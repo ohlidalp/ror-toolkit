@@ -1,0 +1,15 @@
+import glob, os
+env = Environment()
+
+env.ParseConfig('wx-config --cppflags --libs --gl-libs')
+
+srclst = ['myApp.cpp', 'myGLWindow.cpp', 'mySpinCtrl.cpp', 'myRenderer.cpp']
+
+myCPPFlags = ['-g',  '-Wall']
+
+env.Program(
+  target='wxtest',
+  source=srclst,
+  LIBPATH=env['LIBPATH']+['.'],
+  CPPFLAGS=env['CPPFLAGS']+myCPPFlags,
+)
