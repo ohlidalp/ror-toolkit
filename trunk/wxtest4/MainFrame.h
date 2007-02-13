@@ -2,10 +2,10 @@
 #define MAINFRAME_H_
 
 // For compilers that don't support precompilation, include "wx/wx.h"
- #include "wx/wxprec.h"
- #ifndef WX_PRECOMP
-     #include "wx/wx.h"
- #endif
+#include "wx/wxprec.h"
+#ifndef WX_PRECOMP
+#include "wx/wx.h"
+#endif
 
 class MainFrame : public wxFrame {
     public:
