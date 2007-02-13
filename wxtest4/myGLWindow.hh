@@ -9,7 +9,7 @@
 #include "wx/glcanvas.h"
 #include "wx/notebook.h"
 #include "GL/gl.h"
-//#include "GL/glu.h"
+#include "GL/glu.h"
 
 #if !wxUSE_GLCANVAS
     #error "OpenGL required: set wxUSE_GLCANVAS to 1 and rebuild the library"

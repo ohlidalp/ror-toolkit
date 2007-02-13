@@ -20,7 +20,7 @@ bool myApp::OnInit()
   item0->Add( MyGLCanvas1, 1, wxEXPAND, 0);
   //MyGLCanvas1->SetCurrent();
   MyGLCanvas1->gllist = glGenLists(1);
-  MyGLCanvas1->SetToolTip(_T("MyGLCanvas1"));
+  //MyGLCanvas1->SetToolTip(_T("MyGLCanvas1"));
   glNewList(MyGLCanvas1->gllist, GL_COMPILE);
     glRotatef(90 ,0.0f, 1.0f, 0.0f);
   glEndList();
@@ -28,7 +28,7 @@ bool myApp::OnInit()
   MyGLCanvas2 = new myGLWindow(frame, -1, wxPoint(-1,-1), wxSize(30,30), wxSUNKEN_BORDER, _("some text"));
   MyGLCanvas2->setRotation(0,1,0);
   item0->Add( MyGLCanvas2, 1, wxEXPAND, 0 );
-  MyGLCanvas2->SetToolTip(_T("MyGLCanvas2"));
+  //MyGLCanvas2->SetToolTip(_T("MyGLCanvas2"));
   //MyGLCanvas2->SetCurrent();
   MyGLCanvas2->gllist = glGenLists(1);
   glNewList(MyGLCanvas2->gllist, GL_COMPILE);
@@ -38,13 +38,13 @@ bool myApp::OnInit()
   MyGLCanvas3 = new myGLWindow(frame, -1, wxPoint(-1,-1), wxSize(30,30), wxSUNKEN_BORDER, _("some text"));
   MyGLCanvas3->setRotation(4,0,0);
   item0->Add( MyGLCanvas3, 1, wxEXPAND, 0 );
-  MyGLCanvas4->SetToolTip(_T("MyGLCanvas3"));
+  //MyGLCanvas4->SetToolTip(_T("MyGLCanvas3"));
   //MyGLCanvas3->SetCurrent();
 
   MyGLCanvas4 = new myGLWindow(frame, -1, wxPoint(-1,-1), wxSize(30,30), wxSUNKEN_BORDER, _("some text"));
   MyGLCanvas4->setRotation(0,0,0);
   item0->Add( MyGLCanvas4, 1, wxEXPAND, 0 );
-  MyGLCanvas4->SetToolTip(_T("MyGLCanvas4"));
+  //MyGLCanvas4->SetToolTip(_T("MyGLCanvas4"));
   //MyGLCanvas4->SetCurrent();
 
 
