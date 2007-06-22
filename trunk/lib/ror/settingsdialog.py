@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # Don't modify comment 
-import os, os.path
+
 import wx
 #[inc]add your include files here
 
@@ -22,22 +22,20 @@ class SettingsDialogBase(wx.Dialog):
 
 
     def VwXinit(self):
-        respath = os.path.dirname(os.path.abspath(__file__))
         self.fileImgBuf=[None] * 1
-        self.fileImgBuf[0] = wx.Bitmap(os.path.join(respath,"splash.bmp"),wx.BITMAP_TYPE_BMP)
+        self.fileImgBuf[0] = wx.Bitmap("D:/projects/old/rorterraineditor_0_0_3/splash.bmp",wx.BITMAP_TYPE_BMP)
         self.panelBitmapImg0=self.fileImgBuf[0];
-        self.SetIcon(wx.Icon(os.path.join(respath,"ror.ico"),wx.BITMAP_TYPE_ICO));
+        self.SetIcon(wx.Icon("D:/projects/old/rorterraineditor_0_0_3/ror.ico",wx.BITMAP_TYPE_ICO));
         self.SetTitle('RoR Toolkit')
         self.panelBitmap = wx.Panel(self,-1,wx.Point(3,3),wx.Size(500,223))
         self.panelBitmap.SetLabel('RoR Toolkit')
         self.panelBitmap.Bind(wx.EVT_ERASE_BACKGROUND,self.VwXpanelBitmap_VwXEvOnEraseBackground)
         self.txtRoRDir = wx.TextCtrl(self,-1,"",wx.Point(6,137),wx.Size(100,21))
-        self.btnSelectRoRDir = wx.Button(self,-1,"",wx.Point(353,137),wx.Size(180,21))
-        self.btnSelectRoRDir.SetLabel("Select RoR Directory")
-        self.Bind(wx.EVT_BUTTON,self.btnSelectRoRDir_VwXEvOnButtonClick,self.btnSelectRoRDir)
+        self.btnSelectRoRDir = wx.Button(self,-1,"",wx.Point(353,137),wx.Size(75,21))
+        self.btnSelectRoRDir.SetLabel("SelectRoR")
         self.wxnb11c = wx.Notebook(self,-1,wx.Point(3,281),wx.Size(20,20))
         self.pn12c = wx.Panel(self.wxnb11c,-1,wx.Point(4,22),wx.Size(420,103))
-        self.wxnb11c.AddPage(self.pn12c,'Editor Settings',0)
+        self.wxnb11c.AddPage(self.pn12c,'tab n°: 0',0)
         self.lblFPS = wx.StaticText(self.pn12c,-1,"",wx.Point(6,6),wx.Size(50,13),wx.ST_NO_AUTORESIZE)
         self.lblFPS.SetLabel("FPS: 30")
         self.sbFPS = wx.ScrollBar(self.pn12c,-1,wx.Point(62,6),wx.Size(20,20),wx.SB_HORIZONTAL)
@@ -47,7 +45,7 @@ class SettingsDialogBase(wx.Dialog):
         self.sbWaterTrans = wx.ScrollBar(self.pn12c,-1,wx.Point(157,38),wx.Size(20,20),wx.SB_HORIZONTAL)
         self.Bind(wx.EVT_SCROLL,self.sbWaterTrans_VwXEvOnScrollValue,self.sbWaterTrans)
         self.pn21c = wx.Panel(self.wxnb11c,-1,wx.Point(0,0),wx.Size(20,20))
-        self.wxnb11c.AddPage(self.pn21c,'Updates',0)
+        self.wxnb11c.AddPage(self.pn21c,'tab n°: 1',0)
         self.btnCheckUpdates = wx.Button(self.pn21c,-1,"",wx.Point(3,3),wx.Size(412,25))
         self.btnCheckUpdates.SetLabel("Check for Updates!")
         self.Bind(wx.EVT_BUTTON,self.btnCheckUpdates_VwXEvOnButtonClick,self.btnCheckUpdates)
@@ -66,10 +64,6 @@ class SettingsDialogBase(wx.Dialog):
         self.btnExit = wx.Button(self.btnStartTerrain,-1,"",wx.Point(343,3),wx.Size(20,20))
         self.btnExit.SetLabel("Exit")
         self.Bind(wx.EVT_BUTTON,self.btnExit_VwXEvOnButtonClick,self.btnExit)
-        self.btnTruckChecker = wx.Button(self.btnStartTerrain,-1,"",wx.Point(258,3),wx.Size(20,20))
-        self.btnTruckChecker.SetLabel("Truck Checker")
-        self.btnTruckChecker.Enable(False)
-        self.Bind(wx.EVT_BUTTON,self.btnTruckChecker_VwXEvOnButtonClick,self.btnTruckChecker)
         self.sz4s = wx.BoxSizer(wx.VERTICAL)
         self.sz6s = wx.BoxSizer(wx.HORIZONTAL)
         self.sz13s = wx.BoxSizer(wx.VERTICAL)
@@ -95,7 +89,6 @@ class SettingsDialogBase(wx.Dialog):
         self.sz26s.Add(self.btnStartRoR,1,wx.TOP|wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND|wx.FIXED_MINSIZE,3)
         self.sz26s.Add(self.btnTerrainEditor,1,wx.TOP|wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND|wx.FIXED_MINSIZE,3)
         self.sz26s.Add(self.btnTruckEditor,1,wx.TOP|wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND|wx.FIXED_MINSIZE,3)
-        self.sz26s.Add(self.btnTruckChecker,1,wx.TOP|wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND|wx.FIXED_MINSIZE,3)
         self.sz26s.Add(self.btnExit,1,wx.TOP|wx.LEFT|wx.BOTTOM|wx.RIGHT|wx.EXPAND|wx.FIXED_MINSIZE,3)
         self.SetSizer(self.sz4s);self.SetAutoLayout(1);self.Layout();
         self.pn12c.SetSizer(self.sz13s);self.pn12c.SetAutoLayout(1);self.pn12c.Layout();
@@ -153,24 +146,12 @@ class SettingsDialogBase(wx.Dialog):
 
         return #end function
 
-    def btnTruckChecker_VwXEvOnButtonClick(self,event): #init function
-        #[196]Code event VwX...Don't modify[196]#
-        #add your code here
-
-        return #end function
-
-    def btnSelectRoRDir_VwXEvOnButtonClick(self,event): #init function
-        #[193]Code event VwX...Don't modify[193]#
-        #add your code here
-
-        return #end function
-
     def btnTerrainEditor_VwXEvOnButtonClick(self,event): #init function
         #[193]Code event VwX...Don't modify[193]#
         #add your code here
 
         return #end function
-        
+
     def btnStartRoR_VwXEvOnButtonClick(self,event): #init function
         #[192]Code event VwX...Don't modify[192]#
         #add your code here
