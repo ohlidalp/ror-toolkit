@@ -12,20 +12,22 @@ class SettingsDialog(wx.Frame):
         kwds["style"] = wx.SYSTEM_MENU | wx.CAPTION | wx.CLIP_CHILDREN | wx.CLOSE_BOX
         wx.Frame.__init__(self, *args, **kwds) 
 
-        self.lblRoRDir = wx.StaticText(self, wx.ID_ANY, "Please select Rigs of Rods Directory!")
-        self.btnSelectRoRDir = wx.Button(self, wx.ID_ANY, "Select RoR Directory")
+        self.panel = wx.Panel(self, wx.ID_ANY)
+                             
+        self.lblRoRDir = wx.StaticText(self.panel, wx.ID_ANY, "Please select Rigs of Rods Directory!")
+        self.btnSelectRoRDir = wx.Button(self.panel, wx.ID_ANY, "Select RoR Directory")
         self.Bind(wx.EVT_BUTTON, self.OnSelectRoRDir, self.btnSelectRoRDir)
 
-        self.btnStartRoR = wx.Button(self, wx.ID_ANY, "Start RoR")
+        self.btnStartRoR = wx.Button(self.panel, wx.ID_ANY, "Start RoR")
         self.Bind(wx.EVT_BUTTON, self.OnStartRoR, self.btnStartRoR)
         
-        self.btnStartTerrainEditor = wx.Button(self, wx.ID_ANY, "Start Terrain Editor")
+        self.btnStartTerrainEditor = wx.Button(self.panel, wx.ID_ANY, "Start Terrain Editor")
         self.Bind(wx.EVT_BUTTON, self.OnTerrainEditor, self.btnStartTerrainEditor)
         
-        self.btnStartTruckEditor = wx.Button(self, wx.ID_ANY, "Start Truck Editor")
+        self.btnStartTruckEditor = wx.Button(self.panel, wx.ID_ANY, "Start Truck Editor")
         self.Bind(wx.EVT_BUTTON, self.OnTruckEditor, self.btnStartTruckEditor)
 
-        self.btnExit = wx.Button(self, wx.ID_ANY, "Exit")
+        self.btnExit = wx.Button(self.panel, wx.ID_ANY, "Exit")
         self.Bind(wx.EVT_BUTTON, self.OnExit, self.btnExit)
         
         self.rordir = getSettings().getRoRDir()
@@ -54,7 +56,7 @@ class SettingsDialog(wx.Frame):
 
     def OnStartRoR(self, event=None):
         p = Popen(os.path.join(self.rordir, "RoR.exe"), shell=True, cwd=self.rordir)
-        sts = os.waitpid(p.pid, 0)
+        #sts = os.waitpid(p.pid, 0)
 
     def OnTruckEditor(self, event=None):
         import rortruckeditor.MainFrame
@@ -100,15 +102,19 @@ class SettingsDialog(wx.Frame):
         self.SetTitle("RoR Toolkit starter") 
 
     def __do_layout(self): 
-        sizer_main = wx.BoxSizer(wx.VERTICAL)
         
-        sizer_main.Add(self.lblRoRDir, 0, wx.EXPAND, 0) 
-        sizer_main.Add(self.btnSelectRoRDir, 0, wx.EXPAND, 0) 
-        sizer_main.Add(self.btnStartRoR, 0, wx.EXPAND, 0) 
-        sizer_main.Add(self.btnStartTerrainEditor, 0, wx.EXPAND, 0) 
-        sizer_main.Add(self.btnStartTruckEditor, 0, wx.EXPAND, 0) 
-        sizer_main.Add(self.btnExit, 0, wx.EXPAND, 0) 
+        sizer_panel = wx.BoxSizer(wx.VERTICAL)
+        sizer_panel.Add(self.lblRoRDir, 0, wx.EXPAND, 0) 
+        sizer_panel.Add(self.btnSelectRoRDir, 0, wx.EXPAND, 0) 
+        sizer_panel.Add(self.btnStartRoR, 0, wx.EXPAND, 0) 
+        sizer_panel.Add(self.btnStartTerrainEditor, 0, wx.EXPAND, 0) 
+        sizer_panel.Add(self.btnStartTruckEditor, 0, wx.EXPAND, 0) 
+        sizer_panel.Add(self.btnExit, 0, wx.EXPAND, 0) 
+        self.panel.SetSizer(sizer_panel)
 
+        sizer_main = wx.BoxSizer(wx.VERTICAL)
+        sizer_main.Add(self.panel, 0, wx.EXPAND, 0) 
+        
         self.SetAutoLayout(True) 
         self.SetSizer(sizer_main) 
         sizer_main.Fit(self) 

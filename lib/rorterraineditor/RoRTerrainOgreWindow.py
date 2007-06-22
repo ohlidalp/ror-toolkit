@@ -12,7 +12,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
     #myObjects = {}
     myODefs = {}
     
-    def __init__(self, parent, ID, size = wx.Size(200,200), renderSystem = "OpenGL", rordir = "", **kwargs): 
+    def __init__(self, parent, ID, size = wx.Size(200,200), rordir = "", **kwargs): 
         self.rordir = rordir
         self.rand = str(random())
         self.TerrainLoaded = False
@@ -20,7 +20,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         self.rand = str(random())
         self.parent = parent
         self.size = size
-        self.renderSystem =renderSystem
         self.kwargs = kwargs
         self.ID = ID
         self.mSelected = None
@@ -28,7 +27,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         self.myODefs = {}
         self.trucks = {}
         self.meshes = {}
-        wxOgreWindow.__init__(self, self.parent, self.ID, size = self.size, renderSystem = self.renderSystem, **self.kwargs) 
+        wxOgreWindow.__init__(self, self.parent, self.ID, size = self.size, **self.kwargs) 
 
     def OnFrameStarted(self): 
         self.cameraLandCollision()

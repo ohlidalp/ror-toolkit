@@ -8,11 +8,11 @@ from wxogre.wxOgreWindow import *
 from random import random
 
 class RoRTerrainSelectedObjectTopOgreWindow(wxOgreWindow): 
-    def __init__(self, parent, ID, RoRTerrainOgreWindow, size = wx.Size(200,200), renderSystem = "OpenGL", **kwargs):
+    def __init__(self, parent, ID, RoRTerrainOgreWindow, size = wx.Size(200,200), **kwargs):
         self.sceneManager = RoRTerrainOgreWindow.sceneManager
         self.mainWindow = RoRTerrainOgreWindow
         self.rand = str(random())
-        wxOgreWindow.__init__(self, parent, ID, size = size, renderSystem = renderSystem, **kwargs) 
+        wxOgreWindow.__init__(self, parent, ID, size = size, **kwargs) 
         self.parent = parent
         self.distance = 50
 
