@@ -3,39 +3,60 @@ from wxogre.OgreManager import *
 from ror.RoROgreWindow import *
 from ror.rorsettings import *
 from ror.rorcommon import *
-from settingsdialog import *
 from subprocess import Popen
 import wx
 
+class SettingsDialog(wx.Frame): 
+    rordir = None
+    def __init__(self, *args, **kwds): 
+        kwds["style"] = wx.SYSTEM_MENU | wx.CAPTION | wx.CLIP_CHILDREN | wx.CLOSE_BOX
+        wx.Frame.__init__(self, *args, **kwds) 
 
-class SettingsDialog(SettingsDialogBase):
-    def VwXinit(self):
-        SettingsDialogBase.VwXinit(self)
+        self.lblRoRDir = wx.StaticText(self, wx.ID_ANY, "Please select Rigs of Rods Directory!")
+        self.btnSelectRoRDir = wx.Button(self, wx.ID_ANY, "Select RoR Directory")
+        self.Bind(wx.EVT_BUTTON, self.OnSelectRoRDir, self.btnSelectRoRDir)
 
+        self.btnStartRoR = wx.Button(self, wx.ID_ANY, "Start RoR")
+        self.Bind(wx.EVT_BUTTON, self.OnStartRoR, self.btnStartRoR)
+        
+        self.btnStartTerrainEditor = wx.Button(self, wx.ID_ANY, "Start Terrain Editor")
+        self.Bind(wx.EVT_BUTTON, self.OnTerrainEditor, self.btnStartTerrainEditor)
+        
+        self.btnStartTruckEditor = wx.Button(self, wx.ID_ANY, "Start Truck Editor")
+        self.Bind(wx.EVT_BUTTON, self.OnTruckEditor, self.btnStartTruckEditor)
+
+        self.btnExit = wx.Button(self, wx.ID_ANY, "Exit")
+        self.Bind(wx.EVT_BUTTON, self.OnExit, self.btnExit)
+        
         self.rordir = getSettings().getRoRDir()
         #print self.rordir
         if not self.rordir is None:
             if self.checkRoRDir(self.rordir):
-                self.btnTerrainEditor.Enable(True)
                 self.btnStartRoR.Enable(True)
-                self.btnTruckEditor.Enable(True)
-                self.txtRoRDir.SetValue(self.rordir)
+                self.btnStartTruckEditor.Enable(True)
+                self.btnStartTerrainEditor.Enable(True)
+                self.lblRoRDir.SetLabel(self.rordir)
             else:
                 self.rordir = ""
-                self.txtRoRDir.SetValue("")
-                self.btnTerrainEditor.Enable(False)
                 self.btnStartRoR.Enable(False)
-                self.btnTruckEditor.Enable(False)
+                self.btnStartTruckEditor.Enable(False)
+                self.btnStartTerrainEditor.Enable(False)
+                self.lblRoRDir.SetLabel("Please select Rigs of Rods Directory!")
+
         else:
-            self.btnTerrainEditor.Enable(False)
             self.btnStartRoR.Enable(False)
-            self.btnTruckEditor.Enable(False)
-        
-    def btnStartRoR_VwXEvOnButtonClick(self, event=None):
+            self.btnStartTruckEditor.Enable(False)
+            self.btnStartTerrainEditor.Enable(False)
+        self.__set_properties() 
+        self.__do_layout() 
+
+
+
+    def OnStartRoR(self, event=None):
         p = Popen(os.path.join(self.rordir, "RoR.exe"), shell=True, cwd=self.rordir)
         sts = os.waitpid(p.pid, 0)
 
-    def btnTruckEditor_VwXEvOnButtonClick(self, event=None):
+    def OnTruckEditor(self, event=None):
         import rortruckeditor.MainFrame
         try:
             app = rortruckeditor.MainFrame.startApp()
@@ -43,7 +64,7 @@ class SettingsDialog(SettingsDialogBase):
         except:
             pass
     
-    def btnTerrainEditor_VwXEvOnButtonClick(self, event=None):
+    def OnTerrainEditor(self, event=None):
         import rorterraineditor.MainFrame
         try:
             app = rorterraineditor.MainFrame.startApp()
@@ -54,7 +75,7 @@ class SettingsDialog(SettingsDialogBase):
     def checkRoRDir(self, fn):
         return os.path.isfile(os.path.join(fn,"RoR.exe"))
         
-    def btnSelectRoRDir_VwXEvOnButtonClick(self, event=None):
+    def OnSelectRoRDir(self, event=None):
         dialog = wx.DirDialog(self, "Choose RoR Directory", "")
         res = dialog.ShowModal()
         if res == wx.ID_OK:
@@ -66,26 +87,40 @@ class SettingsDialog(SettingsDialogBase):
                 return
                 
             self.rordir = newpath
-            self.txtRoRDir.SetValue(newpath)
+            self.lblRoRDir.SetLabel(newpath)
             getSettings().setRoRDir(newpath)
-            self.btnTerrainEditor.Enable(True)
             self.btnStartRoR.Enable(True)
+            self.btnStartTruckEditor.Enable(True)
+            self.btnStartTerrainEditor.Enable(True)
             
-    def btnExit_VwXEvOnButtonClick(self, event=None):
-        self.Close()
-            
-    pass
-    
-class App(wx.App):
-    def OnInit(self):
-        wx.InitAllImageHandlers()
-        self.main = SettingsDialog(None,-1,'')
-        self.main.ShowModal()
-        return 0
+    def OnExit(self, event=None):
+        self.Close()        
 
-def main():
-    application = App(0)
-    application.MainLoop()
+    def __set_properties(self): 
+        self.SetTitle("RoR Toolkit starter") 
 
-if __name__ == '__main__':
-    main()
+    def __do_layout(self): 
+        sizer_main = wx.BoxSizer(wx.VERTICAL)
+        
+        sizer_main.Add(self.lblRoRDir, 0, wx.EXPAND, 0) 
+        sizer_main.Add(self.btnSelectRoRDir, 0, wx.EXPAND, 0) 
+        sizer_main.Add(self.btnStartRoR, 0, wx.EXPAND, 0) 
+        sizer_main.Add(self.btnStartTerrainEditor, 0, wx.EXPAND, 0) 
+        sizer_main.Add(self.btnStartTruckEditor, 0, wx.EXPAND, 0) 
+        sizer_main.Add(self.btnExit, 0, wx.EXPAND, 0) 
+
+        self.SetAutoLayout(True) 
+        self.SetSizer(sizer_main) 
+        sizer_main.Fit(self) 
+        sizer_main.SetSizeHints(self) 
+        self.Layout() 
+
+def startApp():
+    MainApp = wx.PySimpleApp(0) 
+    wx.InitAllImageHandlers() #you may or may not need this 
+    myFrame = SettingsDialog(None, -1, "") 
+
+    MainApp.SetTopWindow(myFrame) 
+    myFrame.Show() 
+
+    MainApp.MainLoop() 
