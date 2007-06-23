@@ -1,0 +1,1 @@
+c:\python25\python.exe createdoc.py -vv --name RoRToolkit --url http://wiki.rigsofrods.com/index.php?title=Main_Page --debug psyco ogre ror rorterraineditor rortruckeditor wx wxogre
