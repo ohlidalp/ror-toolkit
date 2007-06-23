@@ -665,7 +665,7 @@ class RoRTruckOgreWindow(wxOgreWindow):
         self.camMode = mode
                                                
     def onKeyDown(self,event):
-        print event.m_keyCode
+        #print event.m_keyCode
         d = 0.05
         if event.ShiftDown():
             d = 0.5
