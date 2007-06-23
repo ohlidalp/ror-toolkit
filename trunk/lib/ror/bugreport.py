@@ -13,6 +13,17 @@ class BugReportFrame(wx.Frame):
         self.filename = "readme.txt"
         self.LoadHelp()
 
+    def generateSsysinfo(self):
+        import platform
+        txt = ""
+        txt += ", ".join(platform.uname()) + "\n"
+        txt += ", ".join(platform.architecture()) + "\n"
+        txt += ", ".join(platform.platform()) + "\n"
+        txt += ", ".join(platform.version()) + "\n"
+        txt += ", ".join(platform.python_build()) + "\n"
+        txt += ", ".join(platform.python_version()) + "\n"
+
+        
     def LoadHelp(self):
         if os.path.isfile(self.filename):
             self.TextCtrl.LoadFile(self.filename)
