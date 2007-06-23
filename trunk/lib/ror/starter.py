@@ -127,6 +127,6 @@ def startApp():
     myFrame = SettingsDialog(None, -1, "") 
 
     MainApp.SetTopWindow(myFrame) 
-    myFrame.Show() 
-
-    MainApp.MainLoop() 
+    myFrame.Show()
+    
+    MainApp.MainLoop()

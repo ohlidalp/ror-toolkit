@@ -6,7 +6,7 @@ def main():
     main method
     """
     
-    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib"))
+    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..\lib"))
 
     # Import Psyco if available
     try:
@@ -17,8 +17,8 @@ def main():
     except ImportError:
         pass
 
-    import ror.starter
-    ror.starter.startApp()
+    import epydoc.cli
+    epydoc.cli.cli()
 
 
 if __name__=="__main__": 
