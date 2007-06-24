@@ -1,10 +1,11 @@
 import wx, os, os.path
+import rorsettings
 
 BUGREPORT_FILENAME = "hwinfo.txt"
 
 class BugReportFrame(wx.Frame): 
     def __init__(self, *args, **kwds): 
-        kwds["style"] = wx.CLOSE_BOX | wx.MINIMIZE_BOX | wx.MAXIMIZE_BOX | wx.RESIZE_BORDER | wx.SYSTEM_MENU | wx.CAPTION | wx.CLIP_CHILDREN
+        kwds["style"] = wx.CLOSE_BOX | wx.MINIMIZE_BOX | wx.SYSTEM_MENU | wx.CAPTION | wx.CLIP_CHILDREN
         wx.Frame.__init__(self, *args, **kwds)
 
         self.panel = wx.Panel(self, wx.ID_ANY)
@@ -14,9 +15,11 @@ some tips:
 * it is good to take screenshots of errors, glitches and so on.
   you can insert imageshack.us or equivalent URLs below."""
         self.lblText1 = wx.StaticText(self.panel, wx.ID_ANY, desc)
-        self.TextCtrlOwn = wx.TextCtrl(self.panel, wx.ID_ANY, style=wx.TE_RICH2|wx.TE_AUTO_URL|wx.TE_MULTILINE|wx.TE_READONLY,size=wx.Size(400,200))
-        self.lblText2 = wx.StaticText(self.panel, wx.ID_ANY, "The gathered system information, that will be send along the description:")
-        self.TextCtrl = wx.TextCtrl(self.panel, wx.ID_ANY, style=wx.TE_RICH2|wx.TE_AUTO_URL|wx.TE_MULTILINE|wx.TE_READONLY,size=wx.Size(400,200))
+        self.TextCtrlOwn = wx.TextCtrl(self.panel, wx.ID_ANY, style=wx.TE_RICH2|wx.TE_AUTO_URL|wx.TE_MULTILINE,size=wx.Size(400,200))
+        desc2 = """The gathered system information, that will be send along the description:
+* you may want to correct it and/or remove details you dont want to share with us."""
+        self.lblText2 = wx.StaticText(self.panel, wx.ID_ANY, desc2)
+        self.TextCtrl = wx.TextCtrl(self.panel, wx.ID_ANY, style=wx.TE_RICH2|wx.TE_AUTO_URL|wx.TE_MULTILINE,size=wx.Size(400,200))
         self.btnSubmit = wx.Button(self.panel, wx.ID_ANY, "Submit")
         self.btnCancel = wx.Button(self.panel, wx.ID_ANY, "Cancel")
         self.Bind(wx.EVT_BUTTON, self.onSubmit, self.btnSubmit)
@@ -43,6 +46,11 @@ some tips:
         outfile.write(content)
         outfile.close()
     
+    def readFile(self, filename):
+        outfile = open(filename, 'r')
+        t = outfile.read()
+        outfile.close()
+        return t
     # not working
     # def installPyWin(self):
         # dlg = wx.MessageDialog(self, "Python Windows extensions are required for this to work. I will try install them now in the Registry.\n", "Error", wx.OK | wx.ICON_INFORMATION)
@@ -63,7 +71,8 @@ some tips:
             self.Close()
             return ""
             
-        txt = ""
+        txt = "Hardware Information:\n"
+        txt += "==========================\n"
         try:
             dlg = wx.MessageDialog(self, "This program will now try to figure out some Hardware Information. That can take a minute or so.", "Notice", wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
@@ -113,6 +122,57 @@ some tips:
             txt +=  "Sound card: %s\n" % hw.sound_board.product
         except:
             pass
+        
+        try:
+            txt += "==========================\n"
+            txt += "Ogre.log following\n"
+            txt += "==========================\n"
+            ogrelogfn = rorsettings.getSettings().getRoRDir()
+            txt += self.readFile(os.path.join(ogrelogfn,"Ogre.log"))
+        except:
+            txt += "Ogre.log ERROR\n"
+            pass
+
+        try:
+            txt += "==========================\n"
+            txt += "ogre.cfg following\n"
+            txt += "==========================\n"
+            ogrelogfn = rorsettings.getSettings().getRoRDir()
+            txt += self.readFile(os.path.join(ogrelogfn,"ogre.cfg"))
+        except:
+            txt += "ogre.cfg ERROR\n"
+            pass
+
+        try:
+            txt += "==========================\n"
+            txt += "plugins.cfg following\n"
+            txt += "==========================\n"
+            ogrelogfn = rorsettings.getSettings().getRoRDir()
+            txt += self.readFile(os.path.join(ogrelogfn,"plugins.cfg"))
+        except:
+            txt += "plugins.cfg ERROR\n"
+            pass
+            
+        try:
+            txt += "==========================\n"
+            txt += "RoR.cfg following\n"
+            txt += "==========================\n"
+            ogrelogfn = rorsettings.getSettings().getRoRDir()
+            txt += self.readFile(os.path.join(ogrelogfn,"RoR.cfg"))
+        except:
+            txt += "RoR.cfg ERROR\n"
+            pass
+
+        try:
+            txt += "==========================\n"
+            txt += "resources.cfg following\n"
+            txt += "==========================\n"
+            ogrelogfn = rorsettings.getSettings().getRoRDir()
+            txt += self.readFile(os.path.join(ogrelogfn,"resources.cfg"))
+        except:
+            txt += "resources.cfg ERROR\n"
+            pass
+
         return txt
         
     def LoadHWFile(self):
