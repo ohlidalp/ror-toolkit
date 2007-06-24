@@ -143,12 +143,23 @@ FunctionEnd
 
 Function InstallDirectX
         InitPluginsDir
-        File /oname=$PLUGINSDIR\dxwebsetup.exe "dxwebsetup.exe"
+        File /oname=$PLUGINSDIR\dxwebsetup.exe "tools/dxwebsetup.exe"
         Banner::show /NOUNLOAD "Installing lastest DirectX ..."
         ExecWait '"dxwebsetup.exe /Q"'
         Delete $PLUGINSDIR\dxwebsetup.exe
         Banner::destroy
 FunctionEnd
+
+
+Function InstallDirectX
+        InitPluginsDir
+        File /oname=$PLUGINSDIR\pywin32.exe "tools/pywin32-210.win32-py2.5.exe"
+        Banner::show /NOUNLOAD "Installing Python for Windows ..."
+        ExecWait '"pywin32.exe /Q"'
+        Delete $PLUGINSDIR\dxwebsetup.exe
+        Banner::destroy
+FunctionEnd
+
 
 Function .onInit
         InitPluginsDir

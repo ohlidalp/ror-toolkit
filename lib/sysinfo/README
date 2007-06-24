@@ -1,0 +1,21 @@
+== Python-sysinfo ==
+====================
+
+Python-sysinfo provides an abstraction layer to system information for
+hardware, software and services in the local computer.
+
+The GNU/Linux version uses lshw to collect hardware info and the other 
+data come from config files, /proc and such.
+
+Python-sysinfo is a component of NWU.
+
+See http://cetico.org/nwu
+
+For sample code of python-sysinfo in action, see doc/sysinfo-sample.py
+
+
+Authors:
+Yves Junqueira (nictuku) <yves@cetico.org>
+José Júnior (coredump) <jose.junior@gmail.com>
+
+
