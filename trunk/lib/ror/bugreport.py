@@ -5,7 +5,7 @@ BUGREPORT_FILENAME = "hwinfo.txt"
 
 class BugReportFrame(wx.Frame): 
     def __init__(self, *args, **kwds): 
-        kwds["style"] = wx.CLOSE_BOX | wx.MINIMIZE_BOX | wx.SYSTEM_MENU | wx.CAPTION | wx.CLIP_CHILDREN
+        kwds["style"] = wx.CLOSE_BOX | wx.MINIMIZE_BOX | wx.MAXIMIZE_BOX | wx.RESIZE_BORDER | wx.SYSTEM_MENU | wx.CAPTION | wx.CLIP_CHILDREN
         wx.Frame.__init__(self, *args, **kwds)
 
         self.panel = wx.Panel(self, wx.ID_ANY)
@@ -30,7 +30,9 @@ some tips:
 
     def generateSysinfo(self):
         import platform
-        txt = ""
+        txt = "==========================\n"
+        txt += "Platform/Software Information:\n"
+        txt += "==========================\n"
         txt += "Platform: %s, %s\n"  % (platform.platform(), platform.version())
         txt += "Architecture: " + ", ".join(platform.architecture()) + "\n"
         txt += "Python version:" + "".join(platform.python_version()) + "\n"
@@ -39,6 +41,11 @@ some tips:
         if hwinfo == "":
             return
         txt += hwinfo
+        txt += self.getLogs()
+        
+        txt += "\n==========================\n"
+        txt += "==========================\n"
+
         self.writeFile(BUGREPORT_FILENAME, txt)
         
     def writeFile(self, filename, content):
@@ -59,6 +66,87 @@ some tips:
         # import  pywin32_postinstall
         # pywin32_postinstall.install()
     
+    def getLogs(self):
+        txt = ""
+        try:
+            txt += "==========================\n"
+            txt += "RoR Ogre.log following\n"
+            txt += "==========================\n"
+            ogrelogfn = rorsettings.getSettings().getRoRDir()
+            txt += self.readFile(os.path.join(ogrelogfn,"Ogre.log"))
+        except:
+            txt += "RoR Ogre.log ERROR\n"
+            pass
+        try:
+            txt += "==========================\n"
+            txt += "RoR ogre.cfg following\n"
+            txt += "==========================\n"
+            ogrelogfn = rorsettings.getSettings().getRoRDir()
+            txt += self.readFile(os.path.join(ogrelogfn,"ogre.cfg"))
+        except:
+            txt += "RoR ogre.cfg ERROR\n"
+            pass
+
+        try:
+            txt += "==========================\n"
+            txt += "RoR plugins.cfg following\n"
+            txt += "==========================\n"
+            ogrelogfn = rorsettings.getSettings().getRoRDir()
+            txt += self.readFile(os.path.join(ogrelogfn,"plugins.cfg"))
+        except:
+            txt += "RoR plugins.cfg ERROR\n"
+            pass
+            
+        try:
+            txt += "==========================\n"
+            txt += "RoR.cfg following\n"
+            txt += "==========================\n"
+            ogrelogfn = rorsettings.getSettings().getRoRDir()
+            txt += self.readFile(os.path.join(ogrelogfn,"RoR.cfg"))
+        except:
+            txt += "RoR.cfg ERROR\n"
+            pass
+
+        try:
+            txt += "==========================\n"
+            txt += "RoR resources.cfg following\n"
+            txt += "==========================\n"
+            ogrelogfn = rorsettings.getSettings().getRoRDir()
+            txt += self.readFile(os.path.join(ogrelogfn,"resources.cfg"))
+        except:
+            txt += "RoR resources.cfg ERROR\n"
+            pass
+
+        try:
+            txt += "==========================\n"
+            txt += "RoRToolkit Ogre.log following\n"
+            txt += "==========================\n"
+            ogrelogfn = rorsettings.getSettings().getRoRDir()
+            txt += self.readFile("Ogre.log")
+        except:
+            txt += "RoRToolkit Ogre.log ERROR\n"
+            pass
+            
+        try:
+            txt += "==========================\n"
+            txt += "RoRToolkit ogre.cfg following\n"
+            txt += "==========================\n"
+            ogrelogfn = rorsettings.getSettings().getRoRDir()
+            txt += self.readFile("ogre.cfg")
+        except:
+            txt += "RoRToolkit ogre.cfg ERROR\n"
+            pass
+
+        try:
+            txt += "==========================\n"
+            txt += "RoRToolkit plugins.cfg following\n"
+            txt += "==========================\n"
+            ogrelogfn = rorsettings.getSettings().getRoRDir()
+            txt += self.readFile("plugins.cfg")
+        except:
+            txt += "RoRToolkit plugins.cfg ERROR\n"
+            pass
+        return txt
     
     def getHWInfos(self):
         
@@ -71,7 +159,8 @@ some tips:
             self.Close()
             return ""
             
-        txt = "Hardware Information:\n"
+        txt = "==========================\n"
+        txt += "Hardware Information:\n"
         txt += "==========================\n"
         try:
             dlg = wx.MessageDialog(self, "This program will now try to figure out some Hardware Information. That can take a minute or so.", "Notice", wx.OK | wx.ICON_INFORMATION)
@@ -122,57 +211,7 @@ some tips:
             txt +=  "Sound card: %s\n" % hw.sound_board.product
         except:
             pass
-        
-        try:
-            txt += "==========================\n"
-            txt += "Ogre.log following\n"
-            txt += "==========================\n"
-            ogrelogfn = rorsettings.getSettings().getRoRDir()
-            txt += self.readFile(os.path.join(ogrelogfn,"Ogre.log"))
-        except:
-            txt += "Ogre.log ERROR\n"
-            pass
-
-        try:
-            txt += "==========================\n"
-            txt += "ogre.cfg following\n"
-            txt += "==========================\n"
-            ogrelogfn = rorsettings.getSettings().getRoRDir()
-            txt += self.readFile(os.path.join(ogrelogfn,"ogre.cfg"))
-        except:
-            txt += "ogre.cfg ERROR\n"
-            pass
-
-        try:
-            txt += "==========================\n"
-            txt += "plugins.cfg following\n"
-            txt += "==========================\n"
-            ogrelogfn = rorsettings.getSettings().getRoRDir()
-            txt += self.readFile(os.path.join(ogrelogfn,"plugins.cfg"))
-        except:
-            txt += "plugins.cfg ERROR\n"
-            pass
-            
-        try:
-            txt += "==========================\n"
-            txt += "RoR.cfg following\n"
-            txt += "==========================\n"
-            ogrelogfn = rorsettings.getSettings().getRoRDir()
-            txt += self.readFile(os.path.join(ogrelogfn,"RoR.cfg"))
-        except:
-            txt += "RoR.cfg ERROR\n"
-            pass
-
-        try:
-            txt += "==========================\n"
-            txt += "resources.cfg following\n"
-            txt += "==========================\n"
-            ogrelogfn = rorsettings.getSettings().getRoRDir()
-            txt += self.readFile(os.path.join(ogrelogfn,"resources.cfg"))
-        except:
-            txt += "resources.cfg ERROR\n"
-            pass
-
+ 
         return txt
         
     def LoadHWFile(self):
@@ -188,9 +227,9 @@ some tips:
     def __do_layout(self): 
         sizer_panel = wx.BoxSizer(wx.VERTICAL) 
         sizer_panel.Add(self.lblText1, 0, wx.EXPAND, 0) 
-        sizer_panel.Add(self.TextCtrlOwn, 0, wx.EXPAND, 0) 
+        sizer_panel.Add(self.TextCtrlOwn, -1, wx.EXPAND, 0) 
         sizer_panel.Add(self.lblText2, 0, wx.EXPAND, 0) 
-        sizer_panel.Add(self.TextCtrl, 0, wx.EXPAND, 0) 
+        sizer_panel.Add(self.TextCtrl, -1, wx.EXPAND, 0) 
         sizer_panel.Add(self.btnSubmit, 0, wx.EXPAND, 0) 
         sizer_panel.Add(self.btnCancel, 0, wx.EXPAND, 0) 
         self.panel.SetSizer(sizer_panel)
