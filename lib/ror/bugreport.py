@@ -54,10 +54,11 @@ some tips:
         outfile.close()
     
     def readFile(self, filename):
-        outfile = open(filename, 'r')
+        outfile = open(filename, 'r', encoding = 'utf-8')
         t = outfile.read()
         outfile.close()
         return t
+    
     # not working
     # def installPyWin(self):
         # dlg = wx.MessageDialog(self, "Python Windows extensions are required for this to work. I will try install them now in the Registry.\n", "Error", wx.OK | wx.ICON_INFORMATION)
