@@ -177,39 +177,39 @@ some tips:
         except:
             pass
         try:
-            txt +=  "Motherboard Vendor: %s\n" % hw.motherboard.vendor
+            txt += "Motherboard Vendor: %s\n" % hw.motherboard.vendor
         except:
             pass
         try:
-            txt +=  "CPU: %s\n" % hw.cpu.product
+            txt += "CPU: %s\n" % hw.cpu.product
         except:
             pass
         try:
-            txt +=  "Motherboard Vendor: %s\n" % hw.cpu.vendor
+            txt += "CPU Vendor: %s\n" % hw.cpu.vendor
         except:
             pass
         try:
-            txt +=  "CPU Speed: %s\n" % hw.cpu.frequency
+            txt += "CPU Speed: %s\n" % hw.cpu.frequency
         except:
             pass
         try:
-            txt +=  "Video memory: %.2f MB\n" % (float(hw.video_board.memory) / 1024 / 1024)
+            txt += "Video memory: %.2f MB\n" % (float(hw.video_board.memory) / 1024 / 1024)
         except:
             pass
         try:
-            txt +=  "HW Memory: %.2f MB\n" % (float(hw.memory.size) / 1024)
+            txt += "HW Memory: %.2f MB\n" % (float(hw.memory.size) / 1024)
         except:
             pass
         try:
-            txt +=  "GFX card: %s\n" % hw.video_board.product
+            txt += "GFX card: %s\n" % hw.video_board.product
         except:
             pass
         try:
-            txt +=  "Resolution: %s@%d\n" % (hw.video_board.resolution, int(hw.video_board.width))
+            txt += "Resolution: %s@%d\n" % (hw.video_board.resolution, int(hw.video_board.width))
         except:
             pass
         try:
-            txt +=  "Sound card: %s\n" % hw.sound_board.product
+            txt += "Sound card: %s\n" % hw.sound_board.product
         except:
             pass
  
