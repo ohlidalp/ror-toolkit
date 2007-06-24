@@ -27,6 +27,9 @@ class SettingsDialog(wx.Frame):
         self.btnStartTruckEditor = wx.Button(self.panel, wx.ID_ANY, "Start Truck Editor")
         self.Bind(wx.EVT_BUTTON, self.OnTruckEditor, self.btnStartTruckEditor)
 
+        self.btnBugReport = wx.Button(self.panel, wx.ID_ANY, "Report a Bug")
+        self.Bind(wx.EVT_BUTTON, self.OnBugReport, self.btnBugReport)
+
         self.btnExit = wx.Button(self.panel, wx.ID_ANY, "Exit")
         self.Bind(wx.EVT_BUTTON, self.OnExit, self.btnExit)
         
@@ -66,6 +69,13 @@ class SettingsDialog(wx.Frame):
         except:
             pass
     
+    def OnBugReport(self, event=None):
+        import ror.bugreport
+        #try:
+        ror.bugreport.showBugReportFrame()
+        #except:
+        #    pass
+
     def OnTerrainEditor(self, event=None):
         import rorterraineditor.MainFrame
         try:
@@ -109,6 +119,7 @@ class SettingsDialog(wx.Frame):
         sizer_panel.Add(self.btnStartRoR, 0, wx.EXPAND, 0) 
         sizer_panel.Add(self.btnStartTerrainEditor, 0, wx.EXPAND, 0) 
         sizer_panel.Add(self.btnStartTruckEditor, 0, wx.EXPAND, 0) 
+        sizer_panel.Add(self.btnBugReport, 0, wx.EXPAND, 0) 
         sizer_panel.Add(self.btnExit, 0, wx.EXPAND, 0) 
         self.panel.SetSizer(sizer_panel)
 
