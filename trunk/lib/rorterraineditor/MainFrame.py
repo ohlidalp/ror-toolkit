@@ -312,7 +312,7 @@ class MainFrame(wx.Frame):
         #sys.exit(0)
         
     def __set_properties(self): 
-        self.SetTitle("RoREditor version 0.0.3") 
+        self.SetTitle("RoREditor version 0.0.4") 
         self.terrainOgreWin.SetMinSize((640,480)) 
 
     def __do_layout(self): 
