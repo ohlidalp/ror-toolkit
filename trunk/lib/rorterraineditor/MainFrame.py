@@ -16,6 +16,7 @@ ID_SHOWHELP = 106
 ID_ADDTRUCK = 107
 ID_ADDMESH  = 108
 ID_CHECKUPDATE = 109
+ID_SAVEFILEAS = 110
 ID_EXIT     = 199
 
 DATADIR     = "data"
@@ -120,7 +121,10 @@ class MainFrame(wx.Frame):
         file_menu = wx.Menu()
         self.fileopenmenu = file_menu.Append(ID_OPENFILE, "&Open", "Open Terrain")
         self.filesavemenu = file_menu.Append(ID_SAVEFILE, "&Save", "Save Terrain")
+        self.filesaveasmenu = file_menu.Append(ID_SAVEFILEAS, "&Save as", "Save Terrain as")
+      
         self.filesavemenu.Enable(False)
+        self.filesaveasmenu.Enable(False)
         file_menu.AppendSeparator()
         file_menu.Append(ID_EXIT, "E&xit", "Terminate the program")
         menuBar.Append(file_menu, "&File");
@@ -152,6 +156,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnExit, id=ID_EXIT)
         self.Bind(wx.EVT_MENU, self.OnFileOpen, id=ID_OPENFILE)
         self.Bind(wx.EVT_MENU, self.OnFileSave, id=ID_SAVEFILE)
+        self.Bind(wx.EVT_MENU, self.OnFileSaveAs, id=ID_SAVEFILEAS)
         self.Bind(wx.EVT_MENU, self.OnAbout, id=ID_ABOUT)
         self.Bind(wx.EVT_MENU, self.onViewObjectDetails, id=ID_VIEWOBJ)
         self.Bind(wx.EVT_MENU, self.OnChangeOgreSettings, id=ID_OGRESET)
@@ -234,18 +239,34 @@ class MainFrame(wx.Frame):
             dlg.ShowModal()
             dlg.Destroy()
 
+    def OnFileSaveAs(self, event):
+        default = ""
+        if self.rordir:
+            default = os.path.join(self.rordir, TERRAINDIR)
+        dialog = wx.FileDialog(self, "Save Terrain as", default, "", "Terrain Files (*.terrn)|*.terrn", wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+        res = dialog.ShowModal()
+        if res == wx.ID_OK:
+            if self.terrainOgreWin.SaveTerrnFile(dialog.GetPath()):
+                dlg = wx.MessageDialog(self, "saved","info", wx.OK | wx.ICON_INFORMATION)
+                dlg.ShowModal()
+                dlg.Destroy()           
+            else:
+                dlg = wx.MessageDialog(self, "error while saving as another file, see console!\n","error", wx.OK | wx.ICON_INFORMATION)
+                dlg.ShowModal()
+                dlg.Destroy()
 
 
     def OnFileOpen(self, event=None):
         default = ""
         if self.rordir:
             default = os.path.join(self.rordir, TERRAINDIR)
-        print default
+        #print default
         dialog = wx.FileDialog(self, "Open Terrain", default, "", "Terrain Files (*.terrn)|*.terrn", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         res = dialog.ShowModal()
         if res == wx.ID_OK:
             #self.fileopenmenu.Enable(False)
             self.filesavemenu.Enable(True)
+            self.filesaveasmenu.Enable(True)
             filename = dialog.GetPath()
             print filename
 
