@@ -24,8 +24,12 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         self.ID = ID
         self.mSelected = None
         self.selectedCoords = None
+        self.meshesorder = []
+        self.additionaloptions = {}
+        self.trucksorder = []
         self.myODefs = {}
         self.trucks = {}
+        self.comments = {}
         self.meshes = {}
         wxOgreWindow.__init__(self, self.parent, self.ID, size = self.size, **self.kwargs) 
 
@@ -143,12 +147,15 @@ class RoRTerrainOgreWindow(wxOgreWindow):
             f.close()
             scalearr = content[1].split(",")
             self.myODefs[objname] = []
-            for i in range(1,len(content)):
-                line = content[i]
-                if line.lower().strip() == "end":
-                    break
-                self.myODefs[objname].append(line.split(","))
-            return (float(scalearr[0]), float(scalearr[1]), float(scalearr[2]))
+            if len(content) > 2:
+                for i in range(1,len(content)):
+                    line = content[i]
+                    if line.lower().strip() == "end":
+                        break
+                    self.myODefs[objname].append(line.split(","))
+                return (float(scalearr[0]), float(scalearr[1]), float(scalearr[2]))
+            else:
+                return (1, 1, 1)
         except Exception, err:
             print "error while processing odef file of  %s" % objname
             print str(err)
@@ -180,10 +187,13 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         linecounter = 0
         self.UsingCaelum = False
         self.WaterHeight = None
+        comm = []
         for i in range(0, len(content)):
             if content[i].strip() == "":
+                comm.append(content[i])
                 continue
             if content[i].strip()[0:2] == "//":
+                comm.append(content[i])
                 continue
             if content[i].strip().lower() == "end":
                 continue
@@ -229,67 +239,73 @@ class RoRTerrainOgreWindow(wxOgreWindow):
                 continue
 
             arr = content[i].split(",")
+            #try:
+            x = float(arr[0])
+            y = float(arr[1])
+            z = float(arr[2])
+            rx = float(arr[3])
+            ry = float(arr[4])
+            rz = float(arr[5])
+            objname = (arr[6]).strip().split("\t")
+            if len(objname) == 1:
+                objname = (arr[6]).strip().split(" ")
+            #print objname
+            if objname[0][0:5] == "truck" and len(objname) > 1:
+                print "#############loading truck..."
+                fn = self.rordir + "\\data\\trucks\\"+objname[-1].strip()
+                n, entname = self.createTruckMesh(fn)
+                self.comments[entname] = comm
+                comm = []
+                if not n is None:
+                    n.rotate(ogre.Vector3.UNIT_X, ogre.Degree(rx).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+                    n.rotate(ogre.Vector3.UNIT_Y, ogre.Degree(ry).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+                    n.rotate(ogre.Vector3.UNIT_Z, ogre.Degree(-rz).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+                    n.setPosition(x, y, z)
+                continue
+            if objname[0][0:4] == "load" and len(objname) > 1:
+                print "#################loading load...."
+                fn = self.rordir + "\\data\\trucks\\"+objname[-1].strip()
+                n, entname = self.createTruckMesh(fn)
+                self.comments[entname] = comm
+                comm = []
+                if not n is None:
+                    n.rotate(ogre.Vector3.UNIT_X, ogre.Degree(rx).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+                    n.rotate(ogre.Vector3.UNIT_Y, ogre.Degree(ry).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+                    n.rotate(ogre.Vector3.UNIT_Z, ogre.Degree(-rz).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+                    n.setPosition(x, y, z)
+                continue
+            firstobjname = objname[0]
+            n = self.sceneManager.getRootSceneNode().createChildSceneNode("object" + str(i)+ firstobjname)
+            entname = "objent" + str(i)+"_"+firstobjname
+            e = self.sceneManager.createEntity(entname, firstobjname+".mesh") 
+            n.attachObject(e)
+
             try:
-                x = float(arr[0])
-                y = float(arr[1])
-                z = float(arr[2])
-                rx = float(arr[3])
-                ry = float(arr[4])
-                rz = float(arr[5])
-                objname = (arr[6]).strip().split("\t")
-                if len(objname) == 1:
-                    objname = (arr[6]).strip().split(" ")
-                #print objname
-                if objname[0][0:5] == "truck" and len(objname) > 1:
-                    print "#############loading truck..."
-                    fn = self.rordir + "\\data\\trucks\\"+objname[1].strip()
-                    n = self.createTruckMesh(fn)
-                    if not n is None:
-                        n.rotate(ogre.Vector3.UNIT_X, ogre.Degree(rx).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
-                        n.rotate(ogre.Vector3.UNIT_Y, ogre.Degree(ry).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
-                        n.rotate(ogre.Vector3.UNIT_Z, ogre.Degree(-rz).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
-                        n.setPosition(x, y, z)
-                    continue
-                if objname[0][0:4] == "load" and len(objname) > 1:
-                    print "#################loading load...."
-                    fn = self.rordir + "\\data\\trucks\\"+objname[1].strip()
-                    n = self.createTruckMesh(fn)
-                    if not n is None:
-                        n.rotate(ogre.Vector3.UNIT_X, ogre.Degree(rx).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
-                        n.rotate(ogre.Vector3.UNIT_Y, ogre.Degree(ry).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
-                        n.rotate(ogre.Vector3.UNIT_Z, ogre.Degree(-rz).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
-                        n.setPosition(x, y, z)
-                    continue
-                objname = objname[0]
-                n = self.sceneManager.getRootSceneNode().createChildSceneNode("object" + str(i)+ objname) 
-                entname = "objent" + str(i)+"_"+objname
-                e = self.sceneManager.createEntity(entname, objname+".mesh") 
-                n.attachObject(e)
-                #ae = self.sceneManager.createEntity("axes" + str(i)+ objname, "axes.mesh")
-                #n.attachObject(ae);
+                (sx, sy, sz) = self.loadOdef(firstobjname)
+            except Exception, inst:
+                print inst
+                print "########## error loading odef of %s"  % firstobjname
+                sx = None
+            #print "position: ", x,", ", y,", ", z
+            #print "rotation: ", rx,", ", ry,", ", rz
+            #print "scale: ", sx,", ", sy,", ", sz
+            n.setPosition(x, y, z)
+            n.rotate(ogre.Vector3.UNIT_X, ogre.Degree(-90),relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+            n.rotate(ogre.Vector3.UNIT_Z, ogre.Degree(rz),relativeTo=ogre.Node.TransformSpace.TS_PARENT)
+            n.rotate(ogre.Vector3.UNIT_Y, ogre.Degree(ry),relativeTo=ogre.Node.TransformSpace.TS_PARENT)
+            n.rotate(ogre.Vector3.UNIT_X, ogre.Degree(rx),relativeTo=ogre.Node.TransformSpace.TS_PARENT)
+            if not sx is None:
+                n.setScale(sx, sy, sz)
+            self.comments[entname] = comm
+            comm = []
+            self.meshesorder.append(entname)
+            if len(objname) > 1:
+                self.additionaloptions[entname] = objname[1:]
+            self.meshes[entname] = n
 
-                #self.myObjects["object" + str(i)+ objname] = n
-                #self.parent.cbObjects.Append("object" + str(i)+ objname)
-
-                try:
-                    (sx, sy, sz) = self.loadOdef(objname)
-                except:
-                    print "########## error loading odef of %s"  % objname
-                    sx = None
-                #print "position: ", x,", ", y,", ", z
-                #print "rotation: ", rx,", ", ry,", ", rz
-                #print "scale: ", sx,", ", sy,", ", sz
-                n.setPosition(x, y, z)
-                n.rotate(ogre.Vector3.UNIT_X, ogre.Degree(-90),relativeTo=ogre.Node.TransformSpace.TS_WORLD)
-                n.rotate(ogre.Vector3.UNIT_Z, ogre.Degree(rz),relativeTo=ogre.Node.TransformSpace.TS_PARENT)
-                n.rotate(ogre.Vector3.UNIT_Y, ogre.Degree(ry),relativeTo=ogre.Node.TransformSpace.TS_PARENT)
-                n.rotate(ogre.Vector3.UNIT_X, ogre.Degree(rx),relativeTo=ogre.Node.TransformSpace.TS_PARENT)
-                if not sx is None:
-                    n.setScale(sx, sy, sz)
-                self.meshes[entname] = n
-
-            except:
-                print "error parsing line %s" % content[i]
+            #except Exception, inst:
+            #    print inst
+            #    print "error parsing line %s" % content[i]
         self.createWaterPlane()
         self.createArrows()
         if not self.CharacterStartPosition is None:
@@ -297,8 +313,12 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         else:
             self.camera.setPosition(self.CameraStartPosition)
 
+    def formatFloat(self, fl):
+        return "%12s" % ("%0.6f" % (float(fl)))
 
-    def SaveTerrnFile(self):
+    def SaveTerrnFile(self, fn = None):
+            if fn is None:
+                fn = self.terrnfile
         # quick and dirty ;)
         #try:
             lines = []
@@ -308,7 +328,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
                 lines.append("w "+str(self.WaterHeight)+"\n")
             if self.UsingCaelum:
                 lines.append("caelum\n")
-            lines.append(self.SkyColorLine+"\n")
+            lines.append(self.SkyColorLine.strip()+"\n")
 
             ar = []
             ar.append(str(self.TruckStartPosition.x))
@@ -327,33 +347,74 @@ class RoRTerrainOgreWindow(wxOgreWindow):
             
             #save trucks and loads:
             
-            for k in self.trucks.keys():
+            for k in self.trucksorder:
+            
+                if k in self.comments.keys():
+                    for c in self.comments[k]:
+                        lines.append(c)
+                
+            
                 truck = self.trucks[k]
+                scale = truck.getScale()
+                truck.setScale(1, 1, 1)
                 pos = truck.getPosition()
                 rot = truck.getOrientation()
-                rotx = str(round(ogre.Radian(rot.getPitch()).valueDegrees(),2))
-                roty = str(round(ogre.Radian(rot.getYaw()).valueDegrees(),2))
-                rotz = str(round(ogre.Radian(rot.getRoll()).valueDegrees(),2))
-                truckstring = k.split(".")[-1] + " " + k
-                ar = [str(pos.x), str(pos.y), str(pos.z), rotx, roty, rotz, truckstring]
-                line = ", ".join(ar)+"\n"
-                lines.append(line)
+                truck.setScale(scale)
+
+                rotx = ogre.Radian(rot.getPitch(False)).valueDegrees()
+                roty = ogre.Radian(rot.getRoll(False)).valueDegrees()
+                rotz = - ogre.Radian(rot.getYaw(False)).valueDegrees() 
+                truckstring = k.split(".")[-1] + "\t " + k
+                ar = [self.formatFloat(pos.x), 
+                      self.formatFloat(pos.y), 
+                      self.formatFloat(pos.z), 
+                      self.formatFloat(rotx), 
+                      self.formatFloat(roty), 
+                      self.formatFloat(rotz), 
+                      truckstring]
+                line = ", ".join(ar)
+                lines.append(line.strip()+"\n")
                 
-            for k in self.meshes.keys():
+            # save meshs                   
+            for k in self.meshesorder:
+
+                if k in self.comments.keys():
+                    for c in self.comments[k]:
+                        lines.append(c)
+            
+            
                 meshe = self.meshes[k]
+                scale = meshe.getScale()
+                meshe.setScale(1, 1, 1)
+                meshe.rotate(ogre.Vector3.UNIT_X, ogre.Degree(90),relativeTo=ogre.Node.TransformSpace.TS_WORLD)
                 pos = meshe.getPosition()
                 rot = meshe.getOrientation()
-                rotx = str(round(ogre.Radian(rot.getYaw()).valueDegrees(),2))
-                roty = str(round(ogre.Radian(rot.getPitch()).valueDegrees(),2))
-                rotz = str(round(ogre.Radian(rot.getRoll()).valueDegrees(),2))
+                rot.normalise()
+                meshe.rotate(ogre.Vector3.UNIT_X, ogre.Degree(-90),relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+                meshe.setScale(scale)
+
+                rotx = ogre.Radian(rot.getPitch(False)).valueDegrees()
+                roty = ogre.Radian(rot.getRoll(False)).valueDegrees()
+                rotz = - ogre.Radian(rot.getYaw(False)).valueDegrees() 
                 meshstring = k.split("_")[-1]
-                ar = [str(pos.x), str(pos.y), str(pos.z), rotx, roty, rotz, meshstring]
-                line = ", ".join(ar)+"\n"
-                lines.append(line)
+                ar = [self.formatFloat(pos.x), 
+                      self.formatFloat(pos.y), 
+                      self.formatFloat(pos.z), 
+                      self.formatFloat(rotx), 
+                      self.formatFloat(roty), 
+                      self.formatFloat(rotz), 
+                      meshstring]
+                line = ", ".join(ar)
+                
+                if k in self.additionaloptions.keys():
+                    for ao in self.additionaloptions[k]:
+                        line += " " + ao.strip()
+
+                lines.append(line.strip()+"\n")
 
             lines.append("end\n")
                 
-            f=open(self.terrnfile, 'w')
+            f=open(fn, 'w')
             f.writelines(lines)
             f.close()
             return True
@@ -734,11 +795,12 @@ class RoRTerrainOgreWindow(wxOgreWindow):
                     continue
                 cab = cabobj['data']
                 #print "########face"
-                try:
-                    myManualObject.triangle(int(cab[0]),int(cab[1]),int(cab[2]))
-                except:
-                    print "error with cab: " + str(cab)
-                    pass
+                if cab != []:
+                    try:
+                        myManualObject.triangle(int(cab[0]),int(cab[1]),int(cab[2]))
+                    except:
+                        print "error with cab: " + str(cab)
+                        pass
         myManualObject.end()
         mesh = myManualObject.convertToMesh("manual"+fn+str(self.randomcounter))
         entity = self.sceneManager.createEntity("manualtruckent"+fn+str(self.randomcounter), 
@@ -750,8 +812,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         myManualObjectNode.attachObject(myManualObject)
        
         truckname = os.path.basename(fn)
+        self.trucksorder.append(truckname)
         self.trucks[truckname] = myManualObjectNode
-        return myManualObjectNode
+        return myManualObjectNode, truckname
         #except:
         #    print "error creating truck: " + truckname
         #    return None
