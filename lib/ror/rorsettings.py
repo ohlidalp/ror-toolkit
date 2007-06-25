@@ -24,8 +24,9 @@ class RoRSettings:
     def LoadRoRDir(self):
         try:
             f = open(self.configfilename,'r')
-            self.rordir = f.read()
+            self.rordir = os.path.abspath(f.read())
             f.close()
+            print "Loaded RoR Directory: %s" % self.rordir
         except:
             print "error while loading rordir: %s" % self.configfilename
 

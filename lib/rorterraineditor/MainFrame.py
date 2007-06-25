@@ -78,8 +78,8 @@ class MainFrame(wx.Frame):
         self.statusbar.SetStatusText("-", 1)
 
         #create toolbar
-        self.toolbar  = wx.ToolBar(self, wx.ID_ANY, style = wx.TB_HORZ_TEXT)
-        self.SetToolBar(self.toolbar )
+        #self.toolbar  = wx.ToolBar(self, wx.ID_ANY, style = wx.TB_HORZ_TEXT)
+        #self.SetToolBar(self.toolbar )
         #bitmap = wx.Bitmap("media/gui/OpenFile.gif", wx.BITMAP_TYPE_GIF)
         #self.toolbar.DoAddTool(0, "Open Terrain", bitmap, bitmap, wx.ITEM_NORMAL, "Open Terrain", "Opens a new terrain for edit")
         
@@ -94,21 +94,21 @@ class MainFrame(wx.Frame):
         self.waterlevelctrl.max =  300
         self.Bind(wx.EVT_SCROLL, self.OnChangeWaterLevel, self.waterlevelctrl)
 
-        self.CurrEntName = wx.StaticText(self, wx.ID_ANY, "") 
-        self.PosText = wx.StaticText(self, wx.ID_ANY, "Position: x,y,z") 
-        self.terrPosX = wx.TextCtrl(self, wx.ID_ANY)
-        self.terrPosY = wx.TextCtrl(self, wx.ID_ANY)
-        self.terrPosZ = wx.TextCtrl(self, wx.ID_ANY)
-        self.RotText = wx.StaticText(self, wx.ID_ANY, "Rotation: x,y,z") 
-        self.terrRotX = wx.TextCtrl(self, wx.ID_ANY)
-        self.terrRotY = wx.TextCtrl(self, wx.ID_ANY)
-        self.terrRotZ = wx.TextCtrl(self, wx.ID_ANY)
-        self.Bind(wx.EVT_TEXT, self.OnChangeObjPosRot, self.terrPosX)
-        self.Bind(wx.EVT_TEXT, self.OnChangeObjPosRot, self.terrPosY)
-        self.Bind(wx.EVT_TEXT, self.OnChangeObjPosRot, self.terrPosZ)
-        self.Bind(wx.EVT_TEXT, self.OnChangeObjPosRot, self.terrRotX)
-        self.Bind(wx.EVT_TEXT, self.OnChangeObjPosRot, self.terrRotY)
-        self.Bind(wx.EVT_TEXT, self.OnChangeObjPosRot, self.terrRotZ)
+        self.CurrEntName = wx.StaticText(self, wx.ID_ANY, "\n\n\n") 
+        #self.PosText = wx.StaticText(self, wx.ID_ANY, "Position: x,y,z") 
+        #self.terrPosX = wx.TextCtrl(self, wx.ID_ANY)
+        #self.terrPosY = wx.TextCtrl(self, wx.ID_ANY)
+        #self.terrPosZ = wx.TextCtrl(self, wx.ID_ANY)
+        #self.RotText = wx.StaticText(self, wx.ID_ANY, "Rotation: x,y,z") 
+        #self.terrRotX = wx.TextCtrl(self, wx.ID_ANY)
+        #self.terrRotY = wx.TextCtrl(self, wx.ID_ANY)
+        #self.terrRotZ = wx.TextCtrl(self, wx.ID_ANY)
+        #self.Bind(wx.EVT_TEXT, self.OnChangeObjPosRot, self.terrPosX)
+        #self.Bind(wx.EVT_TEXT, self.OnChangeObjPosRot, self.terrPosY)
+        #self.Bind(wx.EVT_TEXT, self.OnChangeObjPosRot, self.terrPosZ)
+        #self.Bind(wx.EVT_TEXT, self.OnChangeObjPosRot, self.terrRotX)
+        #self.Bind(wx.EVT_TEXT, self.OnChangeObjPosRot, self.terrRotY)
+        #self.Bind(wx.EVT_TEXT, self.OnChangeObjPosRot, self.terrRotZ)
 
         self.btnResetRotation = wx.Button(self, wx.ID_ANY, "Reset Rotation")
         self.Bind(wx.EVT_BUTTON, self.OnBtnResetRotation, self.btnResetRotation)
@@ -139,7 +139,7 @@ class MainFrame(wx.Frame):
         add_menu = wx.Menu()
         add_menu.Append(ID_ADDTRUCK, "&Truck/Load", "add a Truck or a Load to the terrain")
         self.Bind(wx.EVT_MENU, self.OnAddTruck, id=ID_ADDTRUCK)
-        add_menu.Append(ID_ADDMESH, "&Mesh", "add a static Mesh to the terrain")
+        add_menu.Append(ID_ADDMESH, "&Object", "add a static Object to the terrain")
         self.Bind(wx.EVT_MENU, self.OnAddMesh, id=ID_ADDMESH)
         menuBar.Append(add_menu, "&Add");
 
@@ -180,17 +180,25 @@ class MainFrame(wx.Frame):
         dialog = wx.FileDialog(self, "Add Truck", default, "", "Truck and Load Files (*.truck,*.load)|*.truck;*.load", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         res = dialog.ShowModal()
         if res == wx.ID_OK:
-            self.terrainOgreWin.addTruckToTerrain(dialog.GetPath())
+            if not self.terrainOgreWin.addTruckToTerrain(dialog.GetPath()):
+                dlg = wx.MessageDialog(self, "You must select a position on the ground first!", "error", wx.OK | wx.ICON_INFORMATION)
+                dlg.ShowModal()
+                dlg.Destroy()          
 
     def OnAddMesh(self, event=None):
         default = ""
         if self.rordir:
             default = os.path.join(self.rordir, OBJECTDIR)
         print default
-        dialog = wx.FileDialog(self, "Add Mesh", default, "", "Ogre Meshs (*.mesh)|*.mesh", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+        dialog = wx.FileDialog(self, "Add Object", default, "", "RoR Object Definitions (*.odef)|*.odef", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         res = dialog.ShowModal()
         if res == wx.ID_OK:
-            self.terrainOgreWin.addMeshToTerrain(dialog.GetPath())
+            print dialog.GetPath()
+            if not self.terrainOgreWin.addMeshToTerrain(dialog.GetPath()):
+                dlg = wx.MessageDialog(self, "You must select a position on the ground first!", "error", wx.OK | wx.ICON_INFORMATION)
+                dlg.ShowModal()
+                dlg.Destroy()          
+                
 
     def OnBtnResetRotation(self, event=None):
         self.terrainOgreWin.ObjectResetRotation()
@@ -202,18 +210,18 @@ class MainFrame(wx.Frame):
         if self.terrainOgreWin.mSelected is None:
             return
         n = self.terrainOgreWin.mSelected.getParentNode()
-        self.CurrEntName.Label = n.getName()
-        pos = n.getPosition()
-        self.terrPosX.SetValue(str(round(pos.x,2)))
-        self.terrPosY.SetValue(str(round(pos.y,2)))
-        self.terrPosZ.SetValue(str(round(pos.z,2)))
-        rot = n.getOrientation()
-        self.terrRotX.SetValue(str(round(ogre.Radian(rot.getPitch(False)+90).valueDegrees(),2)))
-        self.terrRotY.SetValue(str(round(ogre.Radian(rot.getYaw(False)).valueDegrees(),2)))
-        self.terrRotZ.SetValue(str(round(ogre.Radian(rot.getRoll(False)).valueDegrees(),2)))
+        self.CurrEntName.Label = "selected Object:\n%s" % n.getName()
+        #pos = n.getPosition()
+        #self.terrPosX.SetValue(str(round(pos.x,2)))
+        #self.terrPosY.SetValue(str(round(pos.y,2)))
+        #self.terrPosZ.SetValue(str(round(pos.z,2)))
+        #rot = n.getOrientation()
+        #self.terrRotX.SetValue(str(round(ogre.Radian(rot.getPitch(False)+90).valueDegrees(),2)))
+        #self.terrRotY.SetValue(str(round(ogre.Radian(rot.getYaw(False)).valueDegrees(),2)))
+        #self.terrRotZ.SetValue(str(round(ogre.Radian(rot.getRoll(False)).valueDegrees(),2)))
         
     def OnChangeObjPosRot(self, event=None):
-        self.terrainOgreWin.TerrainName = self.terrainNamectrl.GetValue()
+        pass
         
     def OnChangeTerrainNameChange(self, event=None):
         self.terrainOgreWin.TerrainName = self.terrainNamectrl.GetValue()
@@ -264,7 +272,7 @@ class MainFrame(wx.Frame):
         dialog = wx.FileDialog(self, "Open Terrain", default, "", "Terrain Files (*.terrn)|*.terrn", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         res = dialog.ShowModal()
         if res == wx.ID_OK:
-            #self.fileopenmenu.Enable(False)
+            self.fileopenmenu.Enable(False)
             self.filesavemenu.Enable(True)
             self.filesaveasmenu.Enable(True)
             filename = dialog.GetPath()
@@ -309,7 +317,7 @@ class MainFrame(wx.Frame):
     def OnExit(self, event):
         self.Close(True)
         del self
-        #sys.exit(0)
+        sys.exit(0)
         
     def __set_properties(self): 
         self.SetTitle("RoREditor version 0.0.4") 
@@ -356,19 +364,19 @@ class MainFrame(wx.Frame):
         sizer_settings.Add(self.terrainNamectrl, 0, wx.EXPAND, 0) 
         
         sizer_settings.Add(self.CurrEntName, 0, wx.EXPAND, 0) 
-        sizer_settings.Add(self.PosText, 0, wx.EXPAND, 0) 
-        sizer_terrPos = wx.BoxSizer(wx.HORIZONTAL) 
-        sizer_terrPos.Add(self.terrPosX, 0, wx.EXPAND, 0) 
-        sizer_terrPos.Add(self.terrPosY, 0, wx.EXPAND, 0) 
-        sizer_terrPos.Add(self.terrPosZ, 0, wx.EXPAND, 0) 
-        sizer_settings.Add(sizer_terrPos, 0, wx.EXPAND, 0) 
+        #sizer_settings.Add(self.PosText, 0, wx.EXPAND, 0) 
+        #sizer_terrPos = wx.BoxSizer(wx.HORIZONTAL) 
+        #sizer_terrPos.Add(self.terrPosX, 0, wx.EXPAND, 0) 
+        #sizer_terrPos.Add(self.terrPosY, 0, wx.EXPAND, 0) 
+        #sizer_terrPos.Add(self.terrPosZ, 0, wx.EXPAND, 0) 
+        #sizer_settings.Add(sizer_terrPos, 0, wx.EXPAND, 0) 
         
-        sizer_settings.Add(self.RotText, 0, wx.EXPAND, 0) 
-        sizer_terrRot = wx.BoxSizer(wx.HORIZONTAL) 
-        sizer_terrRot.Add(self.terrRotX, 0, wx.EXPAND, 0) 
-        sizer_terrRot.Add(self.terrRotY, 0, wx.EXPAND, 0) 
-        sizer_terrRot.Add(self.terrRotZ, 0, wx.EXPAND, 0) 
-        sizer_settings.Add(sizer_terrRot, 0, wx.EXPAND, 0) 
+        #sizer_settings.Add(self.RotText, 0, wx.EXPAND, 0) 
+        #sizer_terrRot = wx.BoxSizer(wx.HORIZONTAL) 
+        #sizer_terrRot.Add(self.terrRotX, 0, wx.EXPAND, 0) 
+        #sizer_terrRot.Add(self.terrRotY, 0, wx.EXPAND, 0) 
+        #sizer_terrRot.Add(self.terrRotZ, 0, wx.EXPAND, 0) 
+        #sizer_settings.Add(sizer_terrRot, 0, wx.EXPAND, 0) 
         
         sizer_settings.Add(self.btnResetRotation, 0, wx.EXPAND, 0) 
         sizer_settings.Add(self.btnStickToGround, 0, wx.EXPAND, 0) 
