@@ -361,9 +361,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
                 rot = truck.getOrientation()
                 truck.setScale(scale)
 
-                rotx = ogre.Radian(rot.getPitch(False)).valueDegrees()
-                roty = ogre.Radian(rot.getRoll(False)).valueDegrees()
-                rotz = - ogre.Radian(rot.getYaw(False)).valueDegrees() 
+                rotx = ogre.Radian(rot.getPitch(False)).valueDegrees() - 180
+                rotz = ogre.Radian(rot.getRoll(False)).valueDegrees() - 180
+                roty = - ogre.Radian(rot.getYaw(False)).valueDegrees() -180
                 truckstring = k.split(".")[-1] + "\t " + k
                 ar = [self.formatFloat(pos.x), 
                       self.formatFloat(pos.y), 
