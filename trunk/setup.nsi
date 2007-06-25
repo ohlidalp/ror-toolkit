@@ -143,20 +143,20 @@ FunctionEnd
 
 Function InstallDirectX
         InitPluginsDir
-        File /oname=$PLUGINSDIR\dxwebsetup.exe "tools/dxwebsetup.exe"
+        File /oname=$PLUGINSDIR\dxwebsetup.exe "tools\dxwebsetup.exe"
         Banner::show /NOUNLOAD "Installing lastest DirectX ..."
-        ExecWait '"dxwebsetup.exe /Q"'
+        ExecWait '"$PLUGINSDIR\dxwebsetup.exe /Q"'
         Delete $PLUGINSDIR\dxwebsetup.exe
         Banner::destroy
 FunctionEnd
 
 
-Function InstallDirectX
+Function InstallPyWin32
         InitPluginsDir
-        File /oname=$PLUGINSDIR\pywin32.exe "tools/pywin32-210.win32-py2.5.exe"
+        File /oname=$PLUGINSDIR\pywin32-setup.exe "tools\pywin32-setup.exe"
         Banner::show /NOUNLOAD "Installing Python for Windows ..."
-        ExecWait '"pywin32.exe /Q"'
-        Delete $PLUGINSDIR\dxwebsetup.exe
+        ExecWait '"$PLUGINSDIR\pywin32-setup.exe"'
+        Delete $PLUGINSDIR\pywin32-setup.exe
         Banner::destroy
 FunctionEnd
 
@@ -178,7 +178,11 @@ Section "Install DirectX" SEC02
   Call InstallDirectX
 SectionEnd
 
-Section "Full Installation" SEC03
+Section "Install PyWin32" SEC03
+  Call InstallPyWin32
+SectionEnd
+
+Section "Full Installation" SEC04
   SetOutPath "$INSTDIR"
   SetOverwrite try
   File "ogre.cfg"
@@ -201,6 +205,7 @@ Section "Full Installation" SEC03
   SetOverwrite try
   File "/r" "lib"
   File "/r" "media"
+  File "/r" "tools"
 SectionEnd
 
 Section -AdditionalIcons
