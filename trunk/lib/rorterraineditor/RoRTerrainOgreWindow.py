@@ -7,6 +7,8 @@ from wxogre.wxOgreWindow import *
 
 from random import random
 
+ADDEDBY = "//added by the terrrain editor:\n"
+
 class RoRTerrainOgreWindow(wxOgreWindow):
 
     #myObjects = {}
@@ -145,6 +147,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
             f=open(self.rordir+"\\data\\objects\\%s.odef" % (objname), 'r')
             content = f.readlines()
             f.close()
+            meshname = content[0].strip()
             scalearr = content[1].split(",")
             self.myODefs[objname] = []
             if len(content) > 2:
@@ -153,9 +156,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
                     if line.lower().strip() == "end":
                         break
                     self.myODefs[objname].append(line.split(","))
-                return (float(scalearr[0]), float(scalearr[1]), float(scalearr[2]))
+                return (meshname, float(scalearr[0]), float(scalearr[1]), float(scalearr[2]))
             else:
-                return (1, 1, 1)
+                return (meshname, 1, 1, 1)
         except Exception, err:
             print "error while processing odef file of  %s" % objname
             print str(err)
@@ -275,17 +278,19 @@ class RoRTerrainOgreWindow(wxOgreWindow):
                     n.setPosition(x, y, z)
                 continue
             firstobjname = objname[0]
-            n = self.sceneManager.getRootSceneNode().createChildSceneNode("object" + str(i)+ firstobjname)
-            entname = "objent" + str(i)+"_"+firstobjname
-            e = self.sceneManager.createEntity(entname, firstobjname+".mesh") 
-            n.attachObject(e)
 
             try:
-                (sx, sy, sz) = self.loadOdef(firstobjname)
+                (meshname, sx, sy, sz) = self.loadOdef(firstobjname)
             except Exception, inst:
                 print inst
                 print "########## error loading odef of %s"  % firstobjname
                 sx = None
+            
+            n = self.sceneManager.getRootSceneNode().createChildSceneNode("object" + str(i)+ firstobjname)
+            entname = "objent" + str(i)+"_"+firstobjname
+            e = self.sceneManager.createEntity(entname, meshname) 
+            n.attachObject(e)
+
             #print "position: ", x,", ", y,", ", z
             #print "rotation: ", rx,", ", ry,", ", rz
             #print "scale: ", sx,", ", sy,", ", sz
@@ -361,9 +366,15 @@ class RoRTerrainOgreWindow(wxOgreWindow):
                 rot = truck.getOrientation()
                 truck.setScale(scale)
 
-                rotx = ogre.Radian(rot.getPitch(False)).valueDegrees() - 180
-                rotz = ogre.Radian(rot.getRoll(False)).valueDegrees() - 180
-                roty = - ogre.Radian(rot.getYaw(False)).valueDegrees() -180
+                rotx = ogre.Radian(rot.getPitch(False)).valueDegrees()
+                rotz = ogre.Radian(rot.getRoll(False)).valueDegrees()
+                roty = - ogre.Radian(rot.getYaw(False)).valueDegrees()
+                if rotx != 0:
+                    rotx -= 180
+                if roty != 0:
+                    roty -= 180
+                if rotz != 0:
+                    rotz -= 180
                 truckstring = k.split(".")[-1] + "\t " + k
                 ar = [self.formatFloat(pos.x), 
                       self.formatFloat(pos.y), 
@@ -721,25 +732,44 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 
     def addMeshToTerrain(self, fn):
         if self.selectedCoords is None:
-            return
+            return False
+
         self.randomcounter += 1
-        n = self.sceneManager.getRootSceneNode().createChildSceneNode("objectnode" + str(fn) + str(self.randomcounter)) 
-        entname = "objent" + str(i)+str(self.randomcounter)+"_"+objname
-        e = self.sceneManager.createEntity(entname, objname+".mesh") 
+        meshname = os.path.basename(fn)
+        (firstobjname, fileExtension) = os.path.splitext(meshname)
+            
+        try:
+            (meshname, sx, sy, sz) = self.loadOdef(firstobjname)
+        except Exception, inst:
+            print inst
+            print "########## error loading odef of %s"  % firstobjname
+            sx = None
+        self.randomcounter +=1
+        n = self.sceneManager.getRootSceneNode().createChildSceneNode("object" + str(self.randomcounter)+ firstobjname)
+        entname = "objent" + str(self.randomcounter)+"_"+firstobjname
+        e = self.sceneManager.createEntity(entname, meshname) 
         n.attachObject(e)
+
         n.setPosition(self.selectedCoords)
         n.rotate(ogre.Vector3.UNIT_X, ogre.Degree(-90),relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+        if not sx is None:
+            n.setScale(sx, sy, sz)
         self.meshes[entname] = n
+        self.comments[entname] = [ADDEDBY]
+        self.meshesorder.append(entname)
+        return True
+
                 
     def addTruckToTerrain(self, fn):
         if self.selectedCoords is None:
-            return
-        n = self.createTruckMesh(fn)
+            return False
+        n, entname = self.createTruckMesh(fn)
         n.setPosition(self.selectedCoords)
+        return True
 
     def createTruckMesh(self, fn):
         if not os.path.isfile(fn):
-            print "truck file not found: "+fn
+            print "truck file not found: " + fn
             return
         p = rorparser()
         p.parse(fn)
