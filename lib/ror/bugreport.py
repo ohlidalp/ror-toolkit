@@ -54,7 +54,7 @@ some tips:
         outfile.close()
     
     def readFile(self, filename):
-        outfile = open(filename, 'r', encoding = 'utf-8')
+        outfile = open(filename, 'r')
         t = outfile.read()
         outfile.close()
         return t
@@ -220,7 +220,61 @@ some tips:
             self.TextCtrl.LoadFile(BUGREPORT_FILENAME)
 
     def onSubmit(self, event=None):
+        import base64
+        import socket
+        
+        #combine files
+        self.TextCtrl.SaveFile(BUGREPORT_FILENAME)
+        hwinfos = self.readFile(BUGREPORT_FILENAME)
+
+        self.TextCtrlOwn.SaveFile(BUGREPORT_FILENAME)
+        owninfos = self.readFile(BUGREPORT_FILENAME)
+        
+        txt = owninfos + "\r\n" + hwinfos
+
+        bugreport = base64.b64encode(txt)
+        txt = "action=bugreport&bugreport=%s" % bugreport
+        msg = """POST /index.php HTTP/1.0\r
+Host: repository.rigsofrods.com\r
+Content-Type: application/x-www-form-urlencoded\r
+Content-Length: %d\r
+
+%s""" % (len(txt), txt)
+        
+        
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect(('repository.rigsofrods.com', 80))
+        #print "sending: %s" % msg
+        s.send(msg)
+        data = s.recv(9046)
+        s.close()
+        if data.find("successfully submitted") >= 0:
+            dlg = wx.MessageDialog(self, "Bugreport successfully submitted! Thanks for reporting!", "successfull", wx.OK | wx.ICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()   
+        else:
+            dlg = wx.MessageDialog(self, "Erro while submitting Bugreport! Please use the Forums to report the bug!", "error", wx.OK | wx.ICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
+        #print 'Received', repr(data)
         self.Close()
+        return
+        #s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        #s.connect(('repository.rigsofrods.com', 443))
+        #ssl_sock = socket.ssl(s)
+        #print repr(ssl_sock.server())
+        #print repr(ssl_sock.issuer())
+
+        # Set a simple HTTP request -- use httplib in actual code.
+        #ssl_sock.write(msg)
+
+        # Read a chunk of data.  Will not necessarily
+        # read all the data returned by the server.
+        #print ssl_sock.read()
+
+        # Note that you need to close the underlying socket, not the SSL object.
+        #del ssl_sock
+        #s.close()
 
     def onExit(self, event=None):
         self.Close()
