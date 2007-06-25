@@ -296,6 +296,7 @@ class RoRTruckOgreWindow(wxOgreWindow):
         
         #print tree['globals'][0]['data'][2]
         matname = tree['globals'][0]['data'][2]
+        print matname
         
         idstr = str(smgid)
         sm = self.sceneManager.createManualObject("manualsmg"+idstr)
@@ -317,7 +318,8 @@ class RoRTruckOgreWindow(wxOgreWindow):
         
         # set culling mode for that material
         mat = ogre.MaterialManager.getSingleton().getByName(matname)
-        mat.setCullingMode(Ogre.CullingMode.CULL_NONE)
+        if not mat is None:
+            mat.setCullingMode(Ogre.CullingMode.CULL_NONE)
         
         smnode = self.sceneManager.getRootSceneNode().createChildSceneNode()
         smnode.attachObject(sm)
