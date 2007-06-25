@@ -246,9 +246,6 @@ class MainFrame(wx.Frame):
         self.viewnormalnodes.Check(value)
         self.OnViewNormalNodes()
         
-    
-    
-    
     def OnViewAllBeams(self, event=None):
         value = self.viewallbeams.IsChecked()
         
@@ -278,6 +275,7 @@ class MainFrame(wx.Frame):
         dialog = wx.FileDialog(self, "Open Terrain", default, "", "Trucks or Loads (*.truck, *.load)|*.truck;*.load", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         res = dialog.ShowModal()
         if res == wx.ID_OK:
+            self.fileopenmenu.Enable(False)
             filename = dialog.GetPath()
             print filename
             self.truckOgreWin.LoadTruck(filename)
