@@ -12,7 +12,7 @@ def main():
     # Import Psyco if available
     try:
         import psyco
-        psyco.full()
+        #psyco.full()
         #psyco.log()
         #psyco.profile()
     except ImportError:
