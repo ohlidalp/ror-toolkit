@@ -33,6 +33,8 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         self.trucks = {}
         self.comments = {}
         self.meshes = {}
+        self.moveVector = None
+        self.moveForce = 0
         wxOgreWindow.__init__(self, self.parent, self.ID, size = self.size, **self.kwargs) 
 
     def OnFrameStarted(self): 
@@ -56,6 +58,13 @@ class RoRTerrainOgreWindow(wxOgreWindow):
             else:
                 self.TerrainSelectNode.setScale(0,0,0)
                 
+                
+        #move cam a bit
+        if not self.moveVector is None and self.moveForce > 0:
+            self.camera.moveRelative(self.moveVector * self.moveForce)
+            self.moveForce *= 0.75
+            if self.moveForce < 0.000:
+                self.moveForce = 0
 
     def OnFrameEnded(self): 
         pass 
@@ -935,21 +944,26 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         d = 5
         if event.ShiftDown():
             d = 30
-
         if event.m_keyCode == 65: # A, wx.WXK_LEFT:
-            self.camera.moveRelative(ogre.Vector3(-d,0,0))
+            self.moveVector = ogre.Vector3(-1,0,0)
+            self.moveForce = d
         elif event.m_keyCode == 68: # D, wx.WXK_RIGHT:
-            self.camera.moveRelative(ogre.Vector3(d,0,0))       
+            self.moveVector = ogre.Vector3(1,0,0)
+            self.moveForce = d
         elif event.m_keyCode == 87: # W ,wx.WXK_UP:
-            self.camera.moveRelative(ogre.Vector3(0,0,-d))
+            self.moveVector = ogre.Vector3(0,0,-1)
+            self.moveForce = d
+        elif event.m_keyCode == 83: # S, wx.WXK_DOWN:
+            self.moveVector = ogre.Vector3(0,0,1)
+            self.moveForce = d
+        elif event.m_keyCode == wx.WXK_PAGEUP:
+            self.moveVector = ogre.Vector3(0,1,0)
+            self.moveForce = d
+        elif event.m_keyCode == wx.WXK_PAGEDOWN:
+            self.moveVector = ogre.Vector3(0,-1,0)
+            self.moveForce = d
         elif event.m_keyCode == 81: # Q, wx.WXK_LEFT:
             self.toggleTranslationRotationMode()
-        elif event.m_keyCode == 83: # S, wx.WXK_DOWN:
-            self.camera.moveRelative(ogre.Vector3(0,0,d))
-        elif event.m_keyCode == wx.WXK_PAGEUP:
-            self.camera.moveRelative(ogre.Vector3(0,d,0))
-        elif event.m_keyCode == wx.WXK_PAGEDOWN:
-            self.camera.moveRelative(ogre.Vector3(0,-d,0))
         elif event.m_keyCode == 84: # 84 = T
             if self.filtering == ogre.TFO_BILINEAR:
                 self.filtering = ogre.TFO_TRILINEAR

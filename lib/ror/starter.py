@@ -85,7 +85,21 @@ class SettingsDialog(wx.Frame):
             pass
 
     def checkRoRDir(self, fn):
-        return os.path.isfile(os.path.join(fn,"RoR.exe"))
+        withoutspaces = (fn.find(" ") == -1)
+        if not withoutspaces:
+            dlg = wx.MessageDialog(self, "Your RoR installation directory contains spaces. Rename/move it to a directory with no spaces.\nFor example c:\\ror", "Error", wx.OK | wx.ICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return False
+            
+        exists = os.path.isfile(os.path.join(fn,"RoR.exe"))
+        if not exists:
+            dlg = wx.MessageDialog(self, "RoR.exe not found in the selected directory!\nPlease select a new directory!", "Error", wx.OK | wx.ICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return False
+        
+        return True
         
     def OnSelectRoRDir(self, event=None):
         dialog = wx.DirDialog(self, "Choose RoR Directory", "")
@@ -93,9 +107,6 @@ class SettingsDialog(wx.Frame):
         if res == wx.ID_OK:
             newpath = dialog.GetPath()
             if not self.checkRoRDir(newpath):
-                dlg = wx.MessageDialog(self, "RoR.exe not found in that directory!", "Error", wx.OK | wx.ICON_INFORMATION)
-                dlg.ShowModal()
-                dlg.Destroy()
                 return
                 
             self.rordir = newpath

@@ -296,7 +296,7 @@ class RoRTruckOgreWindow(wxOgreWindow):
         
         #print tree['globals'][0]['data'][2]
         matname = tree['globals'][0]['data'][2]
-        print matname
+        #print matname
         
         idstr = str(smgid)
         sm = self.sceneManager.createManualObject("manualsmg"+idstr)
