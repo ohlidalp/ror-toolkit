@@ -10,7 +10,7 @@ material mysimple/water
 			{
 				texture water.jpg
 				scroll_anim 0.01 0.01
-                alpha_op_ex source1 src_manual src_current 0.9
+                alpha_op_ex source1 src_manual src_current 0.75
 			}
 		}
 	}

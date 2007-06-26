@@ -35,9 +35,11 @@ class RoRTerrainSelectedObjectOgreWindow(wxOgreWindow):
     def OnFrameStarted(self):
         # sync with main
         if not self.mainWindow.mSelected is None:
+            self.radius = self.mainWindow.mSelected.getBoundingRadius() * 2
+            height = self.mainWindow.mSelected.getBoundingBox().getMaximum().y
             n = self.mainWindow.mSelected.getParentNode()
-            pos = n.getPosition()
-            self.camera.lookAt(pos)
+            pos = n.getPosition() + ogre.Vector3(0, height*0.4, 0)
+            self.camera.lookAt(pos + ogre.Vector3(0, height/2, 0))
             dx = math.cos(self.camalpha) * self.radius
             dy = math.sin(self.camalpha) * self.radius
             self.camera.setPosition(pos - ogre.Vector3(dx, -5, dy))

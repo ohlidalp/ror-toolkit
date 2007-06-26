@@ -41,6 +41,8 @@ class RoRTerrainSelectedObjectTopOgreWindow(wxOgreWindow):
             pos = n.getPosition()
             terrainHeight = self.getTerrainHeight(pos)
             camHeight = self.distance
+            self.camera.setNearClipDistance(camHeight)
+            self.camera.setFarClipDistance(camHeight * 10)
             self.camera.setPosition(pos + ogre.Vector3(0.1, camHeight, 0.1))
             self.camera.lookAt(pos)
         wxOgreWindow.OnFrameStarted(self)
@@ -48,10 +50,12 @@ class RoRTerrainSelectedObjectTopOgreWindow(wxOgreWindow):
     def SceneInitialisation(self):
         # create a camera
         self.camera = self.sceneManager.createCamera('SharedCamera' + self.rand) 
-        self.camera.lookAt(ogre.Vector3(0, 0, 0)) 
-        self.camera.setPosition(ogre.Vector3(0, 0, 100))
-        self.camera.nearClipDistance = 0.1
-        self.camera.setAutoAspectRatio(True) 
+        
+        self.camera.setProjectionType(ogre.ProjectionType.PT_ORTHOGRAPHIC)
+        self.camera.setNearClipDistance(5)
+        self.camera.setPosition(ogre.Vector3(0.1,-100,0))
+        self.camera.lookAt(ogre.Vector3(0,0,0))
+        #self.camera.setAutoAspectRatio(True) 
 
         # create the Viewport"
         self.viewport = self.renderWindow.addViewport(self.camera, 0, 0.0, 0.0, 1.0, 1.0) 
