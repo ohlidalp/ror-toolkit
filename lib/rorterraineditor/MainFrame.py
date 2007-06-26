@@ -73,9 +73,9 @@ class MainFrame(wx.Frame):
         self.ogreTimer.Start(25)
         
         #create statusbar
-        self.statusbar = self.CreateStatusBar(3, 0, wx.ID_ANY, "mainstatusbar")
-        self.statusbar.SetStatusWidths([-1, 80, 80])
-        self.statusbar.SetStatusText("-", 1)
+        self.statusbar = self.CreateStatusBar(4, 0, wx.ID_ANY, "mainstatusbar")
+        self.statusbar.SetStatusWidths([-1, 300, 300, 80])
+        #self.statusbar.SetStatusText("", 1)
 
         #create toolbar
         #self.toolbar  = wx.ToolBar(self, wx.ID_ANY, style = wx.TB_HORZ_TEXT)
@@ -94,7 +94,7 @@ class MainFrame(wx.Frame):
         self.waterlevelctrl.max =  300
         self.Bind(wx.EVT_SCROLL, self.OnChangeWaterLevel, self.waterlevelctrl)
 
-        self.CurrEntName = wx.StaticText(self, wx.ID_ANY, "\n\n\n") 
+        #self.CurrEntName = wx.StaticText(self, wx.ID_ANY, "\n\n\n") 
         #self.PosText = wx.StaticText(self, wx.ID_ANY, "Position: x,y,z") 
         #self.terrPosX = wx.TextCtrl(self, wx.ID_ANY)
         #self.terrPosY = wx.TextCtrl(self, wx.ID_ANY)
@@ -208,9 +208,20 @@ class MainFrame(wx.Frame):
         
     def updateObjPosRot(self, event=None):
         if self.terrainOgreWin.mSelected is None:
+            self.statusbar.SetStatusText("", 1)
             return
-        n = self.terrainOgreWin.mSelected.getParentNode()
-        self.CurrEntName.Label = "selected Object:\n%s" % n.getName()
+        n = self.terrainOgreWin.mSelected.getParentNode()        
+        comment = self.terrainOgreWin.getCommentsForObject(n.getName()).lstrip('/')
+        if comment.strip() != "":
+            txt = "%s / %s" % (n.getName(), comment)
+        else:
+            txt = "%s" % n.getName()
+        self.statusbar.SetStatusText(txt, 1)
+
+        posx, posy, posz, rotx, roty, rotz = self.terrainOgreWin.getSelectionPositionRotation()
+        txt = "%0.2f, %0.2f, %0.2f / %0.2f, %0.2f, %0.2f" % (posx, posy, posz, rotx, roty, rotz)
+        self.statusbar.SetStatusText(txt, 2)
+
         #pos = n.getPosition()
         #self.terrPosX.SetValue(str(round(pos.x,2)))
         #self.terrPosY.SetValue(str(round(pos.y,2)))
@@ -220,8 +231,8 @@ class MainFrame(wx.Frame):
         #self.terrRotY.SetValue(str(round(ogre.Radian(rot.getYaw(False)).valueDegrees(),2)))
         #self.terrRotZ.SetValue(str(round(ogre.Radian(rot.getRoll(False)).valueDegrees(),2)))
         
-    def OnChangeObjPosRot(self, event=None):
-        pass
+    #def OnChangeObjPosRot(self, event=None):
+    #    pass
         
     def OnChangeTerrainNameChange(self, event=None):
         self.terrainOgreWin.TerrainName = self.terrainNamectrl.GetValue()
@@ -311,7 +322,7 @@ class MainFrame(wx.Frame):
     def OnTimer(self, event):
         #fill labels with some information, all windows have the same FPS!
         txt = "%0.2f FPS" % (self.terrainOgreWin.renderWindow.getStatistics().lastFPS)
-        self.statusbar.SetStatusText(txt, 2)
+        self.statusbar.SetStatusText(txt, 3)
         self.updateObjPosRot()
         
     def OnExit(self, event):
@@ -363,7 +374,7 @@ class MainFrame(wx.Frame):
         sizer_settings.Add(self.terrainName, 0, wx.EXPAND, 0) 
         sizer_settings.Add(self.terrainNamectrl, 0, wx.EXPAND, 0) 
         
-        sizer_settings.Add(self.CurrEntName, 0, wx.EXPAND, 0) 
+        #sizer_settings.Add(self.CurrEntName, 0, wx.EXPAND, 0) 
         #sizer_settings.Add(self.PosText, 0, wx.EXPAND, 0) 
         #sizer_terrPos = wx.BoxSizer(wx.HORIZONTAL) 
         #sizer_terrPos.Add(self.terrPosX, 0, wx.EXPAND, 0) 

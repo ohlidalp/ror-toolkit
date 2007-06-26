@@ -4,7 +4,6 @@ import ogre.renderer.OGRE as ogre
 from ror.truckparser import *
 from wxogre.OgreManager import *
 from wxogre.wxOgreWindow import *
-
 from random import random
 
 ADDEDBY = "//added by the terrrain editor:\n"
@@ -35,11 +34,24 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         self.meshes = {}
         self.moveVector = None
         self.moveForce = 0
+        self.selectionMaterial = None
+        self.selectionMaterialAnimState = 0
         wxOgreWindow.__init__(self, self.parent, self.ID, size = self.size, **self.kwargs) 
+
+        
+    def animateSelection(self):
+        if not self.selectionMaterial is None:
+            self.selectionMaterialAnimState += 0.01
+            if self.selectionMaterialAnimState >= 0.4:
+                self.selectionMaterialAnimState = - 0.4
+            val = 0.6 + abs(self.selectionMaterialAnimState)
+            #print val
+            self.selectionMaterial.setDiffuse(1, 0.3, 0, val)
+            self.selectionMaterial.setSpecular(1, 0.3, 0, val)
 
     def OnFrameStarted(self): 
         self.cameraLandCollision()
-        self.arrowScale = 0.1
+        self.animateSelection()
         if not self.TranslateNode is None:
             if self.mSelected:
                 if self.TranslationRotationMode:
@@ -123,34 +135,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         #create objects
         self.populateScene()
         
-    
-    
-    def populateScene(self):
-        self.sceneManager.AmbientLight = 0.5, 0.5, 0.5
-
-        l = self.sceneManager.createLight("MainLight" + self.rand)
-        l.setPosition(20,80,50)
-        fadeColour = (0.93, 0.86, 0.76)
-        self.sceneManager.setFog(ogre.FOG_LINEAR, fadeColour, 0.001, 5000.0, 10000.0)
-        self.renderWindow.getViewport(0).BackgroundColour = fadeColour
-
-        self.sceneManager.setWorldGeometry('media/terrain.cfg')
-        plane = ogre.Plane()
-        plane.d = 5000
-        plane.normal = -ogre.Vector3.UNIT_Y
-    
-        self.sceneManager.AmbientLight = ogre.ColourValue(0.7, 0.7, 0.7 )
-        self.sceneManager.setShadowTechnique(ogre.ShadowTechnique.SHADOWTYPE_STENCIL_ADDITIVE);
-        self.sceneManager.setSkyDome(True, 'Examples/CloudySky', 4.0, 8.0) 
-
-        self.MainLight = self.sceneManager.createLight('MainLight') 
-        self.MainLight.setPosition (ogre.Vector3(20, 80, 130))
-
-        #create the camera Axes object
-        self.camAxesNode = self.sceneManager.getRootSceneNode().createChildSceneNode("camaxes" + self.rand) 
-        self.camAxesEnt = self.sceneManager.createEntity('camAxesEnt' + self.rand, 'axes.mesh') 
-        self.camAxesNode.attachObject(self.camAxesEnt) 
-           
     def loadOdef(self, objname):
         try:
             f=open(self.rordir+"\\data\\objects\\%s.odef" % (objname), 'r')
@@ -263,7 +247,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
                 objname = (arr[6]).strip().split(" ")
             #print objname
             if objname[0][0:5] == "truck" and len(objname) > 1:
-                print "#############loading truck..."
+                print "loading truck..."
                 fn = self.rordir + "\\data\\trucks\\"+objname[-1].strip()
                 n, entname = self.createTruckMesh(fn)
                 self.comments[entname] = comm
@@ -275,7 +259,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
                     n.setPosition(x, y, z)
                 continue
             if objname[0][0:4] == "load" and len(objname) > 1:
-                print "#################loading load...."
+                print "loading load...."
                 fn = self.rordir + "\\data\\trucks\\"+objname[-1].strip()
                 n, entname = self.createTruckMesh(fn)
                 self.comments[entname] = comm
@@ -330,6 +314,33 @@ class RoRTerrainOgreWindow(wxOgreWindow):
     def formatFloat(self, fl):
         return "%12s" % ("%0.6f" % (float(fl)))
 
+        
+    def getCommentsForObject(self, entname):
+        if entname in self.comments.keys():
+            #print self.comments[entname]
+            return self.comments[entname];
+        else:
+            return ""
+        
+    def getSelectionPositionRotation(self):
+        if not self.mSelected is None:
+            return self.getPositionRotation(self.mSelected.getParentNode())
+                
+    def getPositionRotation(self, obj):
+        scale = obj.getScale()
+        obj.setScale(1, 1, 1)
+        obj.rotate(ogre.Vector3.UNIT_X, ogre.Degree(90),relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+        pos = obj.getPosition()
+        rot = obj.getOrientation()
+        rot.normalise()
+        obj.rotate(ogre.Vector3.UNIT_X, ogre.Degree(-90),relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+        obj.setScale(scale)
+
+        rotx = ogre.Radian(rot.getPitch(False)).valueDegrees()
+        roty = ogre.Radian(rot.getRoll(False)).valueDegrees()
+        rotz = -ogre.Radian(rot.getYaw(False)).valueDegrees() 
+        return pos.x, pos.y, pos.z, rotx, roty, rotz
+        
     def SaveTerrnFile(self, fn = None):
             if fn is None:
                 fn = self.terrnfile
@@ -367,17 +378,8 @@ class RoRTerrainOgreWindow(wxOgreWindow):
                     for c in self.comments[k]:
                         lines.append(c)
                 
-            
-                truck = self.trucks[k]
-                scale = truck.getScale()
-                truck.setScale(1, 1, 1)
-                pos = truck.getPosition()
-                rot = truck.getOrientation()
-                truck.setScale(scale)
+                posx, posy, posz, rotx, roty, rotz = self.getPositionRotation(self.trucks[k])
 
-                rotx = ogre.Radian(rot.getPitch(False)).valueDegrees()
-                rotz = ogre.Radian(rot.getRoll(False)).valueDegrees()
-                roty = - ogre.Radian(rot.getYaw(False)).valueDegrees()
                 if rotx != 0:
                     rotx -= 180
                 if roty != 0:
@@ -385,9 +387,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
                 if rotz != 0:
                     rotz -= 180
                 truckstring = k.split(".")[-1] + "\t " + k
-                ar = [self.formatFloat(pos.x), 
-                      self.formatFloat(pos.y), 
-                      self.formatFloat(pos.z), 
+                ar = [self.formatFloat(posx), 
+                      self.formatFloat(posy), 
+                      self.formatFloat(posz), 
                       self.formatFloat(rotx), 
                       self.formatFloat(roty), 
                       self.formatFloat(rotz), 
@@ -402,24 +404,11 @@ class RoRTerrainOgreWindow(wxOgreWindow):
                     for c in self.comments[k]:
                         lines.append(c)
             
-            
-                meshe = self.meshes[k]
-                scale = meshe.getScale()
-                meshe.setScale(1, 1, 1)
-                meshe.rotate(ogre.Vector3.UNIT_X, ogre.Degree(90),relativeTo=ogre.Node.TransformSpace.TS_WORLD)
-                pos = meshe.getPosition()
-                rot = meshe.getOrientation()
-                rot.normalise()
-                meshe.rotate(ogre.Vector3.UNIT_X, ogre.Degree(-90),relativeTo=ogre.Node.TransformSpace.TS_WORLD)
-                meshe.setScale(scale)
-
-                rotx = ogre.Radian(rot.getPitch(False)).valueDegrees()
-                roty = ogre.Radian(rot.getRoll(False)).valueDegrees()
-                rotz = - ogre.Radian(rot.getYaw(False)).valueDegrees() 
+                posx, posy, posz, rotx, roty, rotz = self.getPositionRotation(self.meshes[k])
                 meshstring = k.split("_")[-1]
-                ar = [self.formatFloat(pos.x), 
-                      self.formatFloat(pos.y), 
-                      self.formatFloat(pos.z), 
+                ar = [self.formatFloat(posx), 
+                      self.formatFloat(posy), 
+                      self.formatFloat(posz), 
                       self.formatFloat(rotx), 
                       self.formatFloat(roty), 
                       self.formatFloat(rotz), 
@@ -522,14 +511,17 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         if not mat is None:
             mat.copyDetailsTo(selectedmat)
         newmat = ogre.MaterialManager.getSingleton().getByName(newmatname)
-        newmat.setSelfIllumination(0,1,1)
-        newmat.setDiffuse(0,1,1,1)
-        newmat.setAmbient(0,1,1)
-        newmat.setSpecular(0,1,1,1)
+        newmat.setSceneBlending(ogre.SceneBlendFactor.SBF_SOURCE_ALPHA, ogre.SceneBlendFactor.SBF_DEST_ALPHA )
+        newmat.setSelfIllumination(1, 0.3, 0)
+        newmat.setDiffuse(1, 0.3, 0, 0.5)
+        newmat.setAmbient(1, 0.3, 0)
+        newmat.setSpecular(1, 0.3, 0, 0.5)
+        self.selectionMaterial = newmat
         #self.mSelected.getSubEntity(0).setMaterialName(snewmatname)
         self.mSelected.setMaterialName(newmatname)
         self.mSelected.getParentSceneNode().showBoundingBox(True)
         self.reattachArrows(self.mSelected)
+        self.arrowScale = self.mSelected.getBoundingRadius() / 100
 
 
     def LoadTerrnFile(self, filename):
@@ -540,13 +532,16 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         self.processTerrnFile(content)
         
     def populateScene(self):  
-        self.sceneManager.AmbientLight = 0.5, 0.5, 0.5
+        self.sceneManager.AmbientLight = ogre.ColourValue(0.7, 0.7, 0.7 )
+
+        fadeColour = (0.8, 0.8, 0.8)
+        self.sceneManager.setFog(ogre.FOG_LINEAR, fadeColour, 0.001, 5000.0, 10000.0)
+        self.renderWindow.getViewport(0).BackgroundColour = fadeColour
 
         l = self.sceneManager.createLight("MainLight")
         l.setPosition(20,80,50)
-        fadeColour = (0.93, 0.86, 0.76)
-        self.sceneManager.setFog(ogre.FOG_LINEAR, fadeColour, 0.001, 5000.0, 10000.0)
-        self.renderWindow.getViewport(0).BackgroundColour = fadeColour
+        
+        
 
         #create the camera Axes object
         self.camAxesNode = None
@@ -628,6 +623,10 @@ class RoRTerrainOgreWindow(wxOgreWindow):
     def ObjectResetRotation(self):
         if self.mSelected:
             self.mSelected.getParentNode().resetOrientation()
+            self.mSelected.getParentNode().rotate(ogre.Vector3.UNIT_X, ogre.Degree(-90),relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+            self.RotateNode.resetOrientation()
+            self.RotateNode.rotate(ogre.Vector3.UNIT_X, ogre.Degree(-90),relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+            
 
     def selectarrow(self, arrow):
         if self.SelectedArrow.getSubEntity(0).getMaterialName()[-3:] != "sel":
@@ -669,7 +668,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
                     continue
                 if not self.mSelected is None and self.mSelected.getName() == r.movable.getName():
                     continue
-                print r.movable.getMovableType(), r.movable.getName()
+                #print r.movable.getMovableType(), r.movable.getName()
                 if not self.SelectedArrow is None:
                     self.deselectarrow(self.SelectedArrow)
                 self.SelectedArrow = None
@@ -941,9 +940,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
             return
 
         #print event.m_keyCode
-        d = 5
+        d = 2
         if event.ShiftDown():
-            d = 30
+            d = 15
         if event.m_keyCode == 65: # A, wx.WXK_LEFT:
             self.moveVector = ogre.Vector3(-1,0,0)
             self.moveForce = d
