@@ -58,7 +58,9 @@ class SettingsDialog(wx.Frame):
 
 
     def OnStartRoR(self, event=None):
-        p = Popen(os.path.join(self.rordir, "RoR.exe"), shell=True, cwd=self.rordir)
+        #escape spaces!
+        path = newpath.replace(" ", "\ ")
+        p = Popen(os.path.join(path, "RoR.exe"), shell=True, cwd=self.rordir)
         #sts = os.waitpid(p.pid, 0)
 
     def OnTruckEditor(self, event=None):
@@ -85,12 +87,12 @@ class SettingsDialog(wx.Frame):
             pass
 
     def checkRoRDir(self, fn):
-        withoutspaces = (fn.find(" ") == -1)
-        if not withoutspaces:
-            dlg = wx.MessageDialog(self, "Your RoR installation directory contains spaces. Rename/move it to a directory with no spaces.\nFor example c:\\ror", "Error", wx.OK | wx.ICON_INFORMATION)
-            dlg.ShowModal()
-            dlg.Destroy()
-            return False
+        # withoutspaces = (fn.find(" ") == -1)
+        # if not withoutspaces:
+            # dlg = wx.MessageDialog(self, "Your RoR installation directory contains spaces. Rename/move it to a directory with no spaces.\nFor example c:\\ror", "Error", wx.OK | wx.ICON_INFORMATION)
+            # dlg.ShowModal()
+            # dlg.Destroy()
+            # return False
             
         exists = os.path.isfile(os.path.join(fn,"RoR.exe"))
         if not exists:
@@ -108,7 +110,9 @@ class SettingsDialog(wx.Frame):
             newpath = dialog.GetPath()
             if not self.checkRoRDir(newpath):
                 return
-                
+               
+            # no need to escape here!
+            #newpath = newpath.replace(" ", "\ ")
             self.rordir = newpath
             self.lblRoRDir.SetLabel(newpath)
             getSettings().setRoRDir(newpath)

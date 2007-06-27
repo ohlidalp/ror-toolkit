@@ -45,8 +45,10 @@ class RoRTruckOgreWindow(wxOgreWindow):
                 self.sceneManager.destroyEntity(e)
         except:
             pass
-        if not self.uvFrame is None:
+        try:
             self.uvFrame.Close()
+        except:
+            pass
         self.nodes = {}
         self.beams = {}
         self.shocks = {}
