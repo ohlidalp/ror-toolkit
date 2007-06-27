@@ -25,7 +25,7 @@ class RoRTruckOgreWindow(wxOgreWindow):
         self.initScene()
         wxOgreWindow.__init__(self, parent, ID, size = size, **kwargs) 
 
-    def initScene(self):
+    def initScene(self, resetCam = True):
         if not self.sceneManager is None:
             self.sceneManager.destroyAllManualObjects()
         self.EntityCount = 0
@@ -55,8 +55,9 @@ class RoRTruckOgreWindow(wxOgreWindow):
         self.submeshs = {}
         self.selection = None
         self.enablephysics = False
-        self.modeSettings = {}
-        self.camMode = "3d"
+        if resetCam:
+            self.modeSettings = {}
+            self.camMode = "3d"
 
     
     def __del__ (self):
@@ -113,54 +114,57 @@ class RoRTruckOgreWindow(wxOgreWindow):
 
 
     def createNode(self, node):
-        id = int(node[0])
-        pos = ogre.Vector3(float(node[1]),float(node[2]),float(node[3]))
-        if len(node) == 5:
-            option = node[4]
-        else:
-            option = None
+        try:
+            id = int(node[0])
+            pos = ogre.Vector3(float(node[1]),float(node[2]),float(node[3]))
+            if len(node) == 5:
+                option = node[4]
+            else:
+                option = None
 
-        size = 0.05
-        mass = 0.5 * size
-            
-        inertia = OgreNewt.CalcBoxSolid( mass, size )
-    
-        box1node = self.sceneManager.getRootSceneNode().createChildSceneNode()
-        box1 = self.sceneManager.createEntity("NodeEntity"+str(self.EntityCount), "ellipsoid.mesh" )
-        self.clearlist['entity'].append("NodeEntity"+str(self.EntityCount))
-        self.EntityCount += 1
-        box1node.attachObject( box1 )
-        box1node.setScale(size)
-        box1.setNormaliseNormals(True)
-    
-        col = OgreNewt.Ellipsoid( self.World, size )
-        bod = OgreNewt.Body( self.World, col )
-        del col
-                    
-        bod.attachToNode( box1node )
-        bod.setMassMatrix( mass, inertia )
-        bod.setStandardForceCallback()
-    
-        if option == 'l':
-            matname = "TruckEditor/NodeLoad"
-        elif option == 'f':
-            matname = "TruckEditor/NodeFriction"
-        elif option == 'x':
-            matname = "TruckEditor/NodeExhaust"
-        elif option == 'y':
-            matname = "TruckEditor/NodeExhaustReference"
-        elif option == 'c':
-            matname = "TruckEditor/NodeContact"
-        elif option == 'h':
-            matname = "TruckEditor/NodeHook"
-        else:
-            matname = "TruckEditor/NodeNormal"
-        box1.setMaterialName(matname)
-        box1.setCastShadows(False)
-    
-        bod.setPositionOrientation(pos, Ogre.Quaternion.IDENTITY )
-        self.nodes[id] = [box1node, option, node]
-        return bod
+            size = 0.05
+            mass = 0.5 * size
+                
+            inertia = OgreNewt.CalcBoxSolid( mass, size )
+        
+            box1node = self.sceneManager.getRootSceneNode().createChildSceneNode()
+            box1 = self.sceneManager.createEntity("NodeEntity"+str(self.EntityCount), "ellipsoid.mesh" )
+            self.clearlist['entity'].append("NodeEntity"+str(self.EntityCount))
+            self.EntityCount += 1
+            box1node.attachObject( box1 )
+            box1node.setScale(size)
+            box1.setNormaliseNormals(True)
+        
+            col = OgreNewt.Ellipsoid( self.World, size )
+            bod = OgreNewt.Body( self.World, col )
+            del col
+                        
+            bod.attachToNode( box1node )
+            bod.setMassMatrix( mass, inertia )
+            bod.setStandardForceCallback()
+        
+            if option == 'l':
+                matname = "TruckEditor/NodeLoad"
+            elif option == 'f':
+                matname = "TruckEditor/NodeFriction"
+            elif option == 'x':
+                matname = "TruckEditor/NodeExhaust"
+            elif option == 'y':
+                matname = "TruckEditor/NodeExhaustReference"
+            elif option == 'c':
+                matname = "TruckEditor/NodeContact"
+            elif option == 'h':
+                matname = "TruckEditor/NodeHook"
+            else:
+                matname = "TruckEditor/NodeNormal"
+            box1.setMaterialName(matname)
+            box1.setCastShadows(False)
+        
+            bod.setPositionOrientation(pos, Ogre.Quaternion.IDENTITY )
+            self.nodes[id] = [box1node, option, node]
+            return bod
+        except:
+            pass
 
     def showSubmeshs(self, value):
         for k in self.submeshs.keys():
@@ -239,94 +243,103 @@ class RoRTruckOgreWindow(wxOgreWindow):
                 
                 
     def createBeam(self, id0, id1, id2, options):
-        pos1 = self.nodes[id1][0].getPosition()
-        pos2 = self.nodes[id2][0].getPosition()
+        try:        
+            pos1 = self.nodes[id1][0].getPosition()
+            pos2 = self.nodes[id2][0].getPosition()
 
-        idstr = str(id0) + str(id1) + str(id2)
-        line =  self.sceneManager.createManualObject("manual"+idstr)
-        if options == "i":
-            mat = "TruckEditor/BeamInvisible"
-        elif options == "r":
-            mat = "TruckEditor/BeamRope"
-        else:
-            mat = "TruckEditor/BeamNormal"
-        line.begin(mat, ogre.RenderOperation.OT_LINE_LIST) 
-        line.position(pos1)
-        line.position(pos2)
-        line.end()
-        line.setCastShadows(False)
-        linenode = self.sceneManager.getRootSceneNode().createChildSceneNode()
-        linenode.attachObject(line)
-        self.beams[id0] = [linenode, id1, id2, options, line]
+            idstr = str(id0) + str(id1) + str(id2)
+            line =  self.sceneManager.createManualObject("manual"+idstr)
+            if options == "i":
+                mat = "TruckEditor/BeamInvisible"
+            elif options == "r":
+                mat = "TruckEditor/BeamRope"
+            else:
+                mat = "TruckEditor/BeamNormal"
+            line.begin(mat, ogre.RenderOperation.OT_LINE_LIST) 
+            line.position(pos1)
+            line.position(pos2)
+            line.end()
+            line.setCastShadows(False)
+            linenode = self.sceneManager.getRootSceneNode().createChildSceneNode()
+            linenode.attachObject(line)
+            self.beams[id0] = [linenode, id1, id2, options, line]
+        except:
+            pass
 
     def createShock(self, id0, id1, id2, options):
-        pos1 = self.nodes[id1][0].getPosition()
-        pos2 = self.nodes[id2][0].getPosition()
+        try:
+            pos1 = self.nodes[id1][0].getPosition()
+            pos2 = self.nodes[id2][0].getPosition()
 
-        idstr = str(id0) + str(id1) + str(id2)
-        line =  self.sceneManager.createManualObject("manual"+idstr)
-        if options == "i":
-            mat = "TruckEditor/ShockInvisible"
-        else:
-            mat = "TruckEditor/ShockNormal"
-        line.begin(mat, ogre.RenderOperation.OT_LINE_LIST) 
-        line.position(pos1)
-        line.position(pos2)
-        line.end()
-        line.setCastShadows(False)
-        linenode = self.sceneManager.getRootSceneNode().createChildSceneNode()
-        linenode.attachObject(line)
-        self.shocks[id0] = [linenode, id1, id2, options, line]
+            idstr = str(id0) + str(id1) + str(id2)
+            line =  self.sceneManager.createManualObject("manual"+idstr)
+            if options == "i":
+                mat = "TruckEditor/ShockInvisible"
+            else:
+                mat = "TruckEditor/ShockNormal"
+            line.begin(mat, ogre.RenderOperation.OT_LINE_LIST) 
+            line.position(pos1)
+            line.position(pos2)
+            line.end()
+            line.setCastShadows(False)
+            linenode = self.sceneManager.getRootSceneNode().createChildSceneNode()
+            linenode.attachObject(line)
+            self.shocks[id0] = [linenode, id1, id2, options, line]
+        except:
+            pass
         
     def createSubMeshGroup(self, tree, smg, smgid):
-        print smg
-        # read in nodes
-        nodes = {}
-        for nodeobj in tree['nodes']:
-            if nodeobj.has_key('type'):
-                continue
-            node = nodeobj['data']
-            nodes[int(node[0])] = ogre.Vector3(float(node[1]),float(node[2]),float(node[3]))
-        
-        # read in UVs then
-        uv = {}
-        for data in smg['texcoords']:
-            tex = data['data']
-            uv[int(tex[0])] = [float(tex[1]), float(tex[2])]
+        #print smg
+        try:
+            # read in nodes
+            nodes = {}
+            for nodeobj in tree['nodes']:
+                if nodeobj.has_key('type'):
+                    continue
+                node = nodeobj['data']
+                nodes[int(node[0])] = ogre.Vector3(float(node[1]),float(node[2]),float(node[3]))
+            
+            # read in UVs then
+            uv = {}
+            for data in smg['texcoords']:
+                tex = data['data']
+                uv[int(tex[0])] = [float(tex[1]), float(tex[2])]
 
-        # and create the triangles
-        
-        #print tree['globals'][0]['data'][2]
-        matname = tree['globals'][0]['data'][2]
-        #print matname
-        
-        idstr = str(smgid)
-        sm = self.sceneManager.createManualObject("manualsmg"+idstr)
-        sm.begin(matname, ogre.RenderOperation.OT_TRIANGLE_LIST) 
+            # and create the triangles
+            
+            #print tree['globals'][0]['data'][2]
+            matname = tree['globals'][0]['data'][2]
+            #print matname
+            
+            idstr = str(smgid)
+            sm = self.sceneManager.createManualObject("manualsmg"+idstr)
+            sm.begin(matname, ogre.RenderOperation.OT_TRIANGLE_LIST) 
 
-        for data in smg['cab']:
-            cab = data['data']
-            if len(cab) == 0:
-                continue
-            #print nodes, cab
-            sm.position(nodes[int(cab[0])])
-            sm.textureCoord(uv[int(cab[0])][0], uv[int(cab[0])][1])
-            sm.position(nodes[int(cab[1])])
-            sm.textureCoord(uv[int(cab[1])][0], uv[int(cab[1])][1])
-            sm.position(nodes[int(cab[2])])
-            sm.textureCoord(uv[int(cab[2])][0], uv[int(cab[2])][1])
-        sm.end()
-        sm.setCastShadows(False)
-        
-        # set culling mode for that material
-        mat = ogre.MaterialManager.getSingleton().getByName(matname)
-        if not mat is None:
-            mat.setCullingMode(Ogre.CullingMode.CULL_NONE)
-        
-        smnode = self.sceneManager.getRootSceneNode().createChildSceneNode()
-        smnode.attachObject(sm)
+            for data in smg['cab']:
+                cab = data['data']
+                if len(cab) == 0:
+                    continue
+                #print nodes, cab
+                sm.position(nodes[int(cab[0])])
+                sm.textureCoord(uv[int(cab[0])][0], uv[int(cab[0])][1])
+                sm.position(nodes[int(cab[1])])
+                sm.textureCoord(uv[int(cab[1])][0], uv[int(cab[1])][1])
+                sm.position(nodes[int(cab[2])])
+                sm.textureCoord(uv[int(cab[2])][0], uv[int(cab[2])][1])
+            sm.end()
+            sm.setCastShadows(False)
+            
+            # set culling mode for that material
+            mat = ogre.MaterialManager.getSingleton().getByName(matname)
+            if not mat is None:
+                mat.setCullingMode(Ogre.CullingMode.CULL_NONE)
+            
+            smnode = self.sceneManager.getRootSceneNode().createChildSceneNode()
+            smnode.attachObject(sm)
 
-        self.submeshs[smgid] = [smnode, smgid, smg]
+            self.submeshs[smgid] = [smnode, smgid, smg]
+        except:
+            pass
                 
     def makeSimpleBox( self, size, pos,  orient ):
         ## base mass on the size of the object.
@@ -430,15 +443,11 @@ class RoRTruckOgreWindow(wxOgreWindow):
         self.planenode = self.sceneManager.getRootSceneNode().createChildSceneNode()
         self.planenode.attachObject(entity) 
         
-        
-
-    def LoadTruck(self, filename):
-        self.createTruckMesh(os.path.basename(filename))        
-
     def LoadTruck(self, fn):
         if not os.path.isfile(fn):
             print "truck file not found: "+fn
             return
+        self.filename = fn
         truckname = os.path.basename(fn)
         p = rorparser()
         p.parse(fn)
@@ -446,63 +455,80 @@ class RoRTruckOgreWindow(wxOgreWindow):
             return False
 
         self.initScene()
-        
-        nodes = {}
-        for nodeobj in p.tree['nodes']:
-            if nodeobj.has_key('type'):
-                continue
-            node = nodeobj['data']
-            nodes[int(node[0])] = ogre.Vector3(float(node[1]),float(node[2]),float(node[3]))
-            self.createNode(node)
-            
-
-        beamcounter = 0
-        for beamobj in p.tree['beams']:
-            if beamobj.has_key('type'):
-                continue
-            #print beamobj
-            beam = beamobj['data']
-            #print beam
-            if len(beam) == 3:
-                option = beam[2]
-            else:
-                option = None
-            #print beam
-            try:
-                self.createBeam(beamcounter, int(beam[0]),int(beam[1]), option)
-            except:
-                pass
-            beamcounter += 1
+        self.CreateTruck(p.tree)
 
 
-        if 'shocks' in p.tree.keys():            
-            shockcounter = 0
-            for shockobj in p.tree['shocks']:
-                if shockobj.has_key('type'):
+    def reLoadTruck(self):
+        if not os.path.isfile(self.filename):
+            return
+        p = rorparser()
+        p.parse(self.filename)
+        if not 'nodes' in p.tree.keys() or not 'beams' in p.tree.keys() :
+            return False
+
+        self.initScene(resetCam=False)
+        self.CreateTruck(p.tree)
+                
+    def CreateTruck(self, tree):
+        try:
+            nodes = {}
+            for nodeobj in tree['nodes']:
+                if nodeobj.has_key('type'):
                     continue
-                shock = shockobj['data']
-                if len(shock) == 8:
-                    option = shock[7]
+                node = nodeobj['data']
+                nodes[int(node[0])] = ogre.Vector3(float(node[1]),float(node[2]),float(node[3]))
+                self.createNode(node)
+                
+
+            beamcounter = 0
+            for beamobj in tree['beams']:
+                if beamobj.has_key('type'):
+                    continue
+                #print beamobj
+                beam = beamobj['data']
+                #print beam
+                if len(beam) == 3:
+                    option = beam[2]
                 else:
                     option = None
                 #print beam
                 try:
-                    self.createShock(shockcounter, int(shock[0]),int(shock[1]), option)
+                    self.createBeam(beamcounter, int(beam[0]),int(beam[1]), option)
                 except:
                     pass
-                shockcounter += 1
-            
-        smgcounter = 0
-        for smg in p.tree['submeshgroups']:
-            print "##################################", smgcounter
-            self.createSubMeshGroup(p.tree, smg,smgcounter)
-            smgcounter += 1
-            
-        from UVFrame import *
-        self.uvFrame = UVFrame(self, wx.ID_ANY, "") 
-        self.uvFrame.setTree(p.tree)
-        self.uvFrame.Show() 
+                beamcounter += 1
 
+
+            if 'shocks' in tree.keys():            
+                shockcounter = 0
+                for shockobj in tree['shocks']:
+                    if shockobj.has_key('type'):
+                        continue
+                    shock = shockobj['data']
+                    if len(shock) == 8:
+                        option = shock[7]
+                    else:
+                        option = None
+                    #print beam
+                    try:
+                        self.createShock(shockcounter, int(shock[0]),int(shock[1]), option)
+                    except:
+                        pass
+                    shockcounter += 1
+                
+            smgcounter = 0
+            for smg in tree['submeshgroups']:
+                print "##################################", smgcounter
+                self.createSubMeshGroup(tree, smg,smgcounter)
+                smgcounter += 1
+                
+            from UVFrame import *
+            self.uvFrame = UVFrame(self, wx.ID_ANY, "") 
+            self.uvFrame.setTree(tree)
+            self.uvFrame.Show() 
+        except:
+            pass
+            
     def onMouseEvent(self,event):
         width, height, a, b, c = self.renderWindow.getMetrics()       
 

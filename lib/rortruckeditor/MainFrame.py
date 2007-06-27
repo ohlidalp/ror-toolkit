@@ -24,6 +24,7 @@ ID_VIEWSUBMESHS = 116
 ID_VIEWALLBEAMS = 117
 ID_VIEWALLNODES = 118
 ID_FREEMODE = 119
+ID_RELOADFILE = 120
 ID_EXIT     = 199
 
 
@@ -74,6 +75,7 @@ class MainFrame(wx.Frame):
         menuBar = wx.MenuBar()
         file_menu = wx.Menu()
         self.fileopenmenu = file_menu.Append(ID_OPENFILE, "&Open", "Open Truck")
+        self.filereloadmenu = file_menu.Append(ID_RELOADFILE, "&Reload", "Reload Truck")
         file_menu.AppendSeparator()
         file_menu.Append(ID_EXIT, "E&xit", "Terminate the program")
         menuBar.Append(file_menu, "&File");
@@ -178,6 +180,7 @@ class MainFrame(wx.Frame):
 
         self.Bind(wx.EVT_MENU, self.OnExit, id=ID_EXIT)
         self.Bind(wx.EVT_MENU, self.OnFileOpen, id=ID_OPENFILE)
+        self.Bind(wx.EVT_MENU, self.OnFileReload, id=ID_RELOADFILE)
         self.Bind(wx.EVT_MENU, self.OnAbout, id=ID_ABOUT)
 
         
@@ -266,6 +269,9 @@ class MainFrame(wx.Frame):
         
     def OnViewInvisibleBeams(self, event=None):
         self.truckOgreWin.showInvisibleBeams(self.viewinvisiblebeams.IsChecked())
+        
+    def OnFileReload(self, event=None):
+        self.truckOgreWin.reLoadTruck()
         
     def OnFileOpen(self, event=None):
         default = ""
