@@ -55,6 +55,9 @@ class RoRUVOgreWindow(wxOgreWindow):
     
     def __del__ (self):
         ## delete the world when we're done.
+        self.sceneManager.destroyEntity('groundent')
+        #ogre.ResourceGroupManager.getSingleton().undeclareResource("UVGroundPlane", "General")
+        
         del self.bodies
         del self.World
 
@@ -188,12 +191,15 @@ class RoRUVOgreWindow(wxOgreWindow):
         plane.normal = ogre.Vector3(0, 1, 0) 
         plane.d = 100
         # see http://www.ogre3d.org/docs/api/html/classOgre_1_1MeshManager.html#Ogre_1_1MeshManagera5
-        mesh = ogre.MeshManager.getSingleton().createPlane('UVGroundPlane', "General", plane, 2000, 2000, 
-                                                    20, 20, True, 1, 200.0, 200.0, ogre.Vector3(0, 0, 1),
-                                                    ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, 
-                                                    ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, 
-                                                    True, True)
-        entity = self.sceneManager.createEntity('groundent', 'UVGroundPlane') 
+        import random
+        t = str(random.random())
+        ogre.MeshManager.getSingleton().createPlane('UVGroundPlane' + t, "General", plane, 2000, 2000, 
+                                                20, 20, True, 1, 200.0, 200.0, ogre.Vector3(0, 0, 1),
+                                                ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, 
+                                                ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, 
+                                                True, True)
+        entity = self.sceneManager.createEntity('groundent', 'UVGroundPlane' + t) 
+        
         entity.setMaterialName('TruckEditor/UVBackground') 
         self.groundplanenode = self.sceneManager.getRootSceneNode().createChildSceneNode()
         self.groundplanenode.attachObject(entity) 
@@ -277,12 +283,14 @@ class RoRUVOgreWindow(wxOgreWindow):
         plane.normal = ogre.Vector3(0, 1, 0) 
         plane.d = 20
         # see http://www.ogre3d.org/docs/api/html/classOgre_1_1MeshManager.html#Ogre_1_1MeshManagera5
-        mesh = ogre.MeshManager.getSingleton().createPlane('UVPlane', "General", plane, self.imgwidth/IMGSCALE, self.imgheight/IMGSCALE,
+        import random
+        t = str(random.random())
+        mesh = ogre.MeshManager.getSingleton().createPlane('UVPlane'+t, "General", plane, self.imgwidth/IMGSCALE, self.imgheight/IMGSCALE,
                                                     1, 1, True, 1, 1, 1, ogre.Vector3(0, 0, 1),
                                                     ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, 
                                                     ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, 
                                                     True, True)
-        entity = self.sceneManager.createEntity('uvent', 'UVPlane') 
+        entity = self.sceneManager.createEntity('uvent', 'UVPlane'+t) 
         
         #it = ogre.ResourceGroupManager.getSingleton().getResourceManagerIterator()
         #rm = it.getNext()
