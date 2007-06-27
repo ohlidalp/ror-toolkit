@@ -60,6 +60,11 @@ class OgreManager():
         self.renderWindows[wxOgrewin] = renderWindow
         return renderWindow
 
+    def removeRenderWindow(self, wxOgrewin):
+        print "removing render target"
+        self.ogreRoot.detachRenderTarget(self.renderWindows[wxOgrewin])
+        del self.renderWindows[wxOgrewin]
+
     def RenderAll(self):
         for ogrewin in self.renderWindows.keys():
             try:
@@ -82,3 +87,7 @@ class OgreManager():
         
     def createSceneManager(self, type):
         return self.ogreRoot.createSceneManager(type, "SceneManager" + str(len(self.renderWindows)))
+
+    def destroySceneManager(self, sm):
+        return self.ogreRoot.destroySceneManager(sm)
+        

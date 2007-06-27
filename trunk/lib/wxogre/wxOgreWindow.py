@@ -26,19 +26,31 @@ class wxOgreWindow(wx.PyWindow):
         # create a new RenderWindow
         self.renderWindow = getOgreManager().createRenderWindow(self, "wxPythonWxOgreRenderWindow", size[0], size[1], False, self.GetHandle())
         self.renderWindow.active = True 
+        self.sceneManager = None
         
         self.SceneInitialisation() 
         self.SetFocus()
+    
+    def __del__(self):
+        self.close()
         
+    def close(self):
+        getOgreManager().removeRenderWindow(self)
+        if not self.sceneManager is None:
+            getOgreManager().destroySceneManager(self.sceneManager)
+
     def _OnSize(self, event):         
         """
         Is called when the ogre Window is getting resized
         @param event: the sizing event
         @return: none
         """
-        if getattr(self, 'ogreRoot', None): 
-            self.renderWindow.windowMovedOrResized() 
-        event.Skip() 
+        try:
+            if getattr(self, 'ogreRoot', None): 
+                self.renderWindow.windowMovedOrResized() 
+            event.Skip() 
+        except:
+            pass
 
     def _OnEraseBackground(self, event): 
         """
