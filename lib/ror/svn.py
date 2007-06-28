@@ -32,6 +32,20 @@ def getRevision(client=None, path=None):
 def callback_ssl_server_trust_prompt(trust_data):
     return True, trust_data['failures'], True
 
+def getLog(client, startrev, endrev):
+    path = getRootPath()
+    return client.log(path,
+         revision_start=pysvn.Revision(opt_revision_kind.number, startrev),
+         revision_end=pysvn.Revision(opt_revision_kind.number, endrev),
+         discover_changed_paths=False,
+         strict_node_history=True,
+         limit=0)
+
+def showLog(client, startrev, endrev):
+    log = getLog(client, startrev, endrev)
+    for e in log:
+        print "--r%d:%s:\n%s\n" %(e['revision'].number, e['author'], e['message'])
+         
 def svnupdate():
     global changes
     path = getRootPath()
@@ -52,6 +66,7 @@ def svnupdate():
             print "already up to date!"
         elif changes > 2:
             print "updated! please restart the application!"
+            showLog(client, revision_before, revision_after)
     except Exception, inst:
         print "error while updating: " + str(inst)
         print "done."
