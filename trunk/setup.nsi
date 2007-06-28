@@ -221,9 +221,8 @@ FunctionEnd
 Section Uninstall
   Delete "$INSTDIR\${PRODUCT_NAME}.url"
   Delete "$INSTDIR\uninst.exe"
-  RMDir  "/r" "$INSTDIR\media"
-  RMDir  "/r" "$INSTDIR\lib"
-  Delete "$INSTDIR\*"
+  #RMDir  "/r" "$INSTDIR\media"
+  RMDir  "/r" "$INSTDIR"
 
   RMDir  "/r" "$SMPROGRAMS\RoRToolkit"
   Delete "$STARTMENU.lnk"
