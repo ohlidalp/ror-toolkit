@@ -27,6 +27,7 @@ def getRevision(client, path):
 def svnupdate():
     global changes
     path = getRootPath()
+    changes = 0
     try:
         import pysvn
         client = pysvn.Client()
@@ -48,6 +49,7 @@ def svnupdate():
 def svncheckout():
     print "checkout"
     path = getRootPath()
+    changes = 0
     try:
         import pysvn
         client = pysvn.Client()
