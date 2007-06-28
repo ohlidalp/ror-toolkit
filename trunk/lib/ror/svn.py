@@ -42,6 +42,8 @@ def svnupdate():
         print "updated to revision %d." % revision_after
         if revision_before == revision_after and changes == 2:
             print "already up to date!"
+        elif changes > 2:
+            print "updated! please restart the application!"
     except Exception, inst:
         print "error while updating: " + str(inst)
         print "done."
