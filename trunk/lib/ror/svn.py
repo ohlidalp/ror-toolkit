@@ -8,12 +8,12 @@ changes = 0
 def getRootPath():
     path = os.path.dirname(os.path.abspath(__file__))
     if os.path.isdir(os.path.join(path, "media")):
-        print path
         return path
     path = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),"..\\.."))
     if os.path.isdir(os.path.join(path, "media")):
-        print path
         return path
+    # todo: throw exception!
+    return None
     
 def notify(event_dict):
     global changes
