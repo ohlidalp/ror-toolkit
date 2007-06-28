@@ -42,6 +42,8 @@ def getLog(client, startrev, endrev):
          limit=0)
 
 def showLog(client, startrev, endrev):
+    print "------------------------------------"
+    print "Changelog from r%d to r%d\n" % (startrev, endrev)
     log = getLog(client, startrev, endrev)
     for e in log:
         print "--r%d:%s:\n%s\n" %(e['revision'].number, e['author'], e['message'])
