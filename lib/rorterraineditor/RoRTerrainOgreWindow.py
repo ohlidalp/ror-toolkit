@@ -191,6 +191,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
             if content[i].strip()[0:2] == "//":
                 comm.append(content[i])
                 continue
+            if content[i].strip()[0:1] == ";":
+                comm.append(content[i].replace(";","//"))
+                continue
             if content[i].strip().lower() == "end":
                 continue
             linecounter += 1
