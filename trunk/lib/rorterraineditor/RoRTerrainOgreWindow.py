@@ -253,9 +253,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
                 print "loading truck..."
                 fn = self.rordir + "\\data\\trucks\\"+objname[-1].strip()
                 n, entname = self.createTruckMesh(fn)
-                self.comments[entname] = comm
-                comm = []
                 if not n is None:
+                    self.comments[entname] = comm
+                    comm = []
                     n.rotate(ogre.Vector3.UNIT_X, ogre.Degree(rx).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
                     n.rotate(ogre.Vector3.UNIT_Y, ogre.Degree(ry).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
                     n.rotate(ogre.Vector3.UNIT_Z, ogre.Degree(-rz).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
@@ -265,9 +265,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
                 print "loading load...."
                 fn = self.rordir + "\\data\\trucks\\"+objname[-1].strip()
                 n, entname = self.createTruckMesh(fn)
-                self.comments[entname] = comm
-                comm = []
                 if not n is None:
+                    self.comments[entname] = comm
+                    comm = []
                     n.rotate(ogre.Vector3.UNIT_X, ogre.Degree(rx).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
                     n.rotate(ogre.Vector3.UNIT_Y, ogre.Degree(ry).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
                     n.rotate(ogre.Vector3.UNIT_Z, ogre.Degree(-rz).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
@@ -775,8 +775,11 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         if self.selectedCoords is None:
             return False
         n, entname = self.createTruckMesh(fn)
-        n.setPosition(self.selectedCoords)
-        return True
+        if not n is None:
+            n.setPosition(self.selectedCoords)
+            return True
+        else:
+            return False
 
     def createTruckMesh(self, fn):
         if not os.path.isfile(fn):
@@ -857,8 +860,8 @@ class RoRTerrainOgreWindow(wxOgreWindow):
             self.trucks[truckname] = myManualObjectNode
             return myManualObjectNode, truckname
         except:
-            print "error creating truck: " + truckname
-            return None
+            print "error creating truck from file: " +  fn
+            return None, None
 
     def getPointedPosition(self, event):
         x, y = event.GetPosition() 
