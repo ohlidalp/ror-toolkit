@@ -4,6 +4,16 @@ import sys, os, os.path
 URL = "http://roreditor.svn.sourceforge.net/svnroot/roreditor/trunk"
 changes = 0
 
+def getRootPath():
+    path = os.path.dirname(os.path.abspath(__file__))
+    if os.path.isdir(os.path.join(path, "media")):
+        print path
+        return path
+    path = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),"..\\.."))
+    if os.path.isdir(os.path.join(path, "media")):
+        print path
+        return path
+    
 def notify(event_dict):
     global changes
     changes += 1
@@ -16,7 +26,7 @@ def getRevision(client, path):
     
 def svnupdate():
     global changes
-    path = os.path.dirname(os.path.abspath(__file__))
+    path = getRootPath()
     try:
         import pysvn
         client = pysvn.Client()
@@ -31,12 +41,13 @@ def svnupdate():
         print "updated to revision %d." % revision_after
         if revision_before == revision_after and changes == 2:
             print "already up to date!"
-    except:
-        print "error while checkout!"
+    except Exception, inst:
+        print "error while updating: " + str(inst)
+        print "done."
     
 def svncheckout():
     print "checkout"
-    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "svnco")
+    path = getRootPath()
     try:
         import pysvn
         client = pysvn.Client()
@@ -46,7 +57,7 @@ def svncheckout():
         print "error while checkout!"
 
 def run():
-    if os.path.isdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), "media")):
+    if os.path.isdir(os.path.join(getRootPath(), "media")):
         svnupdate()
     else:
         svncheckout()
