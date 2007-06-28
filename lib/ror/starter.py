@@ -59,7 +59,8 @@ class SettingsDialog(wx.Frame):
         self.__do_layout() 
 
     def OnUpdate(self, event=None):
-        
+        import svn
+        svn.run()
 
     def OnStartRoR(self, event=None):
         #escape spaces!
@@ -139,6 +140,7 @@ class SettingsDialog(wx.Frame):
         sizer_panel.Add(self.btnStartTerrainEditor, 0, wx.EXPAND, 0) 
         sizer_panel.Add(self.btnStartTruckEditor, 0, wx.EXPAND, 0) 
         sizer_panel.Add(self.btnBugReport, 0, wx.EXPAND, 0) 
+        sizer_panel.Add(self.btnUpdate, 0, wx.EXPAND, 0) 
         sizer_panel.Add(self.btnExit, 0, wx.EXPAND, 0) 
         self.panel.SetSizer(sizer_panel)
 
