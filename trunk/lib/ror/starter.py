@@ -132,7 +132,11 @@ class SettingsDialog(wx.Frame):
         self.Close()        
 
     def __set_properties(self): 
-        self.SetTitle("RoR Toolkit starter") 
+        try:
+            import ror.svn
+            self.SetTitle("RoR Toolkit r%d" % ror.svn.getRevision())
+        except:
+            self.SetTitle("RoR Toolkit")
 
     def __do_layout(self): 
         
