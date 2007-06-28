@@ -1,8 +1,14 @@
 import wx
 
 def ShowOnAbout(event = None):
-    dlg = wx.MessageDialog(self, "RoR Toolkit version 0.0.3\n"
-                          "Authors: Thomas Fischer",
-                          "About Me", wx.OK | wx.ICON_INFORMATION)
+    rev = ""
+    try:
+        import ror.svn
+        rev = str(ror.svn.getRevision())
+    except:
+        pass
+
+    dlg = wx.MessageDialog(None, "RoR Toolkit revision %s\nAuthors: Aperion, Thomas" % rev,
+                          "About This", wx.OK | wx.ICON_INFORMATION)
     dlg.ShowModal()
     dlg.Destroy()          

@@ -842,19 +842,25 @@ class RoRTerrainOgreWindow(wxOgreWindow):
                     continue
                 node = nodeobj['data']
                 myManualObject.position(float(node[1]),float(node[2]),float(node[3]))       
-            faces = []
-            for smobj in p.tree['submeshgroups']:
-                for cabobj in smobj['cab']:
-                    if cabobj.has_key('type'):
-                        continue
-                    cab = cabobj['data']
-                    #print "########face"
-                    if cab != []:
-                        try:
-                            myManualObject.triangle(int(cab[0]),int(cab[1]),int(cab[2]))
-                        except:
-                            print "error with cab: " + str(cab)
-                            pass
+                
+            print len(p.tree['submeshgroups'])
+            if not 'submeshgroups' in p.tree.keys() or len(p.tree['submeshgroups']) == 0:
+                faces = []
+                for smobj in p.tree['submeshgroups']:
+                    for cabobj in smobj['cab']:
+                        if cabobj.has_key('type'):
+                            continue
+                        cab = cabobj['data']
+                        #print "########face"
+                        if cab != []:
+                            try:
+                                myManualObject.triangle(int(cab[0]),int(cab[1]),int(cab[2]))
+                            except:
+                                print "error with cab: " + str(cab)
+                                pass
+            else:
+                print "truck has no faces!"
+                
             myManualObject.end()
             mesh = myManualObject.convertToMesh("manual"+fn+str(self.randomcounter))
             entity = self.sceneManager.createEntity("manualtruckent"+fn+str(self.randomcounter), 
@@ -869,7 +875,8 @@ class RoRTerrainOgreWindow(wxOgreWindow):
             self.trucksorder.append(truckname)
             self.trucks[truckname] = myManualObjectNode
             return myManualObjectNode, truckname
-        except:
+        except Exception, inst:
+            print str(inst)
             print "error creating truck from file: " +  fn
             return None, None
 
