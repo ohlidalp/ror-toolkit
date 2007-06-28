@@ -4,19 +4,28 @@ import sys, os, os.path
 URL = "http://roreditor.svn.sourceforge.net/svnroot/roreditor/trunk"
 
 def notify(event_dict):
-    print event_dict['path']
+    print str(event_dict['action']) + ", " + event_dict['path']
 
+def getRevision(client, path):
+    info = client.info(path)
+    return info['revision'].number
+    
 def svnupdate():
-    print "update"
     path = os.path.dirname(os.path.abspath(__file__))
     try:
         import pysvn
         client = pysvn.Client()
+        revision_before = getRevision(client, path)
+        print "updating from revision %d ..." % revision_before
         client.callback_notify = notify
         client.update(path,
                       recurse = True,
                       revision = pysvn.Revision(pysvn.opt_revision_kind.head),
                       ignore_externals = False)
+        revision_after = getRevision(client, path)
+        print "updated to revision %d" % revision_after
+        if revision_before == revision_after:
+            print "already up to date!"
     except:
         print "error while checkout!"
     
