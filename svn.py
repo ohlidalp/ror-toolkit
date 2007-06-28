@@ -2,8 +2,12 @@
 import sys, os, os.path
 
 URL = "http://roreditor.svn.sourceforge.net/svnroot/roreditor/trunk"
+changes = 0
 
 def notify(event_dict):
+    global changes
+    changes += 1
+    print event_dict
     print str(event_dict['action']) + ", " + event_dict['path']
 
 def getRevision(client, path):
@@ -11,6 +15,7 @@ def getRevision(client, path):
     return info['revision'].number
     
 def svnupdate():
+    global changes
     path = os.path.dirname(os.path.abspath(__file__))
     try:
         import pysvn
@@ -23,8 +28,8 @@ def svnupdate():
                       revision = pysvn.Revision(pysvn.opt_revision_kind.head),
                       ignore_externals = False)
         revision_after = getRevision(client, path)
-        print "updated to revision %d" % revision_after
-        if revision_before == revision_after:
+        print "updated to revision %d." % revision_after
+        if revision_before == revision_after and changes == 2:
             print "already up to date!"
     except:
         print "error while checkout!"
@@ -40,18 +45,15 @@ def svncheckout():
     except:
         print "error while checkout!"
 
-def main():
-    """
-    main method
-    """
-    
-    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib"))
-
+def run():
     if os.path.isdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), "media")):
         svnupdate()
     else:
         svncheckout()
-
+        
+def main():
+    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib"))
+    run()
 
 if __name__=="__main__": 
     main()
