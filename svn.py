@@ -7,23 +7,29 @@ def notify(event_dict):
     print event_dict['path']
 
 def svnupdate():
-    import pysvn
     print "checkout"
-    client = pysvn.Client()
     path = os.path.dirname(os.path.abspath(__file__))
-    client.update(path,
-                  recurse = True,
-                  revision=pysvn.Revision(pysvn.opt_revision_kind.head),
-                  ignore_externals = False)
+    try:
+        import pysvn
+        client = pysvn.Client()
+        client.callback_notify = notify
+        client.update(path,
+                      recurse = True,
+                      revision = pysvn.Revision(pysvn.opt_revision_kind.head),
+                      ignore_externals = False)
+    except:
+        print "error while checkout!"
     
 def svncheckout():
-    import pysvn
     print "update"
-    client = pysvn.Client()
-    #check out the current version of the pysvn project
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "svnco")
-    client.callback_notify = notify
-    client.checkout(URL, path)
+    try:
+        import pysvn
+        client = pysvn.Client()
+        client.callback_notify = notify
+        client.checkout(URL, path)
+    except:
+        print "error while checkout!"
 
 def main():
     """
