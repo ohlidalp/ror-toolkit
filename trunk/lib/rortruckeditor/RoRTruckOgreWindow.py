@@ -518,7 +518,7 @@ class RoRTruckOgreWindow(wxOgreWindow):
                 
             smgcounter = 0
             for smg in tree['submeshgroups']:
-                print "##################################", smgcounter
+                print "loading submesh: ", smgcounter
                 self.createSubMeshGroup(tree, smg,smgcounter)
                 smgcounter += 1
                 
