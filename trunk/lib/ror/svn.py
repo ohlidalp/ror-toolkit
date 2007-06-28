@@ -23,7 +23,10 @@ def notify(event_dict):
 def getRevision(client, path):
     info = client.info(path)
     return info['revision'].number
-    
+
+def callback_ssl_server_trust_prompt(trust_data):
+    return True, trust_data['failures'], True
+
 def svnupdate():
     global changes
     path = getRootPath()
@@ -34,6 +37,7 @@ def svnupdate():
         revision_before = getRevision(client, path)
         print "updating from revision %d ..." % revision_before
         client.callback_notify = notify
+        client.callback_ssl_server_trust_prompt = callback_ssl_server_trust_prompt
         client.update(path,
                       recurse = True,
                       revision = pysvn.Revision(pysvn.opt_revision_kind.head),
