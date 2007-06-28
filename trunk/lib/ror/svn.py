@@ -51,9 +51,3 @@ def run():
     else:
         svncheckout()
         
-def main():
-    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib"))
-    run()
-
-if __name__=="__main__": 
-    main()
