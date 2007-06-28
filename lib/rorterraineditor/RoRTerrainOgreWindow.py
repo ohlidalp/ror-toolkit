@@ -7,6 +7,9 @@ from wxogre.wxOgreWindow import *
 from random import random
 
 ADDEDBY = "//added by the terrrain editor:\n"
+SHIFT_SPEED_FACTOR = 15
+SLOW_DOWN_FACTOR = 0.75
+LOW_SPEED_THRESHOLD = 1
 
 class RoRTerrainOgreWindow(wxOgreWindow):
 
@@ -32,8 +35,8 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         self.trucks = {}
         self.comments = {}
         self.meshes = {}
-        self.moveVector = None
-        self.moveForce = 0
+        self.keyPress = ogre.Vector3(0,0,0)
+        self.moveVector = ogre.Vector3(0,0,0)
         self.selectionMaterial = None
         self.selectionMaterialAnimState = 0
         wxOgreWindow.__init__(self, self.parent, self.ID, size = self.size, **self.kwargs) 
@@ -72,11 +75,17 @@ class RoRTerrainOgreWindow(wxOgreWindow):
                 
                 
         #move cam a bit
-        if not self.moveVector is None and self.moveForce > 0:
-            self.camera.moveRelative(self.moveVector * self.moveForce)
-            self.moveForce *= 0.75
-            if self.moveForce < 0.000:
-                self.moveForce = 0
+        if not self.moveVector is None:
+            """ DEBUG STATEMENTS
+            pos = self.moveVector
+            kp = self.keyPress
+            print "MV: %.3f %.3f %.3f\tKP: %.3f %.3f %.3f" % (pos.x,pos.y,pos.z,kp.x,kp.y,kp.z)
+            """
+            self.moveVector += self.keyPress
+            self.camera.moveRelative(self.moveVector)
+            self.moveVector *= SLOW_DOWN_FACTOR # each iteration slow the movement down by some fator
+            if self.moveVector < self.moveVector.normalize()*LOW_SPEED_THRESHOLD:
+                self.moveVector *= 0
 
     def OnFrameEnded(self): 
         pass 
@@ -130,6 +139,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 
         # bind mouse and keyboard
         self.Bind(wx.EVT_KEY_DOWN, self.onKeyDown) 
+        self.Bind(wx.EVT_KEY_UP, self.onKeyUp) 
         self.Bind(wx.EVT_MOUSE_EVENTS, self.onMouseEvent)
         
         #create objects
@@ -929,14 +939,15 @@ class RoRTerrainOgreWindow(wxOgreWindow):
             self.StartDragLeftX, self.StartDragLeftY = event.GetPosition() #saves position of initial click 
 
         if event.GetWheelRotation() != 0:
-            zfactor = 5
+        
+            dir = 5
             if event.ShiftDown():
-                zfactor = 80
-            dir = 1
+                dir *= SHIFT_SPEED_FACTOR   # speed is increased by a factor of 16
+                        
             if event.GetWheelRotation() > 0:
-                dir = -1
-            self.moveVector = ogre.Vector3(0, 0, dir)
-            self.moveForce = zfactor
+                dir *= -1   # move backwards
+            
+            self.moveVector += ogre.Vector3(0, 0, dir)
         event.Skip()
 
 
@@ -947,25 +958,21 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         #print event.m_keyCode
         d = 2
         if event.ShiftDown():
-            d = 15
+            d *= SHIFT_SPEED_FACTOR
+            
         if event.m_keyCode == 65: # A, wx.WXK_LEFT:
-            self.moveVector = ogre.Vector3(-1,0,0)
-            self.moveForce = d
+            self.keyPress.x = -d
         elif event.m_keyCode == 68: # D, wx.WXK_RIGHT:
-            self.moveVector = ogre.Vector3(1,0,0)
-            self.moveForce = d
+            self.keyPress.x = d
         elif event.m_keyCode == 87: # W ,wx.WXK_UP:
-            self.moveVector = ogre.Vector3(0,0,-1)
-            self.moveForce = d
+            self.keyPress.z = -d
         elif event.m_keyCode == 83: # S, wx.WXK_DOWN:
-            self.moveVector = ogre.Vector3(0,0,1)
-            self.moveForce = d
+            self.keyPress.z = d
         elif event.m_keyCode == wx.WXK_PAGEUP:
-            self.moveVector = ogre.Vector3(0,1,0)
-            self.moveForce = d
+            self.keyPress.y = d
         elif event.m_keyCode == wx.WXK_PAGEDOWN:
-            self.moveVector = ogre.Vector3(0,-1,0)
-            self.moveForce = d
+            self.keyPress.y = -d
+            
         elif event.m_keyCode == 81: # Q, wx.WXK_LEFT:
             self.toggleTranslationRotationMode()
         elif event.m_keyCode == 84: # 84 = T
@@ -992,3 +999,20 @@ class RoRTerrainOgreWindow(wxOgreWindow):
             print "P: %.3f %.3f %.3f O: %.3f %.3f %.3f %.3f" % (pos.x,pos.y,pos.z, o.w,o.x,o.y,o.z)
               
         event.Skip()  
+    
+    def onKeyUp(self,event):
+        if not self.TerrainLoaded:
+            return
+            
+        if event.m_keyCode == 65: # A, wx.WXK_LEFT:
+            self.keyPress.x = 0
+        elif event.m_keyCode == 68: # D, wx.WXK_RIGHT:
+            self.keyPress.x = 0
+        elif event.m_keyCode == 87: # W ,wx.WXK_UP:
+            self.keyPress.z = 0
+        elif event.m_keyCode == 83: # S, wx.WXK_DOWN:
+            self.keyPress.z = 0
+        elif event.m_keyCode == wx.WXK_PAGEUP:
+            self.keyPress.y = 0
+        elif event.m_keyCode == wx.WXK_PAGEDOWN:
+            self.keyPress.y = 0
