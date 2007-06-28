@@ -35,8 +35,8 @@ def callback_ssl_server_trust_prompt(trust_data):
 def getLog(client, startrev, endrev):
     path = getRootPath()
     return client.log(path,
-         revision_start=pysvn.Revision(opt_revision_kind.number, startrev),
-         revision_end=pysvn.Revision(opt_revision_kind.number, endrev),
+         revision_start=pysvn.Revision(pysvn.opt_revision_kind.number, startrev),
+         revision_end=pysvn.Revision(pysvn.opt_revision_kind.number, endrev),
          discover_changed_paths=False,
          strict_node_history=True,
          limit=0)
