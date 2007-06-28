@@ -787,78 +787,78 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         if not 'nodes' in p.tree.keys() or not 'beams' in p.tree.keys() :
             return False
             
-        #try:
-        self.randomcounter +=1
+        try:
+            self.randomcounter +=1
 
-        myManualObject =  self.sceneManager.createManualObject("manual"+fn+str(self.randomcounter))
+            myManualObject =  self.sceneManager.createManualObject("manual"+fn+str(self.randomcounter))
 
-        #myManualObjectMaterial = ogre.MaterialManager.getSingleton().create("manualmaterial"+truckname+str(self.randomcounter),"debugger"); 
-        #myManualObjectMaterial.setReceiveShadows(False)
-        #myManualObjectMaterial.getTechnique(0).setLightingEnabled(True)
-        #myManualObjectMaterial.getTechnique(0).getPass(0).setDiffuse(0,0,1,0)
-        #myManualObjectMaterial.getTechnique(0).getPass(0).setAmbient(0,0,1)
-        #myManualObjectMaterial.getTechnique(0).getPass(0).setSelfIllumination(0,0,1)
-        #myManualObjectMaterial.getTechnique(0).getPass(0).setCullingMode(ogre.CULL_ANTICLOCKWISE)
+            #myManualObjectMaterial = ogre.MaterialManager.getSingleton().create("manualmaterial"+truckname+str(self.randomcounter),"debugger"); 
+            #myManualObjectMaterial.setReceiveShadows(False)
+            #myManualObjectMaterial.getTechnique(0).setLightingEnabled(True)
+            #myManualObjectMaterial.getTechnique(0).getPass(0).setDiffuse(0,0,1,0)
+            #myManualObjectMaterial.getTechnique(0).getPass(0).setAmbient(0,0,1)
+            #myManualObjectMaterial.getTechnique(0).getPass(0).setSelfIllumination(0,0,1)
+            #myManualObjectMaterial.getTechnique(0).getPass(0).setCullingMode(ogre.CULL_ANTICLOCKWISE)
 
-        matname = ""
-        if fn[-4:].lower() == "load":
-            matname = 'mysimple/loadcolor'
-        elif fn[-5:].lower() == "truck":
-            matname = 'mysimple/truckcolor'
-        
-        myManualObject.useIndexes = True
-        myManualObject.estimateVertexCount(2000)
-        myManualObject.estimateIndexCount(2000)
+            matname = ""
+            if fn[-4:].lower() == "load":
+                matname = 'mysimple/loadcolor'
+            elif fn[-5:].lower() == "truck":
+                matname = 'mysimple/truckcolor'
+            
+            myManualObject.useIndexes = True
+            myManualObject.estimateVertexCount(2000)
+            myManualObject.estimateIndexCount(2000)
 
-        myManualObject.begin(matname+"grid", ogre.RenderOperation.OT_LINE_LIST) 
-        for nodeobj in p.tree['nodes']:
-            if nodeobj.has_key('type'):
-                continue
-            node = nodeobj['data']
-            myManualObject.position(float(node[1]),float(node[2]),float(node[3]))       
-        for beamobj in p.tree['beams']:
-            if beamobj.has_key('type'):
-                continue
-            beam = beamobj['data']
-            myManualObject.index(int(beam[0]))
-            myManualObject.index(int(beam[1]))
-        myManualObject.end()
-        myManualObject.begin(matname, ogre.RenderOperation.OT_TRIANGLE_LIST) 
-        for nodeobj in p.tree['nodes']:
-            if nodeobj.has_key('type'):
-                continue
-            node = nodeobj['data']
-            myManualObject.position(float(node[1]),float(node[2]),float(node[3]))       
-        faces = []
-        for smobj in p.tree['submeshgroups']:
-            for cabobj in smobj['cab']:
-                if cabobj.has_key('type'):
+            myManualObject.begin(matname+"grid", ogre.RenderOperation.OT_LINE_LIST) 
+            for nodeobj in p.tree['nodes']:
+                if nodeobj.has_key('type'):
                     continue
-                cab = cabobj['data']
-                #print "########face"
-                if cab != []:
-                    try:
-                        myManualObject.triangle(int(cab[0]),int(cab[1]),int(cab[2]))
-                    except:
-                        print "error with cab: " + str(cab)
-                        pass
-        myManualObject.end()
-        mesh = myManualObject.convertToMesh("manual"+fn+str(self.randomcounter))
-        entity = self.sceneManager.createEntity("manualtruckent"+fn+str(self.randomcounter), 
-                                                "manual"+fn+str(self.randomcounter))
-        #trucknode = self.sceneManager.getRootSceneNode().createChildSceneNode()
-        myManualObjectNode = self.sceneManager.getRootSceneNode().createChildSceneNode("manualnode"+fn+str(self.randomcounter))
-        myManualObjectNode.attachObject(entity) 
-        
-        myManualObjectNode.attachObject(myManualObject)
-       
-        truckname = os.path.basename(fn)
-        self.trucksorder.append(truckname)
-        self.trucks[truckname] = myManualObjectNode
-        return myManualObjectNode, truckname
-        #except:
-        #    print "error creating truck: " + truckname
-        #    return None
+                node = nodeobj['data']
+                myManualObject.position(float(node[1]),float(node[2]),float(node[3]))       
+            for beamobj in p.tree['beams']:
+                if beamobj.has_key('type'):
+                    continue
+                beam = beamobj['data']
+                myManualObject.index(int(beam[0]))
+                myManualObject.index(int(beam[1]))
+            myManualObject.end()
+            myManualObject.begin(matname, ogre.RenderOperation.OT_TRIANGLE_LIST) 
+            for nodeobj in p.tree['nodes']:
+                if nodeobj.has_key('type'):
+                    continue
+                node = nodeobj['data']
+                myManualObject.position(float(node[1]),float(node[2]),float(node[3]))       
+            faces = []
+            for smobj in p.tree['submeshgroups']:
+                for cabobj in smobj['cab']:
+                    if cabobj.has_key('type'):
+                        continue
+                    cab = cabobj['data']
+                    #print "########face"
+                    if cab != []:
+                        try:
+                            myManualObject.triangle(int(cab[0]),int(cab[1]),int(cab[2]))
+                        except:
+                            print "error with cab: " + str(cab)
+                            pass
+            myManualObject.end()
+            mesh = myManualObject.convertToMesh("manual"+fn+str(self.randomcounter))
+            entity = self.sceneManager.createEntity("manualtruckent"+fn+str(self.randomcounter), 
+                                                    "manual"+fn+str(self.randomcounter))
+            #trucknode = self.sceneManager.getRootSceneNode().createChildSceneNode()
+            myManualObjectNode = self.sceneManager.getRootSceneNode().createChildSceneNode("manualnode"+fn+str(self.randomcounter))
+            myManualObjectNode.attachObject(entity) 
+            
+            myManualObjectNode.attachObject(myManualObject)
+           
+            truckname = os.path.basename(fn)
+            self.trucksorder.append(truckname)
+            self.trucks[truckname] = myManualObjectNode
+            return myManualObjectNode, truckname
+        except:
+            print "error creating truck: " + truckname
+            return None
 
     def getPointedPosition(self, event):
         x, y = event.GetPosition() 

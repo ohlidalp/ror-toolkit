@@ -67,8 +67,11 @@ def svnupdate():
         if revision_before == revision_after and changes == 2:
             print "already up to date!"
         elif changes > 2:
-            print "updated! please restart the application!"
-            showLog(client, revision_before + 1, revision_after)
+            if revision_before != revision_after:
+                print "updated! please restart the application!"
+                showLog(client, revision_before + 1, revision_after)
+            else:
+                print "no files updated, but restored! please restart the application!"
     except Exception, inst:
         print "error while updating: " + str(inst)
         print "done."
