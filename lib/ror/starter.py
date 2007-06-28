@@ -30,6 +30,9 @@ class SettingsDialog(wx.Frame):
         self.btnBugReport = wx.Button(self.panel, wx.ID_ANY, "Report a Bug")
         self.Bind(wx.EVT_BUTTON, self.OnBugReport, self.btnBugReport)
 
+        self.btnUpdate = wx.Button(self.panel, wx.ID_ANY, "Update")
+        self.Bind(wx.EVT_BUTTON, self.OnUpdate, self.btnUpdate)
+        
         self.btnExit = wx.Button(self.panel, wx.ID_ANY, "Exit")
         self.Bind(wx.EVT_BUTTON, self.OnExit, self.btnExit)
         
@@ -55,7 +58,8 @@ class SettingsDialog(wx.Frame):
         self.__set_properties() 
         self.__do_layout() 
 
-
+    def OnUpdate(self, event=None):
+        
 
     def OnStartRoR(self, event=None):
         #escape spaces!
