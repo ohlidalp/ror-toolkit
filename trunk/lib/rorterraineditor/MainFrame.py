@@ -331,7 +331,12 @@ class MainFrame(wx.Frame):
         sys.exit(0)
         
     def __set_properties(self): 
-        self.SetTitle("RoREditor version 0.0.4") 
+        try:
+            import ror.svn
+            self.SetTitle("RoR Terrain Editor revision %d" % ror.svn.getRevision())
+        except:
+            self.SetTitle("RoR Terrain Editor")
+            
         self.terrainOgreWin.SetMinSize((640,480)) 
 
     def __do_layout(self): 

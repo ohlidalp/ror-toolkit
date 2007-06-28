@@ -306,7 +306,12 @@ class MainFrame(wx.Frame):
         dlg.Destroy()          
 
     def __set_properties(self): 
-        self.SetTitle("RoR Truck Editor version 0.0.1") 
+        try:
+            import ror.svn
+            self.SetTitle("RoR Truck Editor revision %d" % ror.svn.getRevision())
+        except:
+            self.SetTitle("RoR Truck Editor")
+
         self.truckOgreWin.SetMinSize((640,480)) 
 
     def __do_layout(self): 

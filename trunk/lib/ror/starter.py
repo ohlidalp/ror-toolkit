@@ -18,8 +18,8 @@ class SettingsDialog(wx.Frame):
         self.btnSelectRoRDir = wx.Button(self.panel, wx.ID_ANY, "Select RoR Directory")
         self.Bind(wx.EVT_BUTTON, self.OnSelectRoRDir, self.btnSelectRoRDir)
 
-        self.btnStartRoR = wx.Button(self.panel, wx.ID_ANY, "Start RoR")
-        self.Bind(wx.EVT_BUTTON, self.OnStartRoR, self.btnStartRoR)
+        #self.btnStartRoR = wx.Button(self.panel, wx.ID_ANY, "Start RoR")
+        #self.Bind(wx.EVT_BUTTON, self.OnStartRoR, self.btnStartRoR)
         
         self.btnStartTerrainEditor = wx.Button(self.panel, wx.ID_ANY, "Start Terrain Editor")
         self.Bind(wx.EVT_BUTTON, self.OnTerrainEditor, self.btnStartTerrainEditor)
@@ -40,19 +40,19 @@ class SettingsDialog(wx.Frame):
         #print self.rordir
         if not self.rordir is None:
             if self.checkRoRDir(self.rordir):
-                self.btnStartRoR.Enable(True)
+                #self.btnStartRoR.Enable(True)
                 self.btnStartTruckEditor.Enable(True)
                 self.btnStartTerrainEditor.Enable(True)
                 self.lblRoRDir.SetLabel(self.rordir)
             else:
                 self.rordir = ""
-                self.btnStartRoR.Enable(False)
+                #self.btnStartRoR.Enable(False)
                 self.btnStartTruckEditor.Enable(False)
                 self.btnStartTerrainEditor.Enable(False)
                 self.lblRoRDir.SetLabel("Please select Rigs of Rods Directory!")
 
         else:
-            self.btnStartRoR.Enable(False)
+            #self.btnStartRoR.Enable(False)
             self.btnStartTruckEditor.Enable(False)
             self.btnStartTerrainEditor.Enable(False)
         self.__set_properties() 
@@ -64,13 +64,15 @@ class SettingsDialog(wx.Frame):
 
     def OnStartRoR(self, event=None):
         #escape spaces!
-        path = newpath.replace(" ", "\ ")
-        p = Popen(os.path.join(path, "RoR.exe"), shell=True, cwd=self.rordir)
+        path = os.path.join(self.rordir, "RoR.exe")
+        print path
+        p = Popen(path, shell=False, cwd=self.rordir)
         #sts = os.waitpid(p.pid, 0)
 
     def OnTruckEditor(self, event=None):
         import rortruckeditor.MainFrame
         try:
+            self.Close()
             app = rortruckeditor.MainFrame.startApp()
             del app
         except:
@@ -86,6 +88,7 @@ class SettingsDialog(wx.Frame):
     def OnTerrainEditor(self, event=None):
         import rorterraineditor.MainFrame
         try:
+            self.Close()
             app = rorterraineditor.MainFrame.startApp()
             del app
         except:
@@ -121,7 +124,7 @@ class SettingsDialog(wx.Frame):
             self.rordir = newpath
             self.lblRoRDir.SetLabel(newpath)
             getSettings().setRoRDir(newpath)
-            self.btnStartRoR.Enable(True)
+            #self.btnStartRoR.Enable(True)
             self.btnStartTruckEditor.Enable(True)
             self.btnStartTerrainEditor.Enable(True)
             
@@ -136,7 +139,7 @@ class SettingsDialog(wx.Frame):
         sizer_panel = wx.BoxSizer(wx.VERTICAL)
         sizer_panel.Add(self.lblRoRDir, 0, wx.EXPAND, 0) 
         sizer_panel.Add(self.btnSelectRoRDir, 0, wx.EXPAND, 0) 
-        sizer_panel.Add(self.btnStartRoR, 0, wx.EXPAND, 0) 
+        #sizer_panel.Add(self.btnStartRoR, 0, wx.EXPAND, 0) 
         sizer_panel.Add(self.btnStartTerrainEditor, 0, wx.EXPAND, 0) 
         sizer_panel.Add(self.btnStartTruckEditor, 0, wx.EXPAND, 0) 
         sizer_panel.Add(self.btnBugReport, 0, wx.EXPAND, 0) 

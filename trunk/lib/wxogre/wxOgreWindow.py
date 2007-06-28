@@ -26,7 +26,12 @@ class wxOgreWindow(wx.PyWindow):
         # create a new RenderWindow
         self.renderWindow = getOgreManager().createRenderWindow(self, "wxPythonWxOgreRenderWindow", size[0], size[1], False, self.GetHandle())
         self.renderWindow.active = True 
-        self.sceneManager = None
+        
+        try:
+            if not self.sceneManager is None:
+                pass
+        except:
+            self.sceneManager = None
         
         self.SceneInitialisation() 
         self.SetFocus()

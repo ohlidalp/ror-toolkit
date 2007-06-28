@@ -1,5 +1,6 @@
 #Thomas Fischer 28/06/2007, thomas@thomasfischer.biz
 import sys, os, os.path
+import pysvn
 
 URL = "http://roreditor.svn.sourceforge.net/svnroot/roreditor/trunk"
 changes = 0
@@ -20,7 +21,11 @@ def notify(event_dict):
     #print event_dict
     print str(event_dict['action']) + ", " + event_dict['path']
 
-def getRevision(client, path):
+def getRevision(client=None, path=None):
+    if client is None:
+        client = pysvn.Client()
+    if  path is None:
+         path = getRootPath()
     info = client.info(path)
     return info['revision'].number
 
@@ -32,7 +37,6 @@ def svnupdate():
     path = getRootPath()
     changes = 0
     try:
-        import pysvn
         client = pysvn.Client()
         revision_before = getRevision(client, path)
         print "updating from revision %d ..." % revision_before
@@ -57,13 +61,13 @@ def svncheckout():
     path = getRootPath()
     changes = 0
     try:
-        import pysvn
         client = pysvn.Client()
         client.callback_notify = notify
         client.checkout(URL, path)
     except:
         print "error while checkout!"
 
+        
 def run():
     if os.path.isdir(os.path.join(getRootPath(), "media")):
         svnupdate()
