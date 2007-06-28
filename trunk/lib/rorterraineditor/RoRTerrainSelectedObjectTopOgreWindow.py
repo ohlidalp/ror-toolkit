@@ -43,7 +43,7 @@ class RoRTerrainSelectedObjectTopOgreWindow(wxOgreWindow):
             camHeight = self.distance
             self.camera.setNearClipDistance(camHeight)
             self.camera.setFarClipDistance(camHeight * 10)
-            self.camera.setPosition(pos + ogre.Vector3(0.1, camHeight, 0.1))
+            self.camera.setPosition(pos - ogre.Vector3(0, 0.1, camHeight))
             self.camera.lookAt(pos)
         wxOgreWindow.OnFrameStarted(self)
 
