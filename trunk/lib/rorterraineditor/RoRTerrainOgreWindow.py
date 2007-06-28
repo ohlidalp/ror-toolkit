@@ -893,12 +893,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
     
         if event.RightDown(): #Precedes dragging 
             self.StartDragX, self.StartDragY = event.GetPosition() #saves position of initial click 
-        if event.GetWheelRotation() != 0:
-            zfactor = 0.1
-            if event.ShiftDown():
-                zfactor = 5
-            zoom = zfactor * -event.GetWheelRotation()
-            self.camera.moveRelative(ogre.Vector3(0,0, zoom))
         if event.Dragging() and event.RightIsDown() and event.ControlDown():
             x,y = event.GetPosition() 
             dx = self.StartDragX - x
@@ -927,11 +921,16 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         if event.LeftDown():
             self.selectnew(event)
             self.StartDragLeftX, self.StartDragLeftY = event.GetPosition() #saves position of initial click 
-            zfactor = 0.1
+
+        if event.GetWheelRotation() != 0:
+            zfactor = 5
             if event.ShiftDown():
-                zfactor = 5
-            zoom = zfactor * -event.GetWheelRotation()
-            self.camera.moveRelative(ogre.Vector3(0,0, zoom))
+                zfactor = 80
+            dir = 1
+            if event.GetWheelRotation() > 0:
+                dir = -1
+            self.moveVector = ogre.Vector3(0, 0, dir)
+            self.moveForce = zfactor
         event.Skip()
 
 
