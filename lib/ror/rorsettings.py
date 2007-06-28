@@ -10,7 +10,7 @@ def getSettings():
 
 class RoRSettings:
     rordir = None
-    configfilename = os.path.join(os.path.dirname(os.path.abspath(__file__)),"editor.cfg")
+    configfilename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "editor.cfg")
     def __init__(self):
         self.LoadRoRDir()
     
