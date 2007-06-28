@@ -7,7 +7,7 @@ def notify(event_dict):
     print event_dict['path']
 
 def svnupdate():
-    print "checkout"
+    print "update"
     path = os.path.dirname(os.path.abspath(__file__))
     try:
         import pysvn
@@ -21,7 +21,7 @@ def svnupdate():
         print "error while checkout!"
     
 def svncheckout():
-    print "update"
+    print "checkout"
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "svnco")
     try:
         import pysvn
