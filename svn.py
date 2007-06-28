@@ -7,7 +7,7 @@ changes = 0
 def notify(event_dict):
     global changes
     changes += 1
-    print event_dict
+    #print event_dict
     print str(event_dict['action']) + ", " + event_dict['path']
 
 def getRevision(client, path):
