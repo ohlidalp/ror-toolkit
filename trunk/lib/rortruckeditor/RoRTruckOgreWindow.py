@@ -2,6 +2,7 @@
 import wx, os, os.path
 import ogre.renderer.OGRE as ogre 
 from ror.truckparser import *
+from ror.camera import *
 
 from ror.logger import log
 from ror.settingsManager import getSettingsManager
@@ -97,11 +98,12 @@ class RoRTruckOgreWindow(wxOgreWindow):
 
         # create a camera
         self.camera = self.sceneManager.createCamera('Camera') 
-        self.camera.lookAt(ogre.Vector3(0, 0, 0)) 
-        self.camera.setPosition(ogre.Vector3(0, 0, 3))
-        self.camera.nearClipDistance = 0.1
-        self.camera.setAutoAspectRatio(True) 
-
+        #self.camera.lookAt(ogre.Vector3(0, 0, 0)) 
+        #self.camera.setPosition(ogre.Vector3(0, 0, 3))
+        #self.camera.nearClipDistance = 0.1
+        #self.camera.setAutoAspectRatio(False) 
+        self.camera2 = Camera(self.sceneManager.getRootSceneNode(), self.camera)
+        
         # create the Viewport"
         self.viewport = self.renderWindow.addViewport(self.camera, 0, 0.0, 0.0, 1.0, 1.0) 
         self.viewport.backgroundColour = ogre.ColourValue(0, 0, 0) 
@@ -600,6 +602,19 @@ class RoRTruckOgreWindow(wxOgreWindow):
                     zfactor = 0.01
                 zoom = zfactor * -event.GetWheelRotation()
                 self.camera.moveRelative(ogre.Vector3(0,0, zoom))
+
+            if event.Dragging() and event.RightIsDown():
+                x,y = event.GetPosition() 
+                
+                dx = self.StartDragX - x
+                dy = self.StartDragY - y
+                self.StartDragX, self.StartDragY = x, y 
+                if event.ShiftDown():
+                    dx = float(dx) / 10
+                    dy = float(dy) / 10
+                self.camera2.move(ogre.Vector3(dx,dy,0), event.ControlDown())
+                
+                """
             if event.Dragging() and event.RightIsDown() and event.ControlDown():
                 x,y = event.GetPosition() 
                 dx = self.StartDragX - x
@@ -612,6 +627,7 @@ class RoRTruckOgreWindow(wxOgreWindow):
                     dx = float(dx) / 50
                     dy = float(dy) / 50
                 self.camera.moveRelative(ogre.Vector3(dx,-dy,0))
+                
             elif event.Dragging() and event.RightIsDown(): #Dragging with RMB 
                 x,y = event.GetPosition() 
                 dx = self.StartDragX - x
@@ -620,7 +636,8 @@ class RoRTruckOgreWindow(wxOgreWindow):
             
                 self.camera.yaw(ogre.Degree(dx/3.0)) 
                 self.camera.pitch(ogre.Degree(dy/3.0)) 
-
+"""
+                
             if event.LeftDown() and event.ControlDown() and not self.mSelected is None:
                 pos = self.getPointedPosition(event)
                 if not pos is None:
