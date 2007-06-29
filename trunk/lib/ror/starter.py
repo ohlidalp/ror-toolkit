@@ -1,10 +1,13 @@
 #Thomas Fischer 31/05/2007, thomas@thomasfischer.biz
 from wxogre.OgreManager import *
 from ror.RoROgreWindow import *
-from ror.rorsettings import *
 from ror.rorcommon import *
 from subprocess import Popen
-import wx
+
+from ror.logger import log
+from ror.settingsManager import getSettingsManager
+
+import wx, os, os.path
 
 class SettingsDialog(wx.Frame): 
     rordir = None
@@ -36,7 +39,7 @@ class SettingsDialog(wx.Frame):
         self.btnExit = wx.Button(self.panel, wx.ID_ANY, "Exit")
         self.Bind(wx.EVT_BUTTON, self.OnExit, self.btnExit)
         
-        self.rordir = getSettings().getRoRDir()
+        self.rordir = getSettingsManager().getSetting("RigsOfRods", "BasePath")
         #print self.rordir
         if not self.rordir is None:
             if self.checkRoRDir(self.rordir):
@@ -63,36 +66,41 @@ class SettingsDialog(wx.Frame):
         svn.run()
 
     def OnStartRoR(self, event=None):
-        #escape spaces!
-        path = os.path.join(self.rordir, "RoR.exe")
-        print path
-        p = Popen(path, shell=False, cwd=self.rordir)
-        #sts = os.waitpid(p.pid, 0)
+        try:
+            path = os.path.join(self.rordir, "RoR.exe")
+            log().info("starting RoR: %s" % path)
+            p = Popen(path, shell = False, cwd = self.rordir)
+            #sts = os.waitpid(p.pid, 0)
+        except Exception, e:
+            log().exception(str(e))
 
     def OnTruckEditor(self, event=None):
-        import rortruckeditor.MainFrame
         try:
+            import rortruckeditor.MainFrame
             self.Close()
+            log().info("starting Truckeditor")
             app = rortruckeditor.MainFrame.startApp()
             del app
-        except:
-            pass
+        except Exception, e:
+            log().exception(str(e))
     
     def OnBugReport(self, event=None):
-        import ror.bugreport
-        #try:
-        ror.bugreport.showBugReportFrame()
-        #except:
-        #    pass
+        try:
+            log().info("starting bugreporter")
+            import ror.bugreport
+            ror.bugreport.showBugReportFrame()
+        except Exception, e:
+            log().exception(str(e))
 
     def OnTerrainEditor(self, event=None):
-        import rorterraineditor.MainFrame
         try:
+            import rorterraineditor.MainFrame
+            log().info("starting Terraineditor")
             self.Close()
             app = rorterraineditor.MainFrame.startApp()
             del app
-        except:
-            pass
+        except Exception, e:
+            log().exception(str(e))
 
     def checkRoRDir(self, fn):
         # withoutspaces = (fn.find(" ") == -1)
@@ -123,7 +131,7 @@ class SettingsDialog(wx.Frame):
             #newpath = newpath.replace(" ", "\ ")
             self.rordir = newpath
             self.lblRoRDir.SetLabel(newpath)
-            getSettings().setRoRDir(newpath)
+            getSettingsManager().setSetting("RigsOfRods", "BasePath", newpath)
             #self.btnStartRoR.Enable(True)
             self.btnStartTruckEditor.Enable(True)
             self.btnStartTerrainEditor.Enable(True)

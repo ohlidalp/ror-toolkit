@@ -844,7 +844,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
                 myManualObject.position(float(node[1]),float(node[2]),float(node[3]))       
                 
             print len(p.tree['submeshgroups'])
-            if not 'submeshgroups' in p.tree.keys() or len(p.tree['submeshgroups']) == 0:
+            if len(p.tree['submeshgroups']) > 0:
                 faces = []
                 for smobj in p.tree['submeshgroups']:
                     for cabobj in smobj['cab']:
