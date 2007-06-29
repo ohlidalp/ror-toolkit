@@ -25,6 +25,7 @@ class RoRTruckOgreWindow(wxOgreWindow):
         self.sceneManager = None
         self.uvFrame = None
         self.clearlist = {'entity':[]}
+        self.bodies = []
         self.initScene()
         wxOgreWindow.__init__(self, parent, ID, size = size, **kwargs) 
 
@@ -32,7 +33,7 @@ class RoRTruckOgreWindow(wxOgreWindow):
         if not self.sceneManager is None:
             self.sceneManager.destroyAllManualObjects()
         self.EntityCount = 0
-        self.bodies=[]
+        
         
         # try to clear things up
         try:
@@ -125,7 +126,8 @@ class RoRTruckOgreWindow(wxOgreWindow):
             else:
                 option = None
 
-            size = 0.05
+                # 0.05
+            size = 0.1
             mass = 0.5 * size
                 
             inertia = OgreNewt.CalcBoxSolid( mass, size )
@@ -139,7 +141,9 @@ class RoRTruckOgreWindow(wxOgreWindow):
             box1.setNormaliseNormals(True)
         
             col = OgreNewt.Ellipsoid( self.World, size )
-            bod = OgreNewt.Body( self.World, col )
+            bod = OgreNewt.Body(self.World, col)
+            self.bodies.append (bod) 
+
             del col
                         
             bod.attachToNode( box1node )
@@ -399,8 +403,8 @@ class RoRTruckOgreWindow(wxOgreWindow):
         self.bodies.append(bod)
         del stat_col
 
-        return
-            ## make a simple rope.
+    def createTestRope(self):
+        ## make a simple rope.
         size = Ogre.Vector3(5,0.5,0.5)
         pos = Ogre.Vector3(0,20,0)
         orient = Ogre.Quaternion.IDENTITY
@@ -429,14 +433,15 @@ class RoRTruckOgreWindow(wxOgreWindow):
             parent = child
             
             ## NOW - we also have to kepe copies of the joints, otherwise they get deleted !!!
-            self.bodies.append ( joint) 
+            self.bodies.append (joint) 
             
     def createGroundPlane(self):
         plane = ogre.Plane() 
         plane.normal = ogre.Vector3(0, 1, 0) 
-        plane.d = 50
+        plane.d = 2
+        planesize = 200000
         # see http://www.ogre3d.org/docs/api/html/classOgre_1_1MeshManager.html#Ogre_1_1MeshManagera5
-        mesh = ogre.MeshManager.getSingleton().createPlane('GroundPlane', "General", plane, 200000, 200000, 
+        mesh = ogre.MeshManager.getSingleton().createPlane('GroundPlane', "General", plane, planesize, planesize, 
                                                     20, 20, True, 1, 50.0, 50.0, ogre.Vector3(0, 0, 1),
                                                     ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, 
                                                     ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, 
@@ -444,7 +449,17 @@ class RoRTruckOgreWindow(wxOgreWindow):
         entity = self.sceneManager.createEntity('groundent', 'GroundPlane') 
         entity.setMaterialName('mysimple/truckEditorGround') 
         self.planenode = self.sceneManager.getRootSceneNode().createChildSceneNode()
-        self.planenode.attachObject(entity) 
+        self.planenode.attachObject(entity)
+        
+        #col = OgreNewt.TreeCollision(self.World, self.planenode, True)
+        groundthickness = 50
+        boxsize = ogre.Vector3(planesize, groundthickness, planesize)
+        col = OgreNewt.Box(self.World, boxsize )
+        bod = OgreNewt.Body( self.World, col )
+        self.bodies.append(bod)
+        bod.setPositionOrientation( Ogre.Vector3(0.0, -groundthickness - plane.d, 0.0), Ogre.Quaternion.IDENTITY )
+        del col
+        
         
     def LoadTruck(self, fn):
         if not os.path.isfile(fn):
@@ -459,6 +474,8 @@ class RoRTruckOgreWindow(wxOgreWindow):
 
         self.initScene()
         self.CreateTruck(p.tree)
+        self.createTestRope()
+
 
 
     def reLoadTruck(self):
