@@ -946,7 +946,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
             self.StartDragLeftX, self.StartDragLeftY = event.GetPosition() #saves position of initial click 
 
         if event.GetWheelRotation() != 0:
-        
             dir = 5
             if event.ShiftDown():
                 dir *= SHIFT_SPEED_FACTOR   # speed is increased by a factor of 16
@@ -1005,7 +1004,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
             o = self.camera.getDerivedOrientation()
             print "P: %.3f %.3f %.3f O: %.3f %.3f %.3f %.3f" % (pos.x,pos.y,pos.z, o.w,o.x,o.y,o.z)
               
-        event.Skip()  
+        event.Skip()
     
     def onKeyUp(self,event):
         if not self.TerrainLoaded:
@@ -1023,3 +1022,5 @@ class RoRTerrainOgreWindow(wxOgreWindow):
             self.keyPress.y = 0
         elif event.m_keyCode == wx.WXK_PAGEDOWN:
             self.keyPress.y = 0
+        event.Skip()
+        
