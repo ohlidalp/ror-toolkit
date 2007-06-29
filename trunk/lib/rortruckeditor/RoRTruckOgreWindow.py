@@ -73,6 +73,7 @@ class RoRTruckOgreWindow(wxOgreWindow):
     def OnFrameStarted(self):
         if self.enablephysics:
             self.World.update(TIMER)
+            self.updateBeams()
         pass
             
     def OnFrameEnded(self): 
@@ -267,12 +268,32 @@ class RoRTruckOgreWindow(wxOgreWindow):
             line.position(pos2)
             line.end()
             line.setCastShadows(False)
+            line.setDynamic(True)
             linenode = self.sceneManager.getRootSceneNode().createChildSceneNode()
             linenode.attachObject(line)
             self.beams[id0] = [linenode, id1, id2, options, line]
+            print id0
         except:
             pass
 
+    def updateBeams(self):
+        for bk in self.beams.keys():
+            beam = self.beams[bk]
+            line = beam[4]
+            id1 = beam[1]
+            id2 = beam[2]
+            try:
+                pos1 = self.nodes[id1][0].getPosition()
+                pos2 = self.nodes[id2][0].getPosition()
+                line.beginUpdate(0)
+                line.position(pos1)
+                line.position(pos2)
+                line.end()
+            except Exception, e:
+                print str(e)
+                continue
+            
+            
     def createShock(self, id0, id1, id2, options):
         try:
             pos1 = self.nodes[id1][0].getPosition()
@@ -344,7 +365,7 @@ class RoRTruckOgreWindow(wxOgreWindow):
             smnode = self.sceneManager.getRootSceneNode().createChildSceneNode()
             smnode.attachObject(sm)
 
-            self.submeshs[smgid] = [smnode, smgid, smg]
+            self.submeshs[smgid] = [smnode, smgid, smg, sm]
         except:
             pass
                 
@@ -514,9 +535,9 @@ class RoRTruckOgreWindow(wxOgreWindow):
                 #print beam
                 try:
                     self.createBeam(beamcounter, int(beam[0]),int(beam[1]), option)
+                    beamcounter += 1
                 except:
                     pass
-                beamcounter += 1
 
 
             if 'shocks' in tree.keys():            

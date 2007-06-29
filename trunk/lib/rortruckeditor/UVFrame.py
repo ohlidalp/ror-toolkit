@@ -1,7 +1,10 @@
 #Thomas Fischer 31/05/2007, thomas@thomasfischer.biz
 from wxogre.OgreManager import *
 from ror.RoROgreWindow import *
-from ror.rorsettings import *
+
+from ror.logger import log
+from ror.settingsManager import getSettingsManager
+
 from ror.rorcommon import *
 from RoRUVOgreWindow import *
 
@@ -23,7 +26,7 @@ class UVFrame(wx.Frame):
         self.splitter.SetSashPosition(100)
         self.splitter.SetMinimumPaneSize(200)
       
-        self.rordir = getSettings().getRoRDir()
+        self.rordir = getSettingsManager().getSetting("RigsOfRods", "BasePath")
 
         #ogre windows
         self.uvOgreWin = RoRUVOgreWindow(self.splitterleft, wx.ID_ANY)

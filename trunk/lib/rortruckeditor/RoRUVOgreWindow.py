@@ -2,7 +2,10 @@
 import wx, os, os.path
 import ogre.renderer.OGRE as ogre 
 from ror.truckparser import *
-from ror.rorsettings import *
+
+from ror.logger import log
+from ror.settingsManager import getSettingsManager
+
 from ror.rorcommon import *
 from wxogre.OgreManager import *
 from wxogre.wxOgreWindow import *
@@ -16,7 +19,7 @@ IMGSCALE = 20
 class RoRUVOgreWindow(wxOgreWindow):
     def __init__(self, parent, ID, size = wx.Size(200,200), **kwargs): 
         self.parent = parent
-        self.rordir = getSettings().getRoRDir()
+        self.rordir = getSettingsManager().getSetting("RigsOfRods", "BasePath")
         self.World = OgreNewt.World()
         self.sceneManager = None
         self.trucktree = None
