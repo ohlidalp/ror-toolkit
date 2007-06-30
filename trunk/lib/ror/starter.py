@@ -26,8 +26,8 @@ class SettingsDialog(wx.Frame):
         self.btnSelectRoRDir = wx.Button(self.panel, wx.ID_ANY, "Select RoR Directory")
         self.Bind(wx.EVT_BUTTON, self.OnSelectRoRDir, self.btnSelectRoRDir)
 
-        #self.btnStartRoR = wx.Button(self.panel, wx.ID_ANY, "Start RoR")
-        #self.Bind(wx.EVT_BUTTON, self.OnStartRoR, self.btnStartRoR)
+        self.btnStartRoR = wx.Button(self.panel, wx.ID_ANY, "Start RoR")
+        self.Bind(wx.EVT_BUTTON, self.OnStartRoR, self.btnStartRoR)
 
         self.cbbRenderEngine = wx.ComboBox(self.panel, wx.ID_ANY, RENDERSYSTEMS[0], style=wx.CB_READONLY, choices=RENDERSYSTEMS)
         self.Bind(wx.EVT_COMBOBOX, self.OnSelectRenderer, self.cbbRenderEngine)
@@ -51,19 +51,19 @@ class SettingsDialog(wx.Frame):
         #print self.rordir
         if not self.rordir is None:
             if self.checkRoRDir(self.rordir):
-                #self.btnStartRoR.Enable(True)
+                self.btnStartRoR.Enable(True)
                 self.btnStartTruckEditor.Enable(True)
                 self.btnStartTerrainEditor.Enable(True)
                 self.lblRoRDir.SetLabel(self.rordir)
             else:
                 self.rordir = ""
-                #self.btnStartRoR.Enable(False)
+                self.btnStartRoR.Enable(False)
                 self.btnStartTruckEditor.Enable(False)
                 self.btnStartTerrainEditor.Enable(False)
                 self.lblRoRDir.SetLabel("Please select Rigs of Rods Directory!")
 
         else:
-            #self.btnStartRoR.Enable(False)
+            self.btnStartRoR.Enable(False)
             self.btnStartTruckEditor.Enable(False)
             self.btnStartTerrainEditor.Enable(False)
         self.__set_properties() 
@@ -168,7 +168,7 @@ class SettingsDialog(wx.Frame):
             self.rordir = newpath
             self.lblRoRDir.SetLabel(newpath)
             getSettingsManager().setSetting("RigsOfRods", "BasePath", newpath)
-            #self.btnStartRoR.Enable(True)
+            self.btnStartRoR.Enable(True)
             self.btnStartTruckEditor.Enable(True)
             self.btnStartTerrainEditor.Enable(True)
             
@@ -187,8 +187,8 @@ class SettingsDialog(wx.Frame):
         sizer_panel = wx.BoxSizer(wx.VERTICAL)
         sizer_panel.Add(self.lblRoRDir, 0, wx.EXPAND, 0)
         sizer_panel.Add(self.btnSelectRoRDir, 0, wx.EXPAND, 0)
-        #sizer_panel.Add(self.btnStartRoR, 0, wx.EXPAND, 0) 
         sizer_panel.Add(self.cbbRenderEngine, 0, wx.EXPAND, 0)
+        sizer_panel.Add(self.btnStartRoR, 0, wx.EXPAND, 0) 
         sizer_panel.Add(self.btnStartTerrainEditor, 0, wx.EXPAND, 0)
         sizer_panel.Add(self.btnStartTruckEditor, 0, wx.EXPAND, 0)
         sizer_panel.Add(self.btnBugReport, 0, wx.EXPAND, 0)
