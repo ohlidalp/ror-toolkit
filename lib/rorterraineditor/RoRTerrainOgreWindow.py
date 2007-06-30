@@ -393,12 +393,8 @@ class RoRTerrainOgreWindow(wxOgreWindow):
                 
                 posx, posy, posz, rotx, roty, rotz = self.getPositionRotation(self.trucks[k])
 
-                if rotx != 0:
-                    rotx -= 180
-                if roty != 0:
-                    roty -= 180
-                if rotz != 0:
-                    rotz -= 180
+                rotx -= 90
+
                 truckstring = k.split(".")[-1] + "\t " + k
                 ar = [self.formatFloat(posx), 
                       self.formatFloat(posy), 
