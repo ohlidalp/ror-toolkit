@@ -9,6 +9,11 @@ from ror.settingsManager import getSettingsManager
 
 import wx, os, os.path
 
+RENDERSYSTEMS = ['OpenGL', 'DirectX9']
+
+DIRECTXLINE = "Plugin=RenderSystem_Direct3D9.dll"
+OPENGLLINE = "Plugin=RenderSystem_GL.dll"
+
 class SettingsDialog(wx.Frame): 
     rordir = None
     def __init__(self, *args, **kwds): 
@@ -23,6 +28,9 @@ class SettingsDialog(wx.Frame):
 
         #self.btnStartRoR = wx.Button(self.panel, wx.ID_ANY, "Start RoR")
         #self.Bind(wx.EVT_BUTTON, self.OnStartRoR, self.btnStartRoR)
+
+        self.cbbRenderEngine = wx.ComboBox(self.panel, wx.ID_ANY, RENDERSYSTEMS[0], style=wx.CB_READONLY, choices=RENDERSYSTEMS)
+        self.Bind(wx.EVT_COMBOBOX, self.OnSelectRenderer, self.cbbRenderEngine)
         
         self.btnStartTerrainEditor = wx.Button(self.panel, wx.ID_ANY, "Start Terrain Editor")
         self.Bind(wx.EVT_BUTTON, self.OnTerrainEditor, self.btnStartTerrainEditor)
@@ -60,7 +68,35 @@ class SettingsDialog(wx.Frame):
             self.btnStartTerrainEditor.Enable(False)
         self.__set_properties() 
         self.__do_layout() 
+        
+        self.renderSystem = RENDERSYSTEMS[0]
 
+    def OnSelectRenderer(self, id=None, func=None):
+        self.renderSystem = self.cbbRenderEngine.GetCurrentSelection()
+        self.updateRenderer()
+
+    def updateRenderer(self):
+        filename = os.path.join(os.getcwd(), "plugins.cfg")
+        f=open(filename, 'r')
+        content = f.readlines()
+        f.close()
+        print self.renderSystem
+        for i in range(0, len(content)):
+            if content[i].find(OPENGLLINE) >= 0:
+                if self.renderSystem == 0:
+                    content[i] = OPENGLLINE+"\n"
+                else:
+                    content[i] = "#"+OPENGLLINE+"\n"
+            elif content[i].find(DIRECTXLINE) >= 0:
+                if self.renderSystem == 1:
+                    content[i] = DIRECTXLINE+"\n"
+                else:
+                    content[i] = "#"+DIRECTXLINE+"\n"
+
+        f=open(filename, 'w')
+        f.writelines(content)
+        f.close()        
+        
     def OnUpdate(self, event=None):
         import svn
         svn.run()
@@ -149,18 +185,19 @@ class SettingsDialog(wx.Frame):
     def __do_layout(self): 
         
         sizer_panel = wx.BoxSizer(wx.VERTICAL)
-        sizer_panel.Add(self.lblRoRDir, 0, wx.EXPAND, 0) 
-        sizer_panel.Add(self.btnSelectRoRDir, 0, wx.EXPAND, 0) 
+        sizer_panel.Add(self.lblRoRDir, 0, wx.EXPAND, 0)
+        sizer_panel.Add(self.btnSelectRoRDir, 0, wx.EXPAND, 0)
         #sizer_panel.Add(self.btnStartRoR, 0, wx.EXPAND, 0) 
-        sizer_panel.Add(self.btnStartTerrainEditor, 0, wx.EXPAND, 0) 
-        sizer_panel.Add(self.btnStartTruckEditor, 0, wx.EXPAND, 0) 
-        sizer_panel.Add(self.btnBugReport, 0, wx.EXPAND, 0) 
-        sizer_panel.Add(self.btnUpdate, 0, wx.EXPAND, 0) 
-        sizer_panel.Add(self.btnExit, 0, wx.EXPAND, 0) 
+        sizer_panel.Add(self.cbbRenderEngine, 0, wx.EXPAND, 0)
+        sizer_panel.Add(self.btnStartTerrainEditor, 0, wx.EXPAND, 0)
+        sizer_panel.Add(self.btnStartTruckEditor, 0, wx.EXPAND, 0)
+        sizer_panel.Add(self.btnBugReport, 0, wx.EXPAND, 0)
+        sizer_panel.Add(self.btnUpdate, 0, wx.EXPAND, 0)
+        sizer_panel.Add(self.btnExit, 0, wx.EXPAND, 0)
         self.panel.SetSizer(sizer_panel)
 
         sizer_main = wx.BoxSizer(wx.VERTICAL)
-        sizer_main.Add(self.panel, 0, wx.EXPAND, 0) 
+        sizer_main.Add(self.panel, 0, wx.EXPAND, 0)
         
         self.SetAutoLayout(True) 
         self.SetSizer(sizer_main) 
