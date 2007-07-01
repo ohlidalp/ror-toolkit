@@ -80,7 +80,7 @@ class SettingsDialog(wx.Frame):
         f=open(filename, 'r')
         content = f.readlines()
         f.close()
-        print self.renderSystem
+        log().info("selected rendersystem: %s" % RENDERSYSTEMS[self.renderSystem])
         for i in range(0, len(content)):
             if content[i].find(OPENGLLINE) >= 0:
                 if self.renderSystem == 0:
