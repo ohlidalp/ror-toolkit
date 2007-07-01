@@ -4,6 +4,7 @@ import pysvn
 
 URL = "http://roreditor.svn.sourceforge.net/svnroot/roreditor/trunk"
 changes = 0
+BACKUPFILES = ['ogre.cfg']
 
 def getRootPath():
     path = os.path.dirname(os.path.abspath(__file__))
@@ -87,10 +88,27 @@ def svncheckout():
     except:
         print "error while checkout!"
 
+def createBackup():
+    import shutil
+    for f in BACKUPFILES:
+        fn = os.path.join(getRootPath(), f)
+        fnbackup = fn + "_backup"
+        if os.path.isfile(fn):
+            shutil.copy(fn, fnbackup)
         
+def restoreBackup():
+    import shutil
+    for f in BACKUPFILES:
+        fn = os.path.join(getRootPath(), f)
+        fnbackup = fn + "_backup"
+        if os.path.isfile(fnbackup):
+            shutil.move(fnbackup, fn)
+                
 def run():
     if os.path.isdir(os.path.join(getRootPath(), "media")):
+        createBackup()
         svnupdate()
+        restoreBackup()
     else:
         svncheckout()
         

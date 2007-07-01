@@ -13,7 +13,8 @@ def getSettingsManager():
 
 class RoRSettings:
     myConfig = None
-    configfilename = os.path.join(os.path.dirname(os.path.abspath(__file__)), CONFIGFILE)
+    configfilename  = os.path.join(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),"..\\..")),CONFIGFILE)
+    #configfilename = os.path.join(os.path.dirname(os.path.abspath(__file__)), CONFIGFILE)
     
     def __init__(self):
         self.loadSettings()
