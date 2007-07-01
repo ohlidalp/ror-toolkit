@@ -19,15 +19,16 @@ class svnUpdate():
         svn.svnupdate(self.notify)
         self.showfinished()
         self.pr.Hide()
+        del self.pr
         
     def showfinished(self):
-        dlg = wx.MessageDialog(self, "Update finished!\nPlease restart the Application!", "Info", wx.OK | wx.ICON_INFORMATION)
+        dlg = wx.MessageDialog(self.pr, "Update finished!\nPlease restart the Application!", "Info", wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
         
     def notify(self, event_dict):
         self.changes += 1
         msg = str(event_dict['action']) + ", " + event_dict['path']
-        self.pr.Update(self.changes % 100, msg)
-        #self.pr.Pulse(msg)
+        #self.pr.Update(self.changes % 100, msg)
+        self.pr.Pulse(msg)
         
