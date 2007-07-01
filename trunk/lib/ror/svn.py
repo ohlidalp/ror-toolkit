@@ -2,6 +2,9 @@
 import sys, os, os.path
 import pysvn
 
+from ror.logger import log
+from ror.settingsManager import getSettingsManager
+
 URL = "http://roreditor.svn.sourceforge.net/svnroot/roreditor/trunk"
 changes = 0
 BACKUPFILES = ['ogre.cfg']
@@ -30,6 +33,25 @@ def getRevision(client=None, path=None):
     info = client.info(path)
     return info['revision'].number
 
+def checkForUpdate():
+    client = pysvn.Client()
+    path = getRootPath()
+    rev = getRevision(client, path)
+    rev += 1
+    try:
+        log = client.log(path,
+             revision_start=pysvn.Revision(pysvn.opt_revision_kind.number, rev),
+             revision_end=pysvn.Revision(pysvn.opt_revision_kind.head),
+             discover_changed_paths=False,
+             strict_node_history=True,
+             limit=0)
+        for e in log:
+            print "--- r%d, author: %s:\n%s\n" %(e['revision'].number, e['author'], e['message'])            
+        if len(log) > 0:
+            return True
+    except:
+        return False
+    
 def callback_ssl_server_trust_prompt(trust_data):
     return True, trust_data['failures'], True
 
@@ -49,7 +71,7 @@ def showLog(client, startrev, endrev):
     for e in log:
         print "--- r%d, author: %s:\n%s\n" %(e['revision'].number, e['author'], e['message'])
          
-def svnupdate():
+def svnupdate(callback = None):
     global changes
     path = getRootPath()
     changes = 0
@@ -57,7 +79,10 @@ def svnupdate():
         client = pysvn.Client()
         revision_before = getRevision(client, path)
         print "updating from revision %d ..." % revision_before
-        client.callback_notify = notify
+        if callback is None:
+            client.callback_notify = notify
+        else:
+            client.callback_notify = callback
         client.callback_ssl_server_trust_prompt = callback_ssl_server_trust_prompt
         client.update(path,
                       recurse = True,
