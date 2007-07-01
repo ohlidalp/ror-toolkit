@@ -107,10 +107,12 @@ class SettingsDialog(wx.Frame):
     def OnUpdate(self, event=None):
         import svngui
         gui = svngui.svnUpdate()
+        del gui
 
     def checkForUpdate(self):
         import svn
         return svn.checkForUpdate()
+        
 
     def OnStartRoR(self, event=None):
         try:
@@ -184,7 +186,8 @@ class SettingsDialog(wx.Frame):
             self.btnStartTerrainEditor.Enable(True)
             
     def OnExit(self, event=None):
-        self.Close()        
+        self.Close()
+        sys.exit(0)
 
     def __set_properties(self): 
         try:
