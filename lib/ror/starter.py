@@ -48,6 +48,13 @@ class SettingsDialog(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.OnExit, self.btnExit)
         
         self.rordir = getSettingsManager().getSetting("RigsOfRods", "BasePath")
+        
+        # this takes too long! threading it?!
+        #if self.checkForUpdate():
+        #    dlg = wx.MessageDialog(self, "Update Available!", "Info", wx.OK | wx.ICON_INFORMATION)
+        #    dlg.ShowModal()
+        #    dlg.Destroy()
+            
         #print self.rordir
         if not self.rordir is None:
             if self.checkRoRDir(self.rordir):
@@ -98,8 +105,12 @@ class SettingsDialog(wx.Frame):
         f.close()        
         
     def OnUpdate(self, event=None):
+        import svngui
+        gui = svngui.svnUpdate()
+
+    def checkForUpdate(self):
         import svn
-        svn.run()
+        return svn.checkForUpdate()
 
     def OnStartRoR(self, event=None):
         try:
