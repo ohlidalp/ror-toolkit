@@ -22,9 +22,14 @@ class svnUpdate():
         del self.pr
         
     def showfinished(self):
-        dlg = wx.MessageDialog(self.pr, "Update finished!\nPlease restart the Application!", "Info", wx.OK | wx.ICON_INFORMATION)
-        dlg.ShowModal()
-        dlg.Destroy()
+        if self.changes == 2:
+            dlg = wx.MessageDialog(self.pr, "No Update available!", "Info", wx.OK | wx.ICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
+        elif self.changes > 2:
+            dlg = wx.MessageDialog(self.pr, "Update finished!\nPlease restart the Application!", "Info", wx.OK | wx.ICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
         
     def notify(self, event_dict):
         self.changes += 1
