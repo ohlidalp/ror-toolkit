@@ -21,13 +21,21 @@ class svnUpdate():
         self.pr.Hide()
         del self.pr
         
+    def restart(self):
+        path = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),"..\\.."))
+        path = os.path.join(path, "updaterestart.bat")
+        log().info("restarting ...")
+        p = Popen(path, shell = True)
+        sys.exit(0)
+        
     def showfinished(self):
         if self.changes == 2:
             dlg = wx.MessageDialog(self.pr, "No Update available!", "Info", wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
+            self.restart()
         elif self.changes > 2:
-            dlg = wx.MessageDialog(self.pr, "Update finished!\nPlease restart the Application!", "Info", wx.OK | wx.ICON_INFORMATION)
+            dlg = wx.MessageDialog(self.pr, "Update finished!\nThe Application now restarts itself!", "Info", wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
         
