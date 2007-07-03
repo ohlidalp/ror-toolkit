@@ -13,6 +13,20 @@ RENDERSYSTEMS = ['OpenGL', 'DirectX9']
 
 DIRECTXLINE = "Plugin=RenderSystem_Direct3D9.dll"
 OPENGLLINE = "Plugin=RenderSystem_GL.dll"
+SPLASHIMAGE = "splash.bmp"
+
+
+class ImagePanel(wx.Panel):
+    """ class Panel1 creates a panel with an image on it, inherits wx.Panel """
+    def __init__(self, parent, id, imageFile):
+        wx.Panel.__init__(self, parent, id)
+        try:
+            jpg1 = wx.Image(imageFile, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+            wx.StaticBitmap(self, wx.ID_ANY, jpg1, (0, 0), (jpg1.GetWidth(), jpg1.GetHeight()))
+        except IOError:
+            print "Image file %s not found" % imageFile
+            raise SystemExit
+
 
 class SettingsDialog(wx.Frame): 
     rordir = None
@@ -21,8 +35,10 @@ class SettingsDialog(wx.Frame):
         wx.Frame.__init__(self, *args, **kwds) 
 
         self.panel = wx.Panel(self, wx.ID_ANY)
+        
+        self.image = ImagePanel(self.panel, wx.ID_ANY, SPLASHIMAGE)
                              
-        self.lblRoRDir = wx.StaticText(self.panel, wx.ID_ANY, "Please select Rigs of Rods Directory!")
+        self.lblRoRDir = wx.StaticText(self.panel, wx.ID_ANY, "Please select Rigs of Rods Directory!", size = (20, 20), style = wx.ALIGN_CENTRE | wx.ST_NO_AUTORESIZE)
         self.btnSelectRoRDir = wx.Button(self.panel, wx.ID_ANY, "Select RoR Directory")
         self.Bind(wx.EVT_BUTTON, self.OnSelectRoRDir, self.btnSelectRoRDir)
 
@@ -61,23 +77,27 @@ class SettingsDialog(wx.Frame):
                 self.btnStartRoR.Enable(True)
                 self.btnStartTruckEditor.Enable(True)
                 self.btnStartTerrainEditor.Enable(True)
-                self.lblRoRDir.SetLabel(self.rordir)
             else:
                 self.rordir = ""
                 self.btnStartRoR.Enable(False)
                 self.btnStartTruckEditor.Enable(False)
                 self.btnStartTerrainEditor.Enable(False)
-                self.lblRoRDir.SetLabel("Please select Rigs of Rods Directory!")
-
         else:
             self.btnStartRoR.Enable(False)
             self.btnStartTruckEditor.Enable(False)
             self.btnStartTerrainEditor.Enable(False)
+        self.displayRoRDir()
         self.__set_properties() 
         self.__do_layout() 
         
         self.renderSystem = RENDERSYSTEMS[0]
 
+    def displayRoRDir(self):
+        if self.rordir == "":
+            self.lblRoRDir.SetLabel("Please select Rigs of Rods Directory!")
+        else:
+            self.lblRoRDir.SetLabel("Selected Rigs of Rods Directory: " + self.rordir)
+        
     def OnSelectRenderer(self, id=None, func=None):
         self.renderSystem = self.cbbRenderEngine.GetCurrentSelection()
         self.updateRenderer()
@@ -199,6 +219,7 @@ class SettingsDialog(wx.Frame):
     def __do_layout(self): 
         
         sizer_panel = wx.BoxSizer(wx.VERTICAL)
+        sizer_panel.Add(self.image, 0, wx.EXPAND, 0)
         sizer_panel.Add(self.lblRoRDir, 0, wx.EXPAND, 0)
         sizer_panel.Add(self.btnSelectRoRDir, 0, wx.EXPAND, 0)
         sizer_panel.Add(self.cbbRenderEngine, 0, wx.EXPAND, 0)
