@@ -33,11 +33,11 @@ class svnUpdate():
             dlg = wx.MessageDialog(self.pr, "No Update available!", "Info", wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
-            self.restart()
         elif self.changes > 2:
             dlg = wx.MessageDialog(self.pr, "Update finished!\nThe Application now restarts itself!", "Info", wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
+            self.restart()
         
     def notify(self, event_dict):
         self.changes += 1
