@@ -13,7 +13,7 @@ RENDERSYSTEMS = ['OpenGL', 'DirectX9']
 
 DIRECTXLINE = "Plugin=RenderSystem_Direct3D9.dll"
 OPENGLLINE = "Plugin=RenderSystem_GL.dll"
-SPLASHIMAGE = "splash.bmp"
+SPLASHIMAGE = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "splash.bmp"))
 
 
 class ImagePanel(wx.Panel):
@@ -65,27 +65,8 @@ class SettingsDialog(wx.Frame):
         
         self.rordir = getSettingsManager().getSetting("RigsOfRods", "BasePath")
         
-        # this takes too long! threading it?!
-        #if self.checkForUpdate():
-        #    dlg = wx.MessageDialog(self, "Update Available!", "Info", wx.OK | wx.ICON_INFORMATION)
-        #    dlg.ShowModal()
-        #    dlg.Destroy()
             
         #print self.rordir
-        if not self.rordir is None:
-            if self.checkRoRDir(self.rordir):
-                self.btnStartRoR.Enable(True)
-                self.btnStartTruckEditor.Enable(True)
-                self.btnStartTerrainEditor.Enable(True)
-            else:
-                self.rordir = ""
-                self.btnStartRoR.Enable(False)
-                self.btnStartTruckEditor.Enable(False)
-                self.btnStartTerrainEditor.Enable(False)
-        else:
-            self.btnStartRoR.Enable(False)
-            self.btnStartTruckEditor.Enable(False)
-            self.btnStartTerrainEditor.Enable(False)
         self.displayRoRDir()
         self.__set_properties() 
         self.__do_layout() 
@@ -94,8 +75,16 @@ class SettingsDialog(wx.Frame):
 
     def displayRoRDir(self):
         if self.rordir == "":
+            self.btnStartRoR.Enable(False)
+            self.btnStartTruckEditor.Enable(False)
+            self.btnStartTerrainEditor.Enable(False)
+            self.btnBugReport.Enable(False)
             self.lblRoRDir.SetLabel("Please select Rigs of Rods Directory!")
         else:
+            self.btnStartRoR.Enable(True)
+            self.btnStartTruckEditor.Enable(True)
+            self.btnStartTerrainEditor.Enable(True)
+            self.btnBugReport.Enable(True)
             self.lblRoRDir.SetLabel("Selected Rigs of Rods Directory: " + self.rordir)
         
     def OnSelectRenderer(self, id=None, func=None):
@@ -155,6 +144,13 @@ class SettingsDialog(wx.Frame):
     
     def OnBugReport(self, event=None):
         try:
+            if self.checkForUpdate():
+               dlg = wx.MessageDialog(self, "Update Available!\nPlease update prior submitting a BugReport!", "Info", wx.OK | wx.ICON_INFORMATION)
+               dlg.ShowModal()
+               dlg.Destroy()
+               self.btnBugReport.Enable(False)
+               return
+               
             log().info("starting bugreporter")
             import ror.bugreport
             ror.bugreport.showBugReportFrame()
@@ -184,8 +180,10 @@ class SettingsDialog(wx.Frame):
             dlg = wx.MessageDialog(self, "RoR.exe not found in the selected directory!\nPlease select a new directory!", "Error", wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
+            self.rordir = ""
             return False
         
+        self.rordir = fn
         return True
         
     def OnSelectRoRDir(self, event=None):
@@ -199,11 +197,8 @@ class SettingsDialog(wx.Frame):
             # no need to escape here!
             #newpath = newpath.replace(" ", "\ ")
             self.rordir = newpath
-            self.lblRoRDir.SetLabel(newpath)
             getSettingsManager().setSetting("RigsOfRods", "BasePath", newpath)
-            self.btnStartRoR.Enable(True)
-            self.btnStartTruckEditor.Enable(True)
-            self.btnStartTerrainEditor.Enable(True)
+            self.displayRoRDir()
             
     def OnExit(self, event=None):
         self.Close()
