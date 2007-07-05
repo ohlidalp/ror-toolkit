@@ -3,7 +3,7 @@ from truckparser import *
 
 def getDependencies(filename):
     p = rorparser()
-    p.parse(filename)
+    p.parse(filename, verbose=False)
     if not 'globals' in p.tree.keys():
         print "truck parsing error on file " + filename
     truckfilename = os.path.basename(filename)

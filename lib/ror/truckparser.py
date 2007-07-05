@@ -576,7 +576,7 @@ class rorparser:
         newcomment = {'data':[comment, attached], 'originline':lineno, 'section':section, 'type':'comment'}
         self.tree['comments'].append(newcomment)
 
-    def parse(self, filename):
+    def parse(self, filename, verbose = True):
         self.filename = filename
         content = None
         try:
@@ -590,7 +590,8 @@ class rorparser:
         if content is None:
             sys.stderr.write("error while reading file!\n")
             sys.exit(1)
-        sys.stderr.write("processing file %s\n" % filename)
+        if verbose:
+            sys.stderr.write("processing file %s\n" % filename)
         self.tree = {'title':[]}
         actualsection = "title"
         prevsection = ""
@@ -714,7 +715,8 @@ class rorparser:
         #self.checkNodes()
         #self.checkForDoubleNodes()
         #self.checkForDoubleBeams()
-        sys.stderr.write("finished processing of file %s\n" % filename)
+        if verbose:
+            sys.stderr.write("finished processing of file %s\n" % filename)
         #self.printtree()
         #self.linearizetree()
         #print self.tree['errors']
