@@ -1,8 +1,11 @@
 import xmlrpclib
 
-s = xmlrpclib.Server('http://repository.rigsofrods.com:8000')
-package = s.getInfo()
-for item in package['data']:
-    print item
+def getFiles(category):
+    s = xmlrpclib.Server('http://repository.rigsofrods.com:8000')
+    package = s.getInfo(category)
+    return package
 
-print s.system.listMethods()
+    
+#for item in package['data']:
+#    print item
+#print s.system.listMethods()
