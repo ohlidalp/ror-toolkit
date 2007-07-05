@@ -9,7 +9,7 @@ def getDependencies(filename):
     truckfilename = os.path.basename(filename)
     truckname, ext = os.path.splitext(truckfilename)
     matname = p.tree['globals'][0]['data'][2]
-    print truckname
+    #print truckname
     return {
             "depends":{
                        "materials":[matname],
