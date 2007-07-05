@@ -1,19 +1,17 @@
-#Thomas Fischer 31/05/2007, thomas@thomasfischer.biz
+#Thomas Fischer 06/07/2007, thomas@thomasfischer.biz
 import sys, os, os.path
 
 #DIR = "C:\\games\\RoR-0.31a\\data"
 DEPCHECKPATH = "depchecker"
 
 class RoRDepChecker:
-    def __init__(self, path):
+    def __init__(self, path, mode):
         sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), DEPCHECKPATH))
         self.deptree = {'materials':{},'file':{}}
         self.dir = path
         self.getfiles()
         self.createDepGraph()
-        self.viewDepGraph("all")
-        self.viewDepGraph("unused")
-        self.viewDepGraph("missing")
+        self.viewDepGraph(mode)
         
         
     def getDependencies(self, extension, filename):
@@ -74,7 +72,12 @@ class RoRDepChecker:
                     display = (len(req) > 0 and len(found) == 0)
                 if display:
                     displayedfiles += 1
-                    str += "%40s: %16s%-10s\n%41s %16s%-10s\n" % (k, "required by: ", reqstr, "", "provided by: ", foundstr)
+                    if mode == "all":
+                        str += "%40s: %16s%-10s\n%41s %16s%-10s\n" % (k, "required by: ", reqstr, "", "provided by: ", foundstr)
+                    elif mode == "unused":
+                        str += "%40s: %16s%-10s\n" % (k, "provided by: ", foundstr)
+                    elif mode == "missing":
+                        str += "%40s: %16s%-10s\n" % (k, "required by: ", reqstr)
         if displayedfiles > 0:
             print str
         elif displayedfiles == 0:
@@ -109,9 +112,25 @@ class RoRDepChecker:
             #    extlist.append(ext)
         #print extlist
             
-    
+
+def usage():
+    print "usage: %s <path to inspect> <all or unused or missing>" % os.path.basename(sys.argv[0])
+    print "for example: %s c:\\ror\\data missing" % os.path.basename(sys.argv[0])
+    print " * all will display all dependencies, inclusive met ones"
+    print " * missing will display only unfulfilled dependencies"
+    print " * unused will display resources that are not in use"
+    sys.exit(0)
+            
 def main():
-    RoRDepChecker(sys.argv[1])
+    if len(sys.argv) != 3:
+        usage()
+    if not os.path.isdir(sys.argv[1]):
+        print "%s is not a valid directory!" % sys.argv[1]
+        usage()
+    if not sys.argv[2] in ['all', 'missing', 'unused']:
+        print "%s is not a valid mode!" % sys.argv[2]
+        usage()
+    RoRDepChecker(sys.argv[1], sys.argv[2])
 
 if __name__ == "__main__":
     main()
