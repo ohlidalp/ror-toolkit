@@ -1,5 +1,5 @@
 import os, os.path
-from truckparser import *
+from ror.truckparser import *
 
 def getDependencies(filename):
     p = rorparser()

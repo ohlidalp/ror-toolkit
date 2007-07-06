@@ -2,7 +2,7 @@
 import sys, os, os.path
 
 #DIR = "C:\\games\\RoR-0.31a\\data"
-DEPCHECKPATH = "depchecker"
+DEPCHECKPATH = "depcheckerplugins"
 
 class RoRDepChecker:
     def __init__(self, path, mode):
@@ -16,8 +16,11 @@ class RoRDepChecker:
         
     def getDependencies(self, extension, filename):
         try:
+            #print "trying to use module: %s" % "ror_" + extension.lstrip(".")
             mod = __import__("ror_" + extension.lstrip("."))
         except ImportError, e:
+            #print "module not found!"
+            #print e
             return
             pass
             
