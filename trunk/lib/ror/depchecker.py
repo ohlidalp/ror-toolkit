@@ -14,13 +14,29 @@ class RoRDepChecker:
         self.filedeps = {}
         self.dir = path
         self.dependfilename = dependfilename
-        self.getfiles()
+        
+        
+        if mode == "md5sum":
+            self.getfiles(True)
+            self.savemd5()
+            sys.exit(0)
+        else:
+            self.getfiles()
+        
+        
         self.createDeps()
         self.generateCrossDep()
         if dependfilename != "":
             self.generateSingleDep()
-        #self.tryGraph()
-        
+        #self.tryGraph()        
+    
+    def savemd5(self):
+        lines = []
+        for fn in self.files.keys():
+            lines.append(os.path.basename(fn)+" "+self.files[fn]['md5']+"\n")
+        f=open("md5sums.txt", 'w')
+        f.writelines(lines)
+        f.close()
     
     def getSingleDepRecursive(self, filename, depth = 0):
         file = self.filedeps[filename]
@@ -63,7 +79,7 @@ class RoRDepChecker:
         for t in tree:
             t.append(self.md5Sum(t[2]))
         for t in tree:
-            print "%-50s %-30s" % ("+"*t[0]+t[2], t[3])
+            print "%-60s %-30s" % ("+"*t[0]+t[2], t[3])
         #for f in self.filedeps.keys():
         #    print str(self.filedeps[f][REQUIRES])
         #    print str(self.filedeps[f][REQUIREDBY])
@@ -202,12 +218,14 @@ class RoRDepChecker:
             if os.path.basename(f) == filename:
                 return f
     
-    def getfiles(self):
+    def getfiles(self, md5 = False):
         fl = {}
         for root, dirs, files in os.walk(self.dir):
             for f in files:
                 fn = os.path.join(root, f)
                 fl[fn] = {}
+                if md5:
+                    fl[fn]['md5'] = self.md5Sum(fn)
         for fk in fl.keys():
             print "%10s %s" % ("", fk)
         print "found %d files!" % (len(fl.keys()))
@@ -255,13 +273,14 @@ def usage():
     print " 'missing' displays only unfulfilled dependencies"
     print " 'unused' displays resources that are not in use"
     print " 'dtree <resourcename>'  displays the dependency tree of the given resource name"
+    print " 'md5sum' creates the md5sums of all files"
     sys.exit(0)
             
 def main():
     if not os.path.isdir(sys.argv[1]):
         print "%s is not a valid directory!" % sys.argv[1]
         usage()
-    if (len(sys.argv) == 3 and sys.argv[2] in ['all', 'missing', 'unused']) or (len(sys.argv) == 4 and sys.argv[2] in ['dtree']):
+    if (len(sys.argv) == 3 and sys.argv[2] in ['all', 'missing', 'unused', 'md5sum']) or (len(sys.argv) == 4 and sys.argv[2] in ['dtree']):
         pass
     else:
         print "%s is not a valid mode, or incorrect arguments!" % sys.argv[2]
