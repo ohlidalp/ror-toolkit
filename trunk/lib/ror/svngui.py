@@ -41,7 +41,7 @@ class svnUpdate():
         
     def notify(self, event_dict):
         self.changes += 1
-        msg = str(event_dict['action']) + ", " + event_dict['path']
+        msg = str(event_dict['action']) + ", " + os.path.basename(event_dict['path'])
         #self.pr.Update(self.changes % 100, msg)
         self.pr.Pulse(msg)
         
