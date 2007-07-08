@@ -77,6 +77,11 @@ def svnupdate(callback = None):
     changes = 0
     try:
         client = pysvn.Client()
+        
+        # try to restore previous broken updates
+        client.unlock(path)
+        client.cleanup(path)
+        
         revision_before = getRevision(client, path)
         print "updating from revision %d ..." % revision_before
         if callback is None:
