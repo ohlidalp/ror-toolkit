@@ -1,6 +1,5 @@
 #Thomas Fischer 06/07/2007, thomas@thomasfischer.biz
 import sys, os, os.path, copy
-import pydot
 
 DEPCHECKPATH = "depcheckerplugins"
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), DEPCHECKPATH))
@@ -17,7 +16,9 @@ class RoRDepChecker:
         self.getfiles()
         self.createDeps()
         self.generateCrossDep()
-        self.drawGraph()
+        
+        self.tryGraph()
+        
     
     def getSingleDepRecursive(self, file, depth = 0):
         req = [file]
@@ -29,8 +30,18 @@ class RoRDepChecker:
         if not self.dependfilename in self.filedeps.keys():
             print "file not found in the dependency tree!"
             sys.exit(0)
-        
+
+    def tryGraph(self):
+        try:
+            import pydot
+            print "pydot found, drawing graphs! beware this can take some time with big graphs!"
+            self.drawGraph()
+        except ImportError:
+            print "pydot not found, not drawing graphs"
+            pass   
+            
     def drawGraph(self):
+        import pydot
         edges = []
         for filenameA in self.filedeps.keys():
             fileA = self.filedeps[filenameA]
@@ -40,7 +51,21 @@ class RoRDepChecker:
         
         #edges = [(1,2), (1,3), (1,4), (3,4)]
         graph = pydot.graph_from_edges(edges)
-        graph.write('dependencies.png', prog='dot', format='png') 
+        graph.set_type('digraph')
+        graph.simplify = True
+        graph.set("resolution", "160")
+        graph.set("overlap", "0.2")
+        graph.set("shape", "box")
+        
+        for n in graph.get_node_list():
+            n.set('fontsize', 12)
+            n.set('style', 'filled')
+            n.set('fillcolor', 'lightblue2')
+            
+        program = "dot" # dot or twopi
+        
+        graph.write('dependencies.jpg', prog = program, format='jpeg') 
+        print "graph successfull written to dependencies.jpg"
         
 
     def generateCrossDep(self):
