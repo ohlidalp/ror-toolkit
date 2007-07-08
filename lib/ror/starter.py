@@ -117,7 +117,7 @@ class SettingsDialog(wx.Frame):
         f.close()        
         
     def OnDepGraph(self, event=None):
-        dlg = wx.MessageDialog(self, "to get this working, you must install tools/pyparsing*.exe and tools/graphviz*.exe!", "Info", wx.OK | wx.ICON_INFORMATION)
+        dlg = wx.MessageDialog(self, "to get this working, you must install tools/pyparsing*.exe and tools/graphviz*.exe (relative to the installation directory)!", "Info", wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
         from depchecker import *
