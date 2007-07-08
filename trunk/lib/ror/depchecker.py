@@ -1,5 +1,5 @@
 #Thomas Fischer 06/07/2007, thomas@thomasfischer.biz
-import sys, os, os.path, copy
+import sys, os, os.path, copy, md5
 
 DEPCHECKPATH = "depcheckerplugins"
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), DEPCHECKPATH))
@@ -24,23 +24,46 @@ class RoRDepChecker:
     
     def getSingleDepRecursive(self, filename, depth = 0):
         file = self.filedeps[filename]
-        req = [(depth, filename)]
+        req = [[depth, filename]]
         #print file
         for r in file[REQUIRES][FILE]:
             try:
                 for rr in self.getSingleDepRecursive(r, depth + 1):
-                    req.append((rr[0], rr[1]))
+                    duplicate = False
+                    for a in req:
+                        if rr[1] in a:
+                            duplicate  = True
+                    if not duplicate:
+                        req.append([rr[0], rr[1]])
             except:
                 pass
         return req
+
+    def readFile(self, filename):
+        f=open(filename, 'rb')
+        content = f.read()
+        f.close()
+        return content        
+    
+    def md5Sum(self, filename):
+        try:
+            content = self.readFile(filename)
+            #print len(content)
+        except:
+            return
+        return md5.new(content).hexdigest()
     
     def generateSingleDep(self):
         if not self.dependfilename in self.filedeps.keys():
             print "file not found in the dependency tree!"
             sys.exit(0)
-        tree = self.getSingleDepRecursive(self.dependfilename)
+        tree = self.getSingleDepRecursive(self.dependfilename)           
         for t in tree:
-            print "+"*t[0]+t[1]
+            t.append(self.getFullPath(t[1]))
+        for t in tree:
+            t.append(self.md5Sum(t[2]))
+        for t in tree:
+            print "%-50s %-30s" % ("+"*t[0]+t[2], t[3])
         #for f in self.filedeps.keys():
         #    print str(self.filedeps[f][REQUIRES])
         #    print str(self.filedeps[f][REQUIREDBY])
