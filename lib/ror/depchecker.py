@@ -17,7 +17,7 @@ class RoRDepChecker:
         self.createDeps()
         self.generateCrossDep()
         
-        self.tryGraph()
+        #self.tryGraph()
         
     
     def getSingleDepRecursive(self, file, depth = 0):
@@ -53,16 +53,30 @@ class RoRDepChecker:
         graph = pydot.graph_from_edges(edges)
         graph.set_type('digraph')
         graph.simplify = True
-        graph.set("resolution", "160")
-        graph.set("overlap", "0.2")
-        graph.set("shape", "box")
+        #graph.set("resolution", "320")
+        graph.set("overlap", "0")
+        #graph.set("shape", "box")
         
         for n in graph.get_node_list():
-            n.set('fontsize', 12)
+            n.set('fontsize', 8)
             n.set('style', 'filled')
-            n.set('fillcolor', 'lightblue2')
+            onlyfilename, ext = os.path.splitext(n.get_name())
+            if ext == ".truck":
+                n.set('fillcolor', 'gold')
+            elif ext == ".load":
+                n.set('fillcolor', 'lightyellow')
+            elif ext == ".material":
+                n.set('fillcolor', 'lightseagreen')
+            elif ext == ".mesh":
+                n.set('fillcolor', 'lightsalmon')
+            elif ext == ".png" or ext == ".jpg" or ext == ".bmp":
+                n.set('fillcolor', 'lightblue')
             
+            
+           
         program = "dot" # dot or twopi
+        if len(self.filedeps) > 100:
+            program = "twopi"
         
         graph.write('dependencies.jpg', prog = program, format='jpeg') 
         print "graph successfull written to dependencies.jpg"
