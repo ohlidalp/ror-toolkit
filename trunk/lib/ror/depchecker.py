@@ -5,6 +5,7 @@ DEPCHECKPATH = "depcheckerplugins"
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), DEPCHECKPATH))
 from deptools import *
 
+REMOVE_UNUSED_MATERIALS = True
 
 
 
@@ -16,20 +17,35 @@ class RoRDepChecker:
         self.getfiles()
         self.createDeps()
         self.generateCrossDep()
-        
+        if dependfilename != "":
+            self.generateSingleDep()
         #self.tryGraph()
         
     
-    def getSingleDepRecursive(self, file, depth = 0):
-        req = [file]
-        for filenameA in self.filedeps.keys():
-            fileA = self.filedeps[filenameA]
-            #for r in 
+    def getSingleDepRecursive(self, filename, depth = 0):
+        file = self.filedeps[filename]
+        req = [(depth, filename)]
+        #print file
+        for r in file[REQUIRES][FILE]:
+            try:
+                for rr in self.getSingleDepRecursive(r, depth + 1):
+                    req.append((rr[0], rr[1]))
+            except:
+                pass
+        return req
     
-    def generateSingleGraph(self):
+    def generateSingleDep(self):
         if not self.dependfilename in self.filedeps.keys():
             print "file not found in the dependency tree!"
             sys.exit(0)
+        tree = self.getSingleDepRecursive(self.dependfilename)
+        for t in tree:
+            print "+"*t[0]+t[1]
+        #for f in self.filedeps.keys():
+        #    print str(self.filedeps[f][REQUIRES])
+        #    print str(self.filedeps[f][REQUIREDBY])
+        #    print "---------------------------------"
+        
 
     def tryGraph(self):
         try:
@@ -157,15 +173,21 @@ class RoRDepChecker:
             pass            
         return mod.getDependencies(filename)
 
+        
+    def getFullPath(self, filename):
+        for f in self.files:
+            if os.path.basename(f) == filename:
+                return f
+    
     def getfiles(self):
         fl = {}
         for root, dirs, files in os.walk(self.dir):
             for f in files:
                 fn = os.path.join(root, f)
                 fl[fn] = {}
-        #for fk in fl.keys():
-        #    print "%10s %s" % ("", fk)
-        #print "found %d files!" % (len(fl.keys()))
+        for fk in fl.keys():
+            print "%10s %s" % ("", fk)
+        print "found %d files!" % (len(fl.keys()))
         self.files = fl
 
     def newRelation(self, dep):
