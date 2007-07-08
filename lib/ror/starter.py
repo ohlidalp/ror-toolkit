@@ -117,9 +117,12 @@ class SettingsDialog(wx.Frame):
         f.close()        
         
     def OnDepGraph(self, event=None):
+        dlg = wx.MessageDialog(self, "to get this working, you must install tools/pyparsing*.exe and tools/graphviz*.exe!", "Info", wx.OK | wx.ICON_INFORMATION)
+        dlg.ShowModal()
+        dlg.Destroy()
         import depchecker
         depchecker.RoRDepChecker(self.rordir, "all", "")
-        dlg = wx.MessageDialog(self, "If everything went fine, you should find the graph in the RoRToolkit Directory under dependencies.png!", "Info", wx.OK | wx.ICON_INFORMATION)
+        dlg = wx.MessageDialog(self, "If everything went fine (and you got the correct tools installed), you should find the graph in the RoRToolkit Directory under dependencies.png!", "Info", wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
         
