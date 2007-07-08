@@ -1,5 +1,6 @@
 import os, os.path, re
 import subprocess 
+from deptools import *
 
 RE1 = r"^\s*texture.?([a-zA-Z0-9_\-]*\.[a-zA-Z0-9]*)\s?.*"
 RE2 = r"\s?material\s?([a-zA-Z0-9_/\-\\]*).?"
@@ -30,10 +31,13 @@ def getDependencies(filename):
         print "no material found in material file " + filename        
     else:
         return {
-                "depends":{
-                           "file":dep
-                          },
-                "provide":{
-                           "materials":prov
-                          }
+                OPTIONAL:{
+                         },
+                REQUIRES:{
+                           FILE:dep,
+                         },
+                PROVIDES:{
+                           MATERIAL:prov,
+                           FILE:[filename],
+                         },
                }

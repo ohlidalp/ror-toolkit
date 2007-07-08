@@ -1,6 +1,8 @@
 import sys, os, os.path, re
 import subprocess 
 
+from deptools import *
+
 # todo remove this hardcoded stuff here!
 CONVERTERBIN = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..\\..\\..\\tools\\OgreCommandLineTools\\OgreXmlConverter.exe"))
 REs = [r".*material\s?=[\"\']([a-zA-Z0-9_/\-\\]*)[\"\'].*"]
@@ -43,7 +45,13 @@ def getDependencies(filename):
         print "no material found for file " + filename
     else:
         return {
-                "depends":{
-                           "materials":dep
-                          }
+                OPTIONAL:{
+                         },
+                REQUIRES:{
+                           MATERIAL:dep,
+                         },
+                PROVIDES:{
+                           FILE:[filename],
+                         },
                }
+

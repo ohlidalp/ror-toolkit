@@ -1,5 +1,6 @@
 import os, os.path
 from ror.truckparser import *
+from deptools import *
 
 def getDependencies(filename):
     p = rorparser()
@@ -9,13 +10,25 @@ def getDependencies(filename):
     truckfilename = os.path.basename(filename)
     truckname, ext = os.path.splitext(truckfilename)
     matname = p.tree['globals'][0]['data'][2]
+    
+    # collect props
+    props = []
+    if 'props' in p.tree.keys():
+        for prop in p.tree['props']:
+            props.append(prop['data'][-1])
+        #print props
+    
     #print truckname
     return {
-            "depends":{
-                       "materials":[matname],
-                       #"file":[truckname+'-mini.png']
-                      },
-            "provide":{
-                       "file":[truckfilename]
-                      }
+            OPTIONAL:{
+                       MATERIAL:["tracks/"+truckname+'help'],
+                       FILE:[truckname+'-mini.png'],
+                     },
+            REQUIRES:{
+                       MATERIAL:[matname],
+                       FILE:props,
+                     },
+            PROVIDES:{
+                       FILE:[filename],
+                     },
            }
