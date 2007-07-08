@@ -3,6 +3,7 @@ import sys, os, os.path, copy, md5
 
 DEPCHECKPATH = "depcheckerplugins"
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), DEPCHECKPATH))
+print os.path.join(os.path.dirname(os.path.abspath(__file__)), DEPCHECKPATH)
 from deptools import *
 
 REMOVE_UNUSED_MATERIALS = True

@@ -120,9 +120,9 @@ class SettingsDialog(wx.Frame):
         dlg = wx.MessageDialog(self, "to get this working, you must install tools/pyparsing*.exe and tools/graphviz*.exe!", "Info", wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
-        import depchecker
-        depchecker.RoRDepChecker(self.rordir, "all", "")
-        dlg = wx.MessageDialog(self, "If everything went fine (and you got the correct tools installed), you should find the graph in the RoRToolkit Directory under dependencies.png!", "Info", wx.OK | wx.ICON_INFORMATION)
+        from depchecker import *
+        RoRDepChecker(self.rordir, "all", "")
+        dlg = wx.MessageDialog(self, "If everything went fine (and you got the correct tools installed), you should find the graph in the RoRToolkit Directory under dependencies.png!\n it is best viewed in firefox.\nred means missing/nout found.", "Info", wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
         
