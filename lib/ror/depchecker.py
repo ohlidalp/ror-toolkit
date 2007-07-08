@@ -7,7 +7,8 @@ from deptools import *
 
 REMOVE_UNUSED_MATERIALS = True
 
-
+MD5FILENAME = "031amd5.txt" #0.31a md5 .txt
+MD5FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), MD5FILENAME)
 
 class RoRDepChecker:
     def __init__(self, path, mode, dependfilename):
@@ -28,33 +29,65 @@ class RoRDepChecker:
         self.generateCrossDep()
         if dependfilename != "":
             self.generateSingleDep()
-        #self.tryGraph()        
+        self.tryGraph()        
     
     def savemd5(self):
         lines = []
         for fn in self.files.keys():
             lines.append(os.path.basename(fn)+" "+self.files[fn]['md5']+"\n")
-        f=open("md5sums.txt", 'w')
+        f=open(MD5FILE, 'w')
         f.writelines(lines)
         f.close()
     
     def getSingleDepRecursive(self, filename, depth = 0):
         file = self.filedeps[filename]
-        req = [[depth, filename]]
+        req = [{'depth':depth, 'filename':filename}]
         #print file
         for r in file[REQUIRES][FILE]:
             try:
                 for rr in self.getSingleDepRecursive(r, depth + 1):
                     duplicate = False
-                    for a in req:
-                        if rr[1] in a:
+                    for rsub in req:
+                        if rr['filename'] == rsub['filename']:
                             duplicate  = True
                     if not duplicate:
-                        req.append([rr[0], rr[1]])
+                        req.append(rr)
             except:
                 pass
         return req
+    
+    def generateSingleDep(self):
+        if not self.dependfilename in self.filedeps.keys():
+            print "file not found in the dependency tree!"
+            sys.exit(0)
+        tree = self.getSingleDepRecursive(self.dependfilename)           
+        #print tree
+        for t in tree:
+            t['fullpath'] = self.getFullPath(t['filename'])
+            t['md5sum'] = self.md5Sum(t['fullpath'])
+            print "%-30s %-30s" % ("+"*t['depth']+t['filename'], t['md5sum'])
+        #self.removeOriginalFilesFromSingleDep
+        #for f in self.filedeps.keys():
+        #    print str(self.filedeps[f][REQUIRES])
+        #    print str(self.filedeps[f][REQUIREDBY])
+        #    print "---------------------------------"
+        self.tryGraph(tree)
 
+    def removeOriginalFilesFromSingleDep(self, tree):
+        self.readMD5File()
+        
+        
+
+    def readMD5File(self):
+        md5s = {}
+        f=open(MD5FILE, 'r')
+        content = f.readlines()
+        f.close()
+        for line in content:
+            l = line.split(" ")
+            md5s[l[0]] = l[1]
+        self.orgMD5s = md5s
+            
     def readFile(self, filename):
         f=open(filename, 'rb')
         content = f.read()
@@ -68,73 +101,63 @@ class RoRDepChecker:
         except:
             return
         return md5.new(content).hexdigest()
-    
-    def generateSingleDep(self):
-        if not self.dependfilename in self.filedeps.keys():
-            print "file not found in the dependency tree!"
-            sys.exit(0)
-        tree = self.getSingleDepRecursive(self.dependfilename)           
-        for t in tree:
-            t.append(self.getFullPath(t[1]))
-        for t in tree:
-            t.append(self.md5Sum(t[2]))
-        for t in tree:
-            print "%-60s %-30s" % ("+"*t[0]+t[2], t[3])
-        #for f in self.filedeps.keys():
-        #    print str(self.filedeps[f][REQUIRES])
-        #    print str(self.filedeps[f][REQUIREDBY])
-        #    print "---------------------------------"
-        
 
-    def tryGraph(self):
+    def tryGraph(self, tree = None):
         try:
             import pydot
             print "pydot found, drawing graphs! beware this can take some time with big graphs!"
-            self.drawGraph()
+            self.drawGraph(tree)
         except ImportError:
             print "pydot not found, not drawing graphs"
             pass   
             
-    def drawGraph(self):
+    def drawGraph(self, tree = None):
         import pydot
         edges = []
-        for filenameA in self.filedeps.keys():
-            fileA = self.filedeps[filenameA]
-            for rel in fileA[REQUIRES][FILE]:
-                e = (filenameA, rel)
-                edges.append(e)
+        if tree is None:        
+            for filenameA in self.filedeps.keys():
+                fileA = self.filedeps[filenameA]
+                for rel in fileA[REQUIRES][FILE]:
+                    e = (filenameA, rel)
+                    edges.append(e)
+        else:
+            pass
         
         #edges = [(1,2), (1,3), (1,4), (3,4)]
         graph = pydot.graph_from_edges(edges)
         graph.set_type('digraph')
         graph.simplify = True
         #graph.set("resolution", "320")
-        graph.set("overlap", "0")
+        #graph.set("overlap", "0")
         #graph.set("shape", "box")
         
         for n in graph.get_node_list():
             n.set('fontsize', 8)
             n.set('style', 'filled')
             onlyfilename, ext = os.path.splitext(n.get_name())
-            if ext == ".truck":
-                n.set('fillcolor', 'gold')
-            elif ext == ".load":
-                n.set('fillcolor', 'lightyellow')
-            elif ext == ".material":
-                n.set('fillcolor', 'lightseagreen')
-            elif ext == ".mesh":
-                n.set('fillcolor', 'lightsalmon')
-            elif ext == ".png" or ext == ".jpg" or ext == ".bmp":
-                n.set('fillcolor', 'lightblue')
+            fp = self.getFullPath(n.get_name())
+            if fp is None:
+                n.set('fillcolor', 'red')
+            else:
+                if ext == ".truck":
+                    n.set('fillcolor', 'gold')
+                elif ext == ".load":
+                    n.set('fillcolor', 'lightyellow')
+                elif ext == ".material":
+                    n.set('fillcolor', 'lightseagreen')
+                elif ext == ".mesh":
+                    n.set('fillcolor', 'lightsalmon')
+                elif ext == ".png" or ext == ".jpg" or ext == ".bmp":
+                    n.set('fillcolor', 'lightblue')
             
             
            
         program = "dot" # dot or twopi
-        if len(self.filedeps) > 100:
-            program = "twopi"
+        #if len(self.filedeps) > 100:
+        #    program = "twopi"
         
-        graph.write('dependencies.jpg', prog = program, format='jpeg') 
-        print "graph successfull written to dependencies.jpg"
+        graph.write('dependencies.png', prog = program, format='png') 
+        print "graph successfull written to dependencies.png"
         
 
     def generateCrossDep(self):
@@ -217,6 +240,7 @@ class RoRDepChecker:
         for f in self.files:
             if os.path.basename(f) == filename:
                 return f
+        return None
     
     def getfiles(self, md5 = False):
         fl = {}

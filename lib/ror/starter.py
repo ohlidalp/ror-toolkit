@@ -60,6 +60,9 @@ class SettingsDialog(wx.Frame):
         self.btnUpdate = wx.Button(self.panel, wx.ID_ANY, "Update")
         self.Bind(wx.EVT_BUTTON, self.OnUpdate, self.btnUpdate)
         
+        self.btnDepGraph = wx.Button(self.panel, wx.ID_ANY, "Create dependency Graph")
+        self.Bind(wx.EVT_BUTTON, self.OnDepGraph, self.btnDepGraph)
+        
         self.btnExit = wx.Button(self.panel, wx.ID_ANY, "Exit")
         self.Bind(wx.EVT_BUTTON, self.OnExit, self.btnExit)
         
@@ -112,6 +115,13 @@ class SettingsDialog(wx.Frame):
         f=open(filename, 'w')
         f.writelines(content)
         f.close()        
+        
+    def OnDepGraph(self, event=None):
+        import depchecker
+        depchecker.RoRDepChecker(self.rordir, "all", "")
+        dlg = wx.MessageDialog(self, "If everything went fine, you should find the graph in the RoRToolkit Directory under dependencies.png!", "Info", wx.OK | wx.ICON_INFORMATION)
+        dlg.ShowModal()
+        dlg.Destroy()
         
     def OnUpdate(self, event=None):
         import svngui
@@ -223,6 +233,7 @@ class SettingsDialog(wx.Frame):
         sizer_panel.Add(self.btnStartTruckEditor, 0, wx.EXPAND, 0)
         sizer_panel.Add(self.btnBugReport, 0, wx.EXPAND, 0)
         sizer_panel.Add(self.btnUpdate, 0, wx.EXPAND, 0)
+        sizer_panel.Add(self.btnDepGraph, 0, wx.EXPAND, 0)
         sizer_panel.Add(self.btnExit, 0, wx.EXPAND, 0)
         self.panel.SetSizer(sizer_panel)
 
