@@ -20,6 +20,7 @@ ID_ADDTRUCK = 107
 ID_ADDMESH  = 108
 ID_CHECKUPDATE = 109
 ID_SAVEFILEAS = 110
+ID_TERRAINCOLLISION = 111
 ID_EXIT     = 199
 
 DATADIR     = "data"
@@ -133,10 +134,13 @@ class MainFrame(wx.Frame):
         menuBar.Append(file_menu, "&File");
         
         view_menu = wx.Menu()
+        self.mnuterraincollision = view_menu.AppendCheckItem(ID_TERRAINCOLLISION, "Camera collides with Terrain", "")
+        self.mnuterraincollision.Check(True)
+        view_menu.AppendSeparator()
         self.viewObjectDetails = view_menu.AppendCheckItem(ID_VIEWOBJ, "&View Objects", "Display object details")
+        self.viewObjectDetails.Check(False)
         view_menu.AppendSeparator()
         view_menu.Append(ID_OGRESET, "&Ogre Settings", "Change Ogre Display Settings")
-        self.viewObjectDetails.Check(False)
         menuBar.Append(view_menu, "&View");
         
         add_menu = wx.Menu()
@@ -163,13 +167,16 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnAbout, id=ID_ABOUT)
         self.Bind(wx.EVT_MENU, self.onViewObjectDetails, id=ID_VIEWOBJ)
         self.Bind(wx.EVT_MENU, self.OnChangeOgreSettings, id=ID_OGRESET)
-        self.Bind(wx.EVT_MENU, self.OnHelp, id=ID_SHOWHELP)
+        self.Bind(wx.EVT_MENU, self.OnCameraTerrainCollision, id=ID_TERRAINCOLLISION)
 
     def OnAbout(self, event=None):
         ShowOnAbout()
         
     def OnCheckUpdate(self, event=None):
         pass
+        
+    def OnCameraTerrainCollision(self, event=None):
+        self.terrainOgreWin.CameraLandCollision(self.mnuterraincollision.IsChecked())
         
     def OnHelp(self, event=None):
         import HelpFrame
