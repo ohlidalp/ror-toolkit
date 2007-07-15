@@ -34,6 +34,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         self.myODefs = {}
         self.trucks = {}
         self.comments = {}
+        self.cameralandcollisionenabled = True
         self.meshes = {}
         self.keyPress = ogre.Vector3(0,0,0)
         self.moveVector = ogre.Vector3(0,0,0)
@@ -41,6 +42,8 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         self.selectionMaterialAnimState = 0
         wxOgreWindow.__init__(self, self.parent, self.ID, size = self.size, **self.kwargs) 
 
+    def CameraLandCollision(self, value):
+        self.cameralandcollisionenabled = value
         
     def animateSelection(self):
         if not self.selectionMaterial is None:
@@ -52,8 +55,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
             self.selectionMaterial.setDiffuse(1, 0.3, 0, val)
             self.selectionMaterial.setSpecular(1, 0.3, 0, val)
 
-    def OnFrameStarted(self): 
-        self.cameraLandCollision()
+    def OnFrameStarted(self):
+        if self.cameralandcollisionenabled:
+            self.cameraLandCollision()
         self.animateSelection()
         if not self.TranslateNode is None:
             if self.mSelected:
