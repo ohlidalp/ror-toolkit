@@ -30,7 +30,7 @@ class RoRDepChecker:
         self.generateCrossDep()
         if dependfilename != "":
             self.generateSingleDep()
-        self.tryGraph()        
+        #self.tryGraph()        
     
     def savemd5(self):
         lines = []
@@ -51,8 +51,8 @@ class RoRDepChecker:
                     for rsub in req:
                         if rr['filename'] == rsub['filename']:
                             duplicate  = True
-                    if not duplicate:
-                        req.append(rr)
+                    #if not duplicate:
+                    req.append(rr)
             except:
                 pass
         return req
@@ -68,7 +68,8 @@ class RoRDepChecker:
             t['md5sum'] = self.md5Sum(t['fullpath'])
             print "%-30s %-30s" % ("+"*t['depth']+t['filename'], t['md5sum'])
         #self.removeOriginalFilesFromSingleDep
-        #for f in self.filedeps.keys():
+        #for t in tree:
+        #    f = t['filename']
         #    print str(self.filedeps[f][REQUIRES])
         #    print str(self.filedeps[f][REQUIREDBY])
         #    print "---------------------------------"
@@ -121,7 +122,31 @@ class RoRDepChecker:
                 for rel in fileA[REQUIRES][FILE]:
                     e = (filenameA, rel)
                     edges.append(e)
+            fn = 'dependencies.png'
         else:
+            od = -1
+            parents = []
+            for t in tree:
+                d = t['depth']
+                f = t['filename']
+                if d > od:
+                    if len(parents) > 0:
+                        #print "1", (parents[-1], f)
+                        edges.append((parents[-1], f))
+                    parents.append(f)
+                elif d == od:
+                    #print "2"
+                    edges.append((parents[-1], f))
+                elif d < od:
+                    for i in range(0, od - d + 1):
+                        del parents[-1]
+                    #print "3", od - d, (parents[-1], f)
+                    edges.append((parents[-1], f))
+                    parents.append(f)
+                
+                
+                od = d
+            fn = 'dependencies_single.png'
             pass
         
         #edges = [(1,2), (1,3), (1,4), (3,4)]
@@ -157,7 +182,7 @@ class RoRDepChecker:
         #if len(self.filedeps) > 100:
         #    program = "twopi"
         
-        graph.write('dependencies.png', prog = program, format='png') 
+        graph.write(fn, prog = program, format='png') 
         print "graph successfull written to dependencies.png"
         
 
@@ -302,6 +327,8 @@ def usage():
     sys.exit(0)
             
 def main():
+    if len(sys.argv) < 3:
+        usage()    
     if not os.path.isdir(sys.argv[1]):
         print "%s is not a valid directory!" % sys.argv[1]
         usage()
