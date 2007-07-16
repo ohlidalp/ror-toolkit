@@ -12,10 +12,11 @@ import svn
 import wx, os, os.path
 
 class svnUpdate(): 
-    def __init__(self):
+    def __init__(self, restartApp=True):
         self.pr = wx.ProgressDialog("Updating ...", "Updating ...", style = wx.PD_SMOOTH | wx.PD_ELAPSED_TIME | wx.PD_ESTIMATED_TIME | wx.PD_REMAINING_TIME)
         self.pr.Show()
         self.changes = 0
+        self.restartApp = restartApp
         svn.svnupdate(self.notify)
         self.showfinished()
         self.pr.Hide()
@@ -34,10 +35,16 @@ class svnUpdate():
             dlg.ShowModal()
             dlg.Destroy()
         elif self.changes > 2:
-            dlg = wx.MessageDialog(self.pr, "Update finished!\nThe Application now restarts itself!", "Info", wx.OK | wx.ICON_INFORMATION)
-            dlg.ShowModal()
-            dlg.Destroy()
-            self.restart()
+            if self.restartApp:
+                dlg = wx.MessageDialog(self.pr, "Update finished!\nThe Application now restarts itself!", "Info", wx.OK | wx.ICON_INFORMATION)
+                dlg.ShowModal()
+                dlg.Destroy()
+                self.restart()
+            else:
+                dlg = wx.MessageDialog(self.pr, "Update finished!", "Info", wx.OK | wx.ICON_INFORMATION)
+                dlg.ShowModal()
+                dlg.Destroy()
+
         
     def notify(self, event_dict):
         self.changes += 1

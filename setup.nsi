@@ -47,9 +47,15 @@ CRCCheck on
 ; Instfiles page
 !insertmacro MUI_PAGE_INSTFILES
 ; Finish page
-!define MUI_FINISHPAGE_RUN "$INSTDIR\rortoolkit.bat"
-!define MUI_FINISHPAGE_RUN_PARAMETERS ""
+;!define MUI_FINISHPAGE_RUN "$INSTDIR\rortoolkit.bat"
+;!define MUI_FINISHPAGE_RUN_PARAMETERS ""
 #!define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\Example.file"
+
+!define MUI_FINISHPAGE_NOAUTOCLOSE
+!define MUI_FINISHPAGE_RUN
+!define MUI_FINISHPAGE_RUN_NOTCHECKED
+!define MUI_FINISHPAGE_RUN_TEXT "Update and start (Can take some time)"
+!define MUI_FINISHPAGE_RUN_FUNCTION "LaunchPostInstallation"
 !insertmacro MUI_PAGE_FINISH
 
 ; Uninstaller pages
@@ -74,7 +80,8 @@ CRCCheck on
 
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
 OutFile "RoRToolkitSetup.exe"
-InstallDir "$PROGRAMFILES\RoRToolkit"
+;InstallDir "$PROGRAMFILES\RoRToolkit"
+InstallDir "c:\rortoolkit"
 ShowInstDetails show
 ShowUnInstDetails show
 
@@ -160,6 +167,24 @@ Function InstallPyWin32
         Banner::destroy
 FunctionEnd
 
+Function InstallPyParsing
+        InitPluginsDir
+        File /oname=$PLUGINSDIR\pyparsing-1.4.6.win32.exe "tools\pyparsing-1.4.6.win32.exe"
+        Banner::show /NOUNLOAD "Installing PyParsing Python Module ..."
+        ExecWait '"$PLUGINSDIR\pyparsing-1.4.6.win32.exe"'
+        Delete $PLUGINSDIR\pyparsing-1.4.6.win32.exe
+        Banner::destroy
+FunctionEnd
+
+Function InstallGraphViz
+        InitPluginsDir
+        File /oname=$PLUGINSDIR\graphviz-2.12.exe "tools\graphviz-2.12.exe"
+        Banner::show /NOUNLOAD "Installing Graphviz for Windows ..."
+        ExecWait '"$PLUGINSDIR\graphviz-2.12.exe"'
+        Delete $PLUGINSDIR\graphviz-2.12.exe
+        Banner::destroy
+FunctionEnd
+
 
 Function .onInit
         InitPluginsDir
@@ -174,19 +199,23 @@ Section "Install Python" SEC01
   Call CheckForPython
 SectionEnd
 
-Section "Install DirectX" SEC02
+Section "Install Tools" SEC02
   Call InstallDirectX
-SectionEnd
-
-Section "Install PyWin32" SEC03
   Call InstallPyWin32
+  Call InstallPyParsing
+  Call InstallGraphViz
 SectionEnd
 
-Section "Full Installation" SEC04
+Section "Full Installation" SEC03
   SetOutPath "$INSTDIR"
   SetOverwrite try
   File "/r" "*"
 SectionEnd
+
+Function "LaunchPostInstallation"
+  ExecWait '"$INSTDIR\update.bat"'
+  ExecWait '"$INSTDIR\rortoolkit.bat"'
+FunctionEnd
 
 Section -AdditionalIcons
   SetOutPath $INSTDIR
