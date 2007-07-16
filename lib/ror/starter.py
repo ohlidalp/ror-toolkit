@@ -3,6 +3,7 @@ from wxogre.OgreManager import *
 from ror.RoROgreWindow import *
 from ror.rorcommon import *
 from subprocess import Popen
+import subprocess
 
 from ror.logger import log
 from ror.settingsManager import getSettingsManager
@@ -117,14 +118,17 @@ class SettingsDialog(wx.Frame):
         f.close()        
         
     def OnDepGraph(self, event=None):
-        dlg = wx.MessageDialog(self, "to get this working, you must install tools/pyparsing*.exe and tools/graphviz*.exe (relative to the installation directory)!", "Info", wx.OK | wx.ICON_INFORMATION)
-        dlg.ShowModal()
-        dlg.Destroy()
         from depchecker import *
         RoRDepChecker(self.rordir, "all", "")
-        dlg = wx.MessageDialog(self, "If everything went fine (and you got the correct tools installed), you should find the graph in the RoRToolkit Directory under dependencies.png!\n it is best viewed in firefox.\nred means missing/nout found.", "Info", wx.OK | wx.ICON_INFORMATION)
-        dlg.ShowModal()
-        dlg.Destroy()
+        file = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..\\..\\dependencies.png"))
+        print file
+        if os.path.isfile(file):
+            dlg = wx.MessageDialog(self, "Graph successfully created:\n"+file, "Info", wx.OK | wx.ICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
+            cmd = file
+            p = subprocess.Popen(cmd, shell = True, stderr = subprocess.PIPE, stdout = subprocess.PIPE)
+    
         
     def OnUpdate(self, event=None):
         import svngui

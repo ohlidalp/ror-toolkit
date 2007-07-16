@@ -16,6 +16,7 @@ def readFile(filename):
 def convertToXML(filename):
     # try to convert to .msh.xml first!
     cmd = CONVERTERBIN + " " + filename
+    print "calling " + cmd
     p = subprocess.Popen(cmd, shell = False, cwd = os.path.dirname(CONVERTERBIN), stderr = subprocess.PIPE, stdout = subprocess.PIPE)
     p.wait()
     print "mesh converted: " + filename
