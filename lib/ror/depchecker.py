@@ -30,7 +30,9 @@ class RoRDepChecker:
         self.generateCrossDep()
         if dependfilename != "":
             self.generateSingleDep()
-        #self.tryGraph()        
+        
+        if mode == "all":
+            self.tryGraph()        
     
     def savemd5(self):
         lines = []
@@ -171,6 +173,8 @@ class RoRDepChecker:
                     n.set('fillcolor', 'lightyellow')
                 elif ext == ".material":
                     n.set('fillcolor', 'lightseagreen')
+                elif ext == ".terrn":
+                    n.set('fillcolor', 'forestgreen')
                 elif ext == ".mesh":
                     n.set('fillcolor', 'lightsalmon')
                 elif ext == ".png" or ext == ".jpg" or ext == ".bmp":
