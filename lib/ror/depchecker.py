@@ -156,7 +156,7 @@ class RoRDepChecker:
         graph.set_type('digraph')
         graph.simplify = True
         #graph.set("resolution", "320")
-        #graph.set("overlap", "0")
+        #graph.set("overlap", "scale")
         #graph.set("shape", "box")
         
         for n in graph.get_node_list():
@@ -182,12 +182,16 @@ class RoRDepChecker:
             
             
            
+        #graph.set("ranksep", "2")
+        #graph.set("splines", True)
         program = "dot" # dot or twopi
+        # this takes very long:
         #if len(self.filedeps) > 100:
         #    program = "twopi"
+        #    graph.set("overlap", "scale")
         
         graph.write(fn, prog = program, format='png') 
-        print "graph successfull written to dependencies.png"
+        print "graph successfull written to " + fn
         
 
     def generateCrossDep(self):
