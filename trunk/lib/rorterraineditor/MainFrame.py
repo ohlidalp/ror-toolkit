@@ -137,7 +137,7 @@ class MainFrame(wx.Frame):
         self.mnuterraincollision = view_menu.AppendCheckItem(ID_TERRAINCOLLISION, "Camera collides with Terrain", "")
         self.mnuterraincollision.Check(True)
         view_menu.AppendSeparator()
-        self.viewObjectDetails = view_menu.AppendCheckItem(ID_VIEWOBJ, "&View Objects", "Display object details")
+        self.viewObjectDetails = view_menu.AppendCheckItem(ID_VIEWOBJ, "&Additional Object View Window", "creates two additional views")
         self.viewObjectDetails.Check(False)
         view_menu.AppendSeparator()
         view_menu.Append(ID_OGRESET, "&Ogre Settings", "Change Ogre Display Settings")
@@ -186,11 +186,10 @@ class MainFrame(wx.Frame):
         default = ""
         if self.rordir:
             default = os.path.join(self.rordir, TRUCKDIR)
-        print default
         dialog = wx.FileDialog(self, "Add Truck", default, "", "Truck and Load Files (*.truck,*.load)|*.truck;*.load", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         res = dialog.ShowModal()
         if res == wx.ID_OK:
-            if not self.terrainOgreWin.addTruckToTerrain(dialog.GetPath()):
+            if not self.terrainOgreWin.addTruckToTerrain(truckFilename=dialog.GetPath()):
                 dlg = wx.MessageDialog(self, "You must select a position on the ground first!", "error", wx.OK | wx.ICON_INFORMATION)
                 dlg.ShowModal()
                 dlg.Destroy()          
@@ -199,12 +198,10 @@ class MainFrame(wx.Frame):
         default = ""
         if self.rordir:
             default = os.path.join(self.rordir, OBJECTDIR)
-        print default
         dialog = wx.FileDialog(self, "Add Object", default, "", "RoR Object Definitions (*.odef)|*.odef", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         res = dialog.ShowModal()
         if res == wx.ID_OK:
-            print dialog.GetPath()
-            if not self.terrainOgreWin.addMeshToTerrain(dialog.GetPath()):
+            if not self.terrainOgreWin.addObjectToTerrain(odefFilename=dialog.GetPath()):
                 dlg = wx.MessageDialog(self, "You must select a position on the ground first!", "error", wx.OK | wx.ICON_INFORMATION)
                 dlg.ShowModal()
                 dlg.Destroy()          
@@ -217,15 +214,15 @@ class MainFrame(wx.Frame):
         self.terrainOgreWin.stickCurrentObjectToGround = self.btnStickToGround.GetValue()
         
     def updateObjPosRot(self, event=None):
-        if self.terrainOgreWin.mSelected is None:
+        if self.terrainOgreWin.selectedEntry is None:
             self.statusbar.SetStatusText("", 1)
             return
-        n = self.terrainOgreWin.mSelected.getParentNode()        
-        comment = self.terrainOgreWin.getCommentsForObject(n.getName()).lstrip('/')
-        if comment.strip() != "":
-            txt = "%s / %s" % (n.getName(), comment)
-        else:
-            txt = "%s" % n.getName()
+        entry = self.terrainOgreWin.selectedEntry
+        #comment = self.terrainOgreWin.getCommentsForObject(n.getName()).lstrip('/')
+        #if comment.strip() != "":
+        #    txt = "%s / %s" % (n.getName(), comment)
+        #else:
+        txt = "%s %s" % (entry.data.name, " ".join(entry.data.additionaloptions))
         self.statusbar.SetStatusText(txt, 1)
 
         posx, posy, posz, rotx, roty, rotz = self.terrainOgreWin.getSelectionPositionRotation()
@@ -248,8 +245,8 @@ class MainFrame(wx.Frame):
         self.terrainOgreWin.TerrainName = self.terrainNamectrl.GetValue()
         
     def OnChangeWaterLevel(self, event=None):
-        self.terrainOgreWin.WaterHeight = self.waterlevelctrl.GetValue()
-        self.waterLevelText.Label = "Water Level: %0.1f" % (self.terrainOgreWin.WaterHeight)
+        self.terrainOgreWin.terrain.WaterHeight = self.waterlevelctrl.GetValue()
+        self.waterLevelText.Label = "Water Level: %0.1f" % (self.terrainOgreWin.terrain.WaterHeight)
         self.terrainOgreWin.updateWaterPlane()
     
     def OnChangeOgreSettings(self, event):
@@ -259,7 +256,7 @@ class MainFrame(wx.Frame):
         dlg.Destroy()          
         
     def OnFileSave(self, event):
-        if self.terrainOgreWin.SaveTerrnFile():
+        if self.terrainOgreWin.SaveTerrain():
             dlg = wx.MessageDialog(self, "saved","info", wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()           
@@ -275,7 +272,7 @@ class MainFrame(wx.Frame):
         dialog = wx.FileDialog(self, "Save Terrain as", default, "", "Terrain Files (*.terrn)|*.terrn", wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
         res = dialog.ShowModal()
         if res == wx.ID_OK:
-            if self.terrainOgreWin.SaveTerrnFile(dialog.GetPath()):
+            if self.terrainOgreWin.SaveTerrain(dialog.GetPath()):
                 dlg = wx.MessageDialog(self, "saved","info", wx.OK | wx.ICON_INFORMATION)
                 dlg.ShowModal()
                 dlg.Destroy()           
@@ -310,9 +307,9 @@ class MainFrame(wx.Frame):
             self.terrainOgreWin.LoadTerrain(filename)
             
             #update some controls if finished loading
-            self.waterlevelctrl.SetValue(self.terrainOgreWin.WaterHeight)
-            self.waterLevelText.Label = "Water Level: %0.1f" % (self.terrainOgreWin.WaterHeight)
-            self.terrainNamectrl.SetValue(self.terrainOgreWin.TerrainName)
+            self.waterlevelctrl.SetValue(self.terrainOgreWin.terrain.WaterHeight)
+            self.waterLevelText.Label = "Water Level: %0.1f" % (self.terrainOgreWin.terrain.WaterHeight)
+            self.terrainNamectrl.SetValue(self.terrainOgreWin.terrain.TerrainName)
 
     
     def onViewObjectDetails(self, event=None): 

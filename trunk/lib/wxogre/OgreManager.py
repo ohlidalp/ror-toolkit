@@ -3,6 +3,9 @@ import sys
 import wx
 import ogre.renderer.OGRE as ogre 
 
+from ror.logger import log
+from ror.settingsManager import getSettingsManager
+
 # singleton implementation of OgreManager
 _ogremanager = None
 def getOgreManager():
@@ -24,10 +27,23 @@ class OgreManager():
         
     def init(self):
         #Root creation 
-        self.ogreRoot = ogre.Root(self.getConfigPath('plugins.cfg'), self.getConfigPath('ogre.cfg'), "ogre.log")        
-        self.ogreRoot.showConfigDialog()                     
+        self.ogreRoot = ogre.Root(self.getConfigPath('plugins.cfg'), self.getConfigPath('ogre.cfg'), "ogre.log")
+        if not self.tryDetectRenderer():
+            self.ogreRoot.showConfigDialog()                     
         self.ogreRoot.initialise(False)
 
+    def tryDetectRenderer(self):
+        for rs in self.ogreRoot.getAvailableRenderers(): 
+            try : 
+                rs.setConfigOption("Full Screen","No") 
+                rs.setConfigOption("Video Mode","800 x 600 @ 32-bit colour") 
+                self.ogreRoot.setRenderSystem(rs)
+                log().info("successfully autodeteced renderer : %s" % rs.getName())
+                return True
+            except: 
+                log().info("not able to auto-detect renderer! showing ogre config dialog instead")
+                return False
+        
     def getRoot(self):
         return self.ogreRoot
         

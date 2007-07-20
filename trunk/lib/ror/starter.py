@@ -68,7 +68,7 @@ class SettingsDialog(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.OnExit, self.btnExit)
         
         self.rordir = getSettingsManager().getSetting("RigsOfRods", "BasePath")
-        
+        self.checkRoRDir(self.rordir)
             
         #print self.rordir
         self.displayRoRDir()
@@ -118,8 +118,8 @@ class SettingsDialog(wx.Frame):
         f.close()        
         
     def OnDepGraph(self, event=None):
-        from depchecker import *
-        RoRDepChecker(self.rordir, "all", "")
+        import ror.depchecker
+        ror.depchecker.RoRDepChecker(self.rordir, "all", "")
         file = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..\\..\\dependencies.png"))
         print file
         if os.path.isfile(file):
