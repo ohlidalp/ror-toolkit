@@ -1,11 +1,12 @@
 #Thomas Fischer 31/05/2007, thomas@thomasfischer.biz
-import wx, os, os.path
+import wx, os, os.path, copy
 import ogre.renderer.OGRE as ogre 
 from ror.truckparser import *
 from ror.terrainparser import *
 from wxogre.OgreManager import *
 from wxogre.wxOgreWindow import *
 from ror.rorcommon import *
+
 
 ADDEDBY = "//added by the terrrain editor:\n"
 SHIFT_SPEED_FACTOR = 20
@@ -14,18 +15,27 @@ LOW_SPEED_THRESHOLD = 1
 
 # this class holds all the needed 3d data and also the underlying object data
 class Entry:
+    uuid = None
     node = None
     entity = None
     data = None
     manual = None
     
+class HistoryEntry:
+    uuid = None
+    Position = None
+    Rotation = None
 
 class RoRTerrainOgreWindow(wxOgreWindow):
     terrain = None
-    clearlist = {'entity':[]}
+    
+    commandhistory = []
+    historypointer = 0
     
     selectedEntry = None
     selectedCoords = None
+    
+    currentStatusMsg = ""
     
     cameralandcollisionenabled = True
     
@@ -322,13 +332,11 @@ class RoRTerrainOgreWindow(wxOgreWindow):
                     entry.node.detachAllObjects()
                     self.sceneManager.destroySceneNode(entry.node.getName())
                 except:
-                    print "A"
                     pass
             if not entry.entity is None:
                 try:
                     self.sceneManager.destroyEntity(entry.entity)
                 except:
-                    print "B"
                     pass
             if not entry.data is None:
                 del entry.data
@@ -360,14 +368,14 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         self.updateDataStructures()
         if not self.terrain is None:
             return self.terrain.save(fn)
-    
+            
     def LoadTerrain(self, filename):
     
         if not self.terrain is None:
             self.free()
-        print filename
+        #print filename
         self.terrain = RoRTerrain(filename)
-        print len(self.terrain.objects)
+        #print len(self.terrain.objects)
 
         cfgfile = os.path.join(os.path.dirname(filename), self.terrain.TerrainConfig)
         self.sceneManager.setWorldGeometry(cfgfile)
@@ -438,6 +446,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
             return
         
         entry = Entry()
+        entry.uuid = uuid
         entry.node = self.sceneManager.getRootSceneNode().createChildSceneNode(str(uuid)+"node")
         entry.entity = self.sceneManager.createEntity(str(uuid)+"entity", meshname)
         entry.data = data
@@ -481,6 +490,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
             truckFilename = self.rordir + "\\data\\trucks\\"+truckFilename
             
         entry = Entry()
+        entry.uuid = uuid
         entry.node, entry.entity, entry.manualobject = self.createTruckMesh(truckFilename, uuid)        
         entry.data = data
         
@@ -683,6 +693,67 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 
     def controlSelectedObject(self,action, value):
         pass
+
+    def addObjectToHistory(self, entry):
+        if len(self.commandhistory) > 0:
+            if self.historypointer < len(self.commandhistory):
+                del self.commandhistory[self.historypointer:]
+
+        pos = entry.node.getPosition()
+        rot = entry.node.getOrientation()
+                    
+        if len(self.commandhistory) > 0:
+            # check if double
+            hentry = self.commandhistory[-1]
+            if hentry.position == pos and hentry.rotation == rot:
+                return
+        
+        hentry = HistoryEntry()
+        hentry.uuid = entry.uuid
+        hentry.position = pos
+        hentry.rotation = rot
+        self.commandhistory.append(hentry)
+        self.historypointer = len(self.commandhistory)
+
+    def undoHistory(self):
+        if self.historypointer == 0:
+            return
+        self.SelectedArrow = None
+        
+        
+        self.historypointer -= 1
+        hentry = self.commandhistory[self.historypointer]
+        self.entries[hentry.uuid].node.setPosition(hentry.position)
+        self.entries[hentry.uuid].node.setOrientation(hentry.rotation)
+        
+        # update node positions
+        self.TranslateNode.setPosition(self.entries[hentry.uuid].node.getPosition())
+        self.RotateNode.setPosition(self.entries[hentry.uuid].node.getPosition())
+        #self.TranslateNode.setOrientation(self.entries[hentry.uuid].node.getOrientation())
+        self.RotateNode.setOrientation(self.entries[hentry.uuid].node.getOrientation())
+        
+        #self.entries[obj.uuid].node.setPosition(obj.node.getPosition)
+        self.currentStatusMsg = "undo step %d of %d" % (self.historypointer+1, len(self.commandhistory))
+        
+    def redoHistory(self):
+        if self.historypointer + 1 >= len(self.commandhistory):
+            return
+        self.SelectedArrow = None        
+        
+        self.historypointer += 1
+        hentry = self.commandhistory[self.historypointer]
+        self.entries[hentry.uuid].node.setPosition(hentry.position)
+        self.entries[hentry.uuid].node.setOrientation(hentry.rotation)
+        
+        # update node positions
+        self.TranslateNode.setPosition(self.entries[hentry.uuid].node.getPosition())
+        self.RotateNode.setPosition(self.entries[hentry.uuid].node.getPosition())
+        #self.TranslateNode.setOrientation(self.entries[hentry.uuid].node.getOrientation())
+        self.RotateNode.setOrientation(self.entries[hentry.uuid].node.getOrientation())
+        
+        #self.entries[obj.uuid].node.setPosition(obj.node.getPosition)
+        self.currentStatusMsg = "redo step %d of %d" % (self.historypointer+1, len(self.commandhistory))
+                
         
     def controlArrows(self, event):
         if self.SelectedArrow is None:
@@ -711,6 +782,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
                 self.TranslateNode.setPosition(self.StickVectorToGround(self.TranslateNode.getPosition()))
             self.RotateNode.setPosition(self.TranslateNode.getPosition())
             if self.selectedEntry:
+                self.addObjectToHistory(self.selectedEntry)
                 self.selectedEntry.node.setPosition(self.TranslateNode.getPosition())
         elif self.SelectedArrow.getName() == 'movearrowsY':
             self.TranslateNode.translate(0,0,forcex,relativeTo=ogre.Node.TransformSpace.TS_LOCAL)
@@ -718,6 +790,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
                 self.TranslateNode.setPosition(self.StickVectorToGround(self.TranslateNode.getPosition()))
             self.RotateNode.setPosition(self.TranslateNode.getPosition())
             if self.selectedEntry:
+                self.addObjectToHistory(self.selectedEntry)
                 self.selectedEntry.node.setPosition(self.TranslateNode.getPosition())
         elif self.SelectedArrow.getName() == 'movearrowsZ':
             self.TranslateNode.translate(0,forcex,0,relativeTo=ogre.Node.TransformSpace.TS_LOCAL)
@@ -725,18 +798,22 @@ class RoRTerrainOgreWindow(wxOgreWindow):
                 self.TranslateNode.setPosition(self.StickVectorToGround(self.TranslateNode.getPosition()))
             self.RotateNode.setPosition(self.TranslateNode.getPosition())
             if self.selectedEntry:
+                self.addObjectToHistory(self.selectedEntry)
                 self.selectedEntry.node.setPosition(self.TranslateNode.getPosition())
         elif self.SelectedArrow.getName() == 'rotatearrowsX':
             self.RotateNode.yaw(forceDegree)
             if self.selectedEntry:
+                self.addObjectToHistory(self.selectedEntry)
                 self.selectedEntry.node.yaw(forceDegree)
         elif self.SelectedArrow.getName() == 'rotatearrowsY':
             self.RotateNode.pitch(forceDegree)
             if self.selectedEntry:
+                self.addObjectToHistory(self.selectedEntry)
                 self.selectedEntry.node.pitch(forceDegree)
         elif self.SelectedArrow.getName() == 'rotatearrowsZ':
             self.RotateNode.roll(forceDegree)
             if self.selectedEntry:
+                self.addObjectToHistory(self.selectedEntry)
                 self.selectedEntry.node.roll(forceDegree)
                        
     def onMouseEvent(self,event):
@@ -772,6 +849,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         if event.LeftDown() and event.ControlDown() and not self.selectedEntry is None:
             pos = self.getPointedPosition(event)
             if not pos is None:
+                self.addObjectToHistory(self.selectedEntry)
                 self.TranslateNode.setPosition(pos)
                 self.RotateNode.setPosition(pos)
                 self.selectedEntry.node.setPosition(pos)
@@ -800,7 +878,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         d = 0.5
         if event.ShiftDown():
             d *= SHIFT_SPEED_FACTOR
-            
+
         if event.m_keyCode == 65: # A, wx.WXK_LEFT:
             self.keyPress.x = -d
         elif event.m_keyCode == 68: # D, wx.WXK_RIGHT:
@@ -809,6 +887,10 @@ class RoRTerrainOgreWindow(wxOgreWindow):
             self.keyPress.z = -d
         elif event.m_keyCode == 83: # S, wx.WXK_DOWN:
             self.keyPress.z = d
+        elif event.m_keyCode == 70: # F
+            self.undoHistory()
+        elif event.m_keyCode == 71: # G
+            self.redoHistory()
         elif event.m_keyCode == wx.WXK_PAGEUP:
             self.keyPress.y = d
         elif event.m_keyCode == wx.WXK_PAGEDOWN:
