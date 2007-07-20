@@ -25,6 +25,10 @@ Q			switch between object rotation and translation
 T			switch between bilinear and trilinear filtering
 R			switch between solid, wireframe and point mode
 
+History Functions:
+F           undo last movement/rotation
+G           redo last undo
+
 ============================================================
 How To Add Things
 ============================================================

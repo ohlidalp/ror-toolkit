@@ -184,29 +184,6 @@ class RoRTerrain:
             obj.additionaloptions = objname[1:]
             self.objects.append(obj)
 
-
-        
-    def loadOdef(self, objname):
-        try:
-            f=open(self.rordir+"\\data\\objects\\%s.odef" % (objname), 'r')
-            content = f.readlines()
-            f.close()
-            meshname = content[0].strip()
-            scalearr = content[1].split(",")
-            self.myODefs[objname] = []
-            if len(content) > 2:
-                for i in range(1,len(content)):
-                    line = content[i]
-                    if line.lower().strip() == "end":
-                        break
-                    self.myODefs[objname].append(line.split(","))
-                return (meshname, float(scalearr[0]), float(scalearr[1]), float(scalearr[2]))
-            else:
-                return (meshname, 1, 1, 1)
-        except Exception, err:
-            print "error while processing odef file of  %s" % objname
-            print str(err)
-
     def getObjectLines(self, object):
         lines = []
 

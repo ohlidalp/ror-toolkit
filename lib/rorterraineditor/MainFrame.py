@@ -77,8 +77,8 @@ class MainFrame(wx.Frame):
         self.ogreTimer.Start(25)
         
         #create statusbar
-        self.statusbar = self.CreateStatusBar(4, 0, wx.ID_ANY, "mainstatusbar")
-        self.statusbar.SetStatusWidths([-1, 300, 300, 80])
+        self.statusbar = self.CreateStatusBar(5, 0, wx.ID_ANY, "mainstatusbar")
+        self.statusbar.SetStatusWidths([-1, 200, 130, 250, 80])
         #self.statusbar.SetStatusText("", 1)
 
         #create toolbar
@@ -214,10 +214,11 @@ class MainFrame(wx.Frame):
         self.terrainOgreWin.stickCurrentObjectToGround = self.btnStickToGround.GetValue()
         
     def updateObjPosRot(self, event=None):
+        self.statusbar.SetStatusText(self.terrainOgreWin.currentStatusMsg, 1)
         if self.terrainOgreWin.terrain is None:
             return
         if self.terrainOgreWin.selectedEntry is None:
-            self.statusbar.SetStatusText("", 1)
+            self.statusbar.SetStatusText("Nothing selected", 2)
             return
         entry = self.terrainOgreWin.selectedEntry
         #comment = self.terrainOgreWin.getCommentsForObject(n.getName()).lstrip('/')
@@ -225,11 +226,11 @@ class MainFrame(wx.Frame):
         #    txt = "%s / %s" % (n.getName(), comment)
         #else:
         txt = "%s %s" % (entry.data.name, " ".join(entry.data.additionaloptions))
-        self.statusbar.SetStatusText(txt, 1)
-
+        self.statusbar.SetStatusText(txt, 2)
+        
         posx, posy, posz, rotx, roty, rotz = self.terrainOgreWin.getSelectionPositionRotation()
         txt = "%0.2f, %0.2f, %0.2f / %0.2f, %0.2f, %0.2f" % (posx, posy, posz, rotx, roty, rotz)
-        self.statusbar.SetStatusText(txt, 2)
+        self.statusbar.SetStatusText(txt, 3)
 
         #pos = n.getPosition()
         #self.terrPosX.SetValue(str(round(pos.x,2)))
@@ -332,7 +333,7 @@ class MainFrame(wx.Frame):
     def OnTimer(self, event):
         #fill labels with some information, all windows have the same FPS!
         txt = "%0.2f FPS" % (self.terrainOgreWin.renderWindow.getStatistics().lastFPS)
-        self.statusbar.SetStatusText(txt, 3)
+        self.statusbar.SetStatusText(txt, 4)
         self.updateObjPosRot()
         
     def OnExit(self, event):

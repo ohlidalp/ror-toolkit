@@ -4,6 +4,7 @@ import wx
 import ogre.renderer.OGRE as ogre 
 
 from ror.logger import log
+from ror.ogrelogger import initOgreLogging
 from ror.settingsManager import getSettingsManager
 
 # singleton implementation of OgreManager
@@ -14,6 +15,15 @@ def getOgreManager():
         _ogremanager = OgreManager()
     return _ogremanager
 
+class MyLog(ogre.LogListener):
+    def __init__(self):
+        # Creates a C++ log that will try and write to console and file
+        ogre.LogListener.__init__(self)
+                 
+    def messageLogged(self, message, level, debug, logName):
+        print ">>>", message
+        return True
+    
 
 class OgreManager():
     renderWindows = {}
@@ -27,7 +37,13 @@ class OgreManager():
         
     def init(self):
         #Root creation 
-        self.ogreRoot = ogre.Root(self.getConfigPath('plugins.cfg'), self.getConfigPath('ogre.cfg'), "ogre.log")
+        self.ogreRoot = ogre.Root(self.getConfigPath('plugins.cfg'), self.getConfigPath('ogre.cfg'), "Ogre.log")
+        #logMgr = ogre.LogManager()
+        #currentLog = ogre.LogManager.getSingletonPtr().createLog("ogre.log" ,True, False, False) 
+        #myLog = MyLog()
+        #currentLog.addListener ( myLog )    
+        #ogre.LogManager.getSingletonPtr().setDefaultLog(currentLog)
+
         if not self.tryDetectRenderer():
             self.ogreRoot.showConfigDialog()                     
         self.ogreRoot.initialise(False)
