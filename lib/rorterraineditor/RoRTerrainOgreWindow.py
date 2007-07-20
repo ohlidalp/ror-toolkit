@@ -2,44 +2,59 @@
 import wx, os, os.path
 import ogre.renderer.OGRE as ogre 
 from ror.truckparser import *
+from ror.terrainparser import *
 from wxogre.OgreManager import *
 from wxogre.wxOgreWindow import *
-from random import random
+from ror.rorcommon import *
 
 ADDEDBY = "//added by the terrrain editor:\n"
-SHIFT_SPEED_FACTOR = 15
+SHIFT_SPEED_FACTOR = 20
 SLOW_DOWN_FACTOR = 0.75
 LOW_SPEED_THRESHOLD = 1
 
-class RoRTerrainOgreWindow(wxOgreWindow):
+# this class holds all the needed 3d data and also the underlying object data
+class Entry:
+    node = None
+    entity = None
+    data = None
+    
 
-    #myObjects = {}
-    myODefs = {}
+class RoRTerrainOgreWindow(wxOgreWindow):
+    terrain = None
+    clearlist = {'entity':[]}
+    
+    selectedEntry = None
+    selectedCoords = None
+    
+    cameralandcollisionenabled = True
+    
+    entries = {}
+
+    # movement related
+    keyPress = ogre.Vector3(0,0,0)
+    moveVector = ogre.Vector3(0,0,0)
+    
+    # selection related
+    selectionMaterial = None
+    selectionMaterialAnimState = 0
+
+
+    SelectedArrow = None
+    StartDragLeftX = (0,0)
+    StartDragLeftY = (0,0)
+    TranslationRotationMode = False
+    TranslateNode = None
+    RotateNode = None
+    stickCurrentObjectToGround = False
     
     def __init__(self, parent, ID, size = wx.Size(200,200), rordir = "", **kwargs): 
         self.rordir = rordir
-        self.rand = str(random())
-        self.TerrainLoaded = False
-        self.mCount = 0
-        self.rand = str(random())
+        
         self.parent = parent
         self.size = size
         self.kwargs = kwargs
         self.ID = ID
-        self.mSelected = None
-        self.selectedCoords = None
-        self.meshesorder = []
-        self.additionaloptions = {}
-        self.trucksorder = []
-        self.myODefs = {}
-        self.trucks = {}
-        self.comments = {}
-        self.cameralandcollisionenabled = True
-        self.meshes = {}
-        self.keyPress = ogre.Vector3(0,0,0)
-        self.moveVector = ogre.Vector3(0,0,0)
-        self.selectionMaterial = None
-        self.selectionMaterialAnimState = 0
+
         wxOgreWindow.__init__(self, self.parent, self.ID, size = self.size, **self.kwargs) 
 
     def CameraLandCollision(self, value):
@@ -48,9 +63,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
     def animateSelection(self):
         if not self.selectionMaterial is None:
             self.selectionMaterialAnimState += 0.01
-            if self.selectionMaterialAnimState >= 0.4:
-                self.selectionMaterialAnimState = - 0.4
-            val = 0.6 + abs(self.selectionMaterialAnimState)
+            if self.selectionMaterialAnimState >= 0.2:
+                self.selectionMaterialAnimState = - 0.2
+            val = 0.8 + abs(self.selectionMaterialAnimState)
             #print val
             self.selectionMaterial.setDiffuse(1, 0.3, 0, val)
             self.selectionMaterial.setSpecular(1, 0.3, 0, val)
@@ -60,7 +75,10 @@ class RoRTerrainOgreWindow(wxOgreWindow):
             self.cameraLandCollision()
         self.animateSelection()
         if not self.TranslateNode is None:
-            if self.mSelected:
+            if self.selectedEntry:
+                if not self.selectedEntry.data.mayRotate and self.TranslationRotationMode:
+                    self.TranslationRotationMode = False
+
                 if self.TranslationRotationMode:
                     # rotation mode
                     self.TranslateNode.setScale(0,0,0)
@@ -127,7 +145,8 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         self.sceneManager = getOgreManager().createSceneManager(ogre.ST_EXTERIOR_CLOSE)
 
         # create a camera
-        self.camera = self.sceneManager.createCamera('Camera' + self.rand) 
+        cameraUUID = randomID()
+        self.camera = self.sceneManager.createCamera(str(cameraUUID)+"camera")
         self.camera.lookAt(ogre.Vector3(0, 0, 0)) 
         self.camera.setPosition(ogre.Vector3(0, 0, 100))
         self.camera.nearClipDistance = 0.1
@@ -149,199 +168,34 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         #create objects
         self.populateScene()
         
-    def loadOdef(self, objname):
-        try:
-            f=open(self.rordir+"\\data\\objects\\%s.odef" % (objname), 'r')
-            content = f.readlines()
-            f.close()
-            meshname = content[0].strip()
-            scalearr = content[1].split(",")
-            self.myODefs[objname] = []
-            if len(content) > 2:
-                for i in range(1,len(content)):
-                    line = content[i]
-                    if line.lower().strip() == "end":
-                        break
-                    self.myODefs[objname].append(line.split(","))
-                return (meshname, float(scalearr[0]), float(scalearr[1]), float(scalearr[2]))
-            else:
-                return (meshname, 1, 1, 1)
-        except Exception, err:
-            print "error while processing odef file of  %s" % objname
-            print str(err)
-        
+
     def updateWaterPlane(self):
-        self.planenode.setPosition(1500, self.WaterHeight + 200, 1500)
+        self.waternode.setPosition(1500, self.terrain.WaterHeight + 200, 1500)
     
     def createWaterPlane(self):
-        if self.WaterHeight is None:
+        if self.terrain.WaterHeight is None:
             return
         plane = ogre.Plane() 
         plane.normal = ogre.Vector3(0, 1, 0) 
         plane.d = 200 
         # see http://www.ogre3d.org/docs/api/html/classOgre_1_1MeshManager.html#Ogre_1_1MeshManagera5
-        mesh = ogre.MeshManager.getSingleton().createPlane('WaterPlane' + self.rand, "General", plane, 3000, 3000, 
+        waterid = str(randomID())
+        mesh = ogre.MeshManager.getSingleton().createPlane(waterid+'WaterPlane', "General", plane, 3000, 3000, 
                                                     20, 20, True, 1, 50.0, 50.0, ogre.Vector3(0, 0, 1),
                                                     ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, 
                                                     ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, 
                                                     True, True)
-        entity = self.sceneManager.createEntity('waterent', 'WaterPlane' + self.rand) 
-        entity.setMaterialName('mysimple/water') 
-        self.planenode = self.sceneManager.getRootSceneNode().createChildSceneNode()
-        self.planenode.attachObject(entity) 
+        self.waterentity = self.sceneManager.createEntity(waterid+"entity", waterid+'WaterPlane')
+        self.waterentity.setMaterialName('mysimple/water')
+        
+        self.waternode = self.sceneManager.getRootSceneNode().createChildSceneNode()
+        self.waternode.attachObject(self.waterentity) 
         self.updateWaterPlane()
         
-        
-    def processTerrnFile(self, content):
-        #self.parent.cbObjects.Clear()
-        linecounter = 0
-        self.UsingCaelum = False
-        self.WaterHeight = None
-        comm = []
-        for i in range(0, len(content)):
-            if content[i].strip() == "":
-                comm.append(content[i])
-                continue
-            if content[i].strip()[0:2] == "//":
-                comm.append(content[i])
-                continue
-            if content[i].strip()[0:1] == ";":
-                comm.append(content[i].replace(";","//"))
-                continue
-            if content[i].strip().lower() == "end":
-                continue
-            linecounter += 1
-            if linecounter == 1:
-                #terrain name
-                self.TerrainName = content[i].strip()
-                continue
-            elif linecounter == 2:
-                # .cfg file
-                self.TerrainConfig = content[i].strip()
-                continue
-            if content[i].strip()[0].lower() == "w":
-                self.WaterHeight = float(content[i].strip()[2:])
-                continue
-            if content[i].strip().lower() == "caelum":
-                self.UsingCaelum = True
-                continue
-            if linecounter < 10 and len(content[i].split(",")) == 3:
-                # sky color
-                sc = content[i].split(",")
-                self.SkyColor = (float(sc[0]), float(sc[1]), float(sc[2]))
-                self.SkyColorLine = content[i]
-                continue
-            if linecounter < 10  and len(content[i].split(",")) == 9 or len(content[i].split(",")) == 6:
-                # spawning Position
-                sp = content[i].split(",")
-                self.TruckStartPosition = ogre.Vector3(float(sp[0]), float(sp[1]), float(sp[2]))
-                
-                #insert truckshop
-                # n = self.sceneManager.getRootSceneNode().createChildSceneNode("objectts") 
-                # e = self.sceneManager.createEntity("objentts", "truckshop.mesh") 
-                # n.attachObject(e) 
-                # n.setPosition(self.TruckStartPosition)
-                # n.rotate(ogre.Vector3.UNIT_X, ogre.Degree(-90).valueRadians())
-                # self.myObjects["objectts"] = n
-                
-                self.CameraStartPosition = ogre.Vector3(float(sp[3]), float(sp[4]), float(sp[5]))
-                if len(sp) == 9:
-                    self.CharacterStartPosition = ogre.Vector3(float(sp[6]), float(sp[7]), float(sp[8]))
-                else:
-                    self.CharacterStartPosition = None
-                continue
 
-            arr = content[i].split(",")
-            #try:
-            x = float(arr[0])
-            y = float(arr[1])
-            z = float(arr[2])
-            rx = float(arr[3])
-            ry = float(arr[4])
-            rz = float(arr[5])
-            objname = (arr[6]).strip().split("\t")
-            if len(objname) == 1:
-                objname = (arr[6]).strip().split(" ")
-            #print objname
-            if objname[0][0:5] == "truck" and len(objname) > 1:
-                print "loading truck..."
-                fn = self.rordir + "\\data\\trucks\\"+objname[-1].strip()
-                n, entname = self.createTruckMesh(fn)
-                if not n is None:
-                    self.comments[entname] = comm
-                    comm = []
-                    n.rotate(ogre.Vector3.UNIT_X, ogre.Degree(rx).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
-                    n.rotate(ogre.Vector3.UNIT_Y, ogre.Degree(ry).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
-                    n.rotate(ogre.Vector3.UNIT_Z, ogre.Degree(-rz).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
-                    n.setPosition(x, y, z)
-                continue
-            if objname[0][0:4] == "load" and len(objname) > 1:
-                print "loading load...."
-                fn = self.rordir + "\\data\\trucks\\"+objname[-1].strip()
-                n, entname = self.createTruckMesh(fn)
-                if not n is None:
-                    self.comments[entname] = comm
-                    comm = []
-                    n.rotate(ogre.Vector3.UNIT_X, ogre.Degree(rx).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
-                    n.rotate(ogre.Vector3.UNIT_Y, ogre.Degree(ry).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
-                    n.rotate(ogre.Vector3.UNIT_Z, ogre.Degree(-rz).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
-                    n.setPosition(x, y, z)
-                continue
-            firstobjname = objname[0]
-
-            try:
-                (meshname, sx, sy, sz) = self.loadOdef(firstobjname)
-            except Exception, inst:
-                print inst
-                print "########## error loading odef of %s"  % firstobjname
-                sx = None
-            
-            n = self.sceneManager.getRootSceneNode().createChildSceneNode("object" + str(i)+ firstobjname)
-            entname = "objent" + str(i)+"_"+firstobjname
-            e = self.sceneManager.createEntity(entname, meshname) 
-            n.attachObject(e)
-
-            #print "position: ", x,", ", y,", ", z
-            #print "rotation: ", rx,", ", ry,", ", rz
-            #print "scale: ", sx,", ", sy,", ", sz
-            n.setPosition(x, y, z)
-            n.rotate(ogre.Vector3.UNIT_X, ogre.Degree(-90),relativeTo=ogre.Node.TransformSpace.TS_WORLD)
-            n.rotate(ogre.Vector3.UNIT_Z, ogre.Degree(rz),relativeTo=ogre.Node.TransformSpace.TS_PARENT)
-            n.rotate(ogre.Vector3.UNIT_Y, ogre.Degree(ry),relativeTo=ogre.Node.TransformSpace.TS_PARENT)
-            n.rotate(ogre.Vector3.UNIT_X, ogre.Degree(rx),relativeTo=ogre.Node.TransformSpace.TS_PARENT)
-            if not sx is None:
-                n.setScale(sx, sy, sz)
-            self.comments[entname] = comm
-            comm = []
-            self.meshesorder.append(entname)
-            if len(objname) > 1:
-                self.additionaloptions[entname] = objname[1:]
-            self.meshes[entname] = n
-
-            #except Exception, inst:
-            #    print inst
-            #    print "error parsing line %s" % content[i]
-        self.createWaterPlane()
-        self.createArrows()
-        if not self.CharacterStartPosition is None:
-            self.camera.setPosition(self.CharacterStartPosition)
-        else:
-            self.camera.setPosition(self.CameraStartPosition)
-
-    def formatFloat(self, fl):
-        return "%12s" % ("%0.6f" % (float(fl)))
-
-        
-    def getCommentsForObject(self, entname):
-        if entname in self.comments.keys():
-            #print self.comments[entname]
-            return self.comments[entname];
-        else:
-            return ""
-        
     def getSelectionPositionRotation(self):
-        if not self.mSelected is None:
-            return self.getPositionRotation(self.mSelected.getParentNode())
+        if not self.selectedEntry is None:
+            return self.getPositionRotation(self.selectedEntry.node)
                 
     def getPositionRotation(self, obj):
         scale = obj.getScale()
@@ -358,92 +212,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         rotz = -ogre.Radian(rot.getYaw(False)).valueDegrees() 
         return pos.x, pos.y, pos.z, rotx, roty, rotz
         
-    def SaveTerrnFile(self, fn = None):
-            if fn is None:
-                fn = self.terrnfile
-        # quick and dirty ;)
-        #try:
-            lines = []
-            lines.append(self.TerrainName+"\n")
-            lines.append(self.TerrainConfig+"\n")
-            if not self.WaterHeight is None:
-                lines.append("w "+str(self.WaterHeight)+"\n")
-            if self.UsingCaelum:
-                lines.append("caelum\n")
-            lines.append(self.SkyColorLine.strip()+"\n")
-
-            ar = []
-            ar.append(str(self.TruckStartPosition.x))
-            ar.append(str(self.TruckStartPosition.y))
-            ar.append(str(self.TruckStartPosition.z))
-            ar.append(str(self.CameraStartPosition.x))
-            ar.append(str(self.CameraStartPosition.y))
-            ar.append(str(self.CameraStartPosition.z))
-            if not self.CharacterStartPosition is None:
-                ar.append(str(self.CharacterStartPosition.x))
-                ar.append(str(self.CharacterStartPosition.y))
-                ar.append(str(self.CharacterStartPosition.z))
-            startline = ", ".join(ar)+"\n"
-            lines.append(startline)
-
-            
-            #save trucks and loads:
-            
-            for k in self.trucksorder:
-            
-                if k in self.comments.keys():
-                    for c in self.comments[k]:
-                        lines.append(c)
-                
-                posx, posy, posz, rotx, roty, rotz = self.getPositionRotation(self.trucks[k])
-
-                rotx -= 90
-
-                truckstring = k.split(".")[-1] + "\t " + k
-                ar = [self.formatFloat(posx), 
-                      self.formatFloat(posy), 
-                      self.formatFloat(posz), 
-                      self.formatFloat(rotx), 
-                      self.formatFloat(roty), 
-                      self.formatFloat(rotz), 
-                      truckstring]
-                line = ", ".join(ar)
-                lines.append(line.strip()+"\n")
-                
-            # save meshs                   
-            for k in self.meshesorder:
-
-                if k in self.comments.keys():
-                    for c in self.comments[k]:
-                        lines.append(c)
-            
-                posx, posy, posz, rotx, roty, rotz = self.getPositionRotation(self.meshes[k])
-                meshstring = k.split("_")[-1]
-                ar = [self.formatFloat(posx), 
-                      self.formatFloat(posy), 
-                      self.formatFloat(posz), 
-                      self.formatFloat(rotx), 
-                      self.formatFloat(roty), 
-                      self.formatFloat(rotz), 
-                      meshstring]
-                line = ", ".join(ar)
-                
-                if k in self.additionaloptions.keys():
-                    for ao in self.additionaloptions[k]:
-                        line += " " + ao.strip()
-
-                lines.append(line.strip()+"\n")
-
-            lines.append("end\n")
-                
-            f=open(fn, 'w')
-            f.writelines(lines)
-            f.close()
-            return True
-        #except:
-        #    return False
-    
-    
     def reattachArrows(self, entity):
         self.TranslateNode.setPosition(entity.getParentNode().getPosition())
         self.TranslateNode.setOrientation(entity.getParentNode().getOrientation())
@@ -502,48 +270,282 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         self.TerrainSelectNode = nt
         self.TranslateNode = n
         self.RotateNode = nr
-        n.setPosition(self.CameraStartPosition)
-        nr.setPosition(self.CameraStartPosition)
+        n.setPosition(0,0,0)
+        nr.setPosition(0,0,0)
 
     def deselectSelection(self):
-        if self.mSelected:
-            #self.mSelected.getSubEntity(0).setMaterialName(self.oldmaterial)
-            self.mSelected.setMaterialName(self.oldmaterial)   
-            self.mSelected.getParentSceneNode().showBoundingBox(False)
+        if self.selectedEntry:
+            #self.selectedEntry.entity.getSubEntity(0).setMaterialName(self.oldmaterial)
+            self.selectedEntry.entity.setMaterialName(self.oldmaterial)   
+            self.selectedEntry.entity.getParentSceneNode().showBoundingBox(False)
     
     
     def changeSelection(self, newnode):
         self.deselectSelection()
-        self.mSelected = newnode
-        self.oldmaterial = self.mSelected.getSubEntity(0).getMaterialName()
+        key = newnode.getName()[:-len("entity")]
+        self.selectedEntry = self.entries[key]
+        
+        self.oldmaterial = self.selectedEntry.entity.getSubEntity(0).getMaterialName()
         
         
         newmatname = "mysimple/selectedobject"
         selectedmat = ogre.MaterialManager.getSingleton().getByName(newmatname)
-        mat = ogre.MaterialManager.getSingleton().getByName(self.mSelected.getSubEntity(0).getMaterialName())
+        mat = ogre.MaterialManager.getSingleton().getByName(self.selectedEntry.entity.getSubEntity(0).getMaterialName())
         if not mat is None:
             mat.copyDetailsTo(selectedmat)
         newmat = ogre.MaterialManager.getSingleton().getByName(newmatname)
         newmat.setSceneBlending(ogre.SceneBlendFactor.SBF_SOURCE_ALPHA, ogre.SceneBlendFactor.SBF_DEST_ALPHA )
         newmat.setSelfIllumination(1, 0.3, 0)
-        newmat.setDiffuse(1, 0.3, 0, 0.5)
+        newmat.setDiffuse(1, 0.3, 0, 0.9)
         newmat.setAmbient(1, 0.3, 0)
-        newmat.setSpecular(1, 0.3, 0, 0.5)
+        newmat.setSpecular(1, 0.3, 0, 0.9)
         self.selectionMaterial = newmat
-        #self.mSelected.getSubEntity(0).setMaterialName(snewmatname)
-        self.mSelected.setMaterialName(newmatname)
-        self.mSelected.getParentSceneNode().showBoundingBox(True)
-        self.reattachArrows(self.mSelected)
-        self.arrowScale = self.mSelected.getBoundingRadius() / 100
+        #self.selectedEntry.entity.getSubEntity(0).setMaterialName(snewmatname)
+        self.selectedEntry.entity.setMaterialName(newmatname)
+        self.selectedEntry.entity.getParentSceneNode().showBoundingBox(True)
+        self.reattachArrows(self.selectedEntry.entity)
+        self.arrowScale = self.selectedEntry.entity.getBoundingRadius() / 100
+
+    def free(self):
+        self.sceneManager.clearScene()
+    
+    def updateDataStructures(self):
+        for uuid in self.entries.keys():
+            entry = self.entries[uuid]
+            x, y, z, rotx, roty, rotz = self.getPositionRotation(entry.node)
+            if entry.data.name.lower() in ['truck', 'load']:
+                rotx -= 90
+            entry.data.setPosition(x, y, z)
+            entry.data.setRotation(rotx, roty, rotz)
+    
+    def SaveTerrain(self, fn = None):
+        self.updateDataStructures()
+        if not self.terrain is None:
+            return self.terrain.save(fn)
+    
+    def LoadTerrain(self, filename):
+    
+        if not self.terrain is None:
+            self.free()
+        self.terrain = RoRTerrain(filename)
+
+        cfgfile = os.path.join(os.path.dirname(filename), self.terrain.TerrainConfig)
+        self.sceneManager.setWorldGeometry(cfgfile)
+
+        self.createWaterPlane()
+        self.createArrows()
+        if not self.terrain.CharacterStartPosition is None:
+            self.camera.setPosition(self.terrain.CharacterStartPosition)
+        else:
+            self.camera.setPosition(self.terrain.CameraStartPosition)
+        
+        for truck in self.terrain.trucks:
+            self.addTruckToTerrain(data=truck)
+
+        for load in self.terrain.loads:
+            self.addTruckToTerrain(data=load)
+
+        for object in self.terrain.objects:
+            self.addObjectToTerrain(data=object)
 
 
-    def LoadTerrnFile(self, filename):
-        self.terrnfile = filename
-        f=open(filename, 'r')
+            
+    def loadOdef(self, odefFilename):
+        f=open(odefFilename, 'r')
         content = f.readlines()
         f.close()
-        self.processTerrnFile(content)
+        meshname = content[0].strip()
+        scalearr = [1,1,1]
+        if len(content) > 2:
+            scalearr = content[1].split(",")
+
+        return (meshname, float(scalearr[0]), float(scalearr[1]), float(scalearr[2]))
+
+                        
+    
+    def addObjectToTerrain(self, data=None, odefFilename=None, coords=None):
+        if coords is None:
+            coords = self.selectedCoords
+        if coords is None and data is None:
+            return False
+
+        uuid = randomID()
+
+        if data is None:
+            data = Object()
+            data.name = os.path.basename(odefFilename).split(".")[0]
+            data.filename = os.path.basename(odefFilename).split(".")[0]
+            data.comments = ['// added by terrain editor\n']
+            data.setPosition(coords.x, coords.y, coords.z)
+            data.setRotation(0, 0, 0)
+            data.additionaloptions =[]
+            self.terrain.objects.append(data)        
+        else:
+            odefFilename = data.filename
+
+        if os.path.basename(odefFilename) == odefFilename:
+            if odefFilename[-5:] != ".odef":
+                odefFilename += ".odef"
+            odefFilename = self.rordir + "\\data\\objects\\"+odefFilename
         
+        meshname = None
+        try:
+            (meshname, sx, sy, sz) = self.loadOdef(odefFilename)
+        except Exception, err:
+            data.error=True
+            log().error("error while processing odef file %s" % odefFilename)
+            log().error(str(err))
+            return
+        
+        entry = Entry()
+        entry.node = self.sceneManager.getRootSceneNode().createChildSceneNode(str(uuid)+"node")
+        entry.entity = self.sceneManager.createEntity(str(uuid)+"entity", meshname)
+        entry.data = data
+        
+        entry.node.attachObject(entry.entity)
+        entry.node.rotate(ogre.Vector3.UNIT_X, ogre.Degree(-90),relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+        entry.node.rotate(ogre.Vector3.UNIT_Z, ogre.Degree(data.rotz).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)        
+        entry.node.rotate(ogre.Vector3.UNIT_Y, ogre.Degree(data.roty).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+        entry.node.rotate(ogre.Vector3.UNIT_X, ogre.Degree(data.rotx).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+        entry.node.setPosition(data.x, data.y, data.z)
+        if not sx is None:
+            entry.node.setScale(sx, sy, sz)
+            
+        self.entries[uuid] = entry
+        return True
+
+    def addTruckToTerrain(self, data=None, truckFilename=None, coords=None):
+        if coords is None:
+            coords = self.selectedCoords
+        if coords is None and data is None:
+            return False
+
+        uuid = randomID()
+
+        if data is None:
+            data = Object()
+            data.name = truckFilename.split(".")[-1] # truck or load
+            data.filename = os.path.basename(truckFilename)
+            data.comments = ['// added by terrain editor\n']
+            data.setPosition(coords.x, coords.y, coords.z)
+            data.setRotation(0, 0, 0)
+            data.additionaloptions =[data.filename]
+            if truckFilename.split(".")[-1].lower() == "truck":
+                self.terrain.trucks.append(data)
+            elif truckFilename.split(".")[-1].lower() == "load":
+                self.terrain.loads.append(data)
+        else:
+            truckFilename = data.filename
+
+        if os.path.basename(truckFilename) == truckFilename:
+            truckFilename = self.rordir + "\\data\\trucks\\"+truckFilename
+            
+        entry = Entry()
+        entry.node, entry.entity, entry.manualobject = self.createTruckMesh(truckFilename, uuid)        
+        entry.data = data
+        
+        entry.node.rotate(ogre.Vector3.UNIT_Z, ogre.Degree(data.rotz).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)        
+        entry.node.rotate(ogre.Vector3.UNIT_Y, ogre.Degree(data.roty).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+        entry.node.rotate(ogre.Vector3.UNIT_X, ogre.Degree(data.rotx).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+        entry.node.setPosition(data.x, data.y, data.z)
+        self.entries[uuid] = entry
+        return True
+
+    def createTruckMesh(self, fn, uuid):
+        if not os.path.isfile(fn):
+            #print "truck file not found: " + fn
+            return
+        p = rorparser()
+        p.parse(fn)
+        if not 'nodes' in p.tree.keys() or not 'beams' in p.tree.keys() :
+            return False
+            
+        try:
+            myManualObject =  self.sceneManager.createManualObject(str(uuid)+"manual")
+
+            #myManualObjectMaterial = ogre.MaterialManager.getSingleton().create("manualmaterial"+truckname+str(self.randomcounter),"debugger"); 
+            #myManualObjectMaterial.setReceiveShadows(False)
+            #myManualObjectMaterial.getTechnique(0).setLightingEnabled(True)
+            #myManualObjectMaterial.getTechnique(0).getPass(0).setDiffuse(0,0,1,0)
+            #myManualObjectMaterial.getTechnique(0).getPass(0).setAmbient(0,0,1)
+            #myManualObjectMaterial.getTechnique(0).getPass(0).setSelfIllumination(0,0,1)
+            #myManualObjectMaterial.getTechnique(0).getPass(0).setCullingMode(ogre.CULL_ANTICLOCKWISE)
+
+            matname = ""
+            if fn[-4:].lower() == "load":
+                matname = 'mysimple/loadcolor'
+            elif fn[-5:].lower() == "truck":
+                matname = 'mysimple/truckcolor'
+            
+            myManualObject.useIndexes = True
+            myManualObject.estimateVertexCount(2000)
+            myManualObject.estimateIndexCount(2000)
+
+            myManualObject.begin(matname+"grid", ogre.RenderOperation.OT_LINE_LIST) 
+            for nodeobj in p.tree['nodes']:
+                if nodeobj.has_key('type'):
+                    continue
+                node = nodeobj['data']
+                myManualObject.position(float(node[1]),float(node[2]),float(node[3]))       
+            for beamobj in p.tree['beams']:
+                if beamobj.has_key('type'):
+                    continue
+                beam = beamobj['data']
+                myManualObject.index(int(beam[0]))
+                myManualObject.index(int(beam[1]))
+            myManualObject.end()
+            myManualObject.begin(matname, ogre.RenderOperation.OT_TRIANGLE_LIST) 
+            for nodeobj in p.tree['nodes']:
+                if nodeobj.has_key('type'):
+                    continue
+                node = nodeobj['data']
+                myManualObject.position(float(node[1]),float(node[2]),float(node[3]))       
+                
+            #print len(p.tree['submeshgroups'])
+            if len(p.tree['submeshgroups']) > 0:
+                faces = []
+                for smobj in p.tree['submeshgroups']:
+                    for cabobj in smobj['cab']:
+                        if cabobj.has_key('type'):
+                            continue
+                        cab = cabobj['data']
+                        #print "########face"
+                        if cab != []:
+                            try:
+                                myManualObject.triangle(int(cab[0]),int(cab[1]),int(cab[2]))
+                            except:
+                                print "error with cab: " + str(cab)
+                                pass
+            else:
+                print "truck has no faces!"
+                
+            myManualObject.end()
+            mesh = myManualObject.convertToMesh(str(uuid)+"manual")
+            entity = self.sceneManager.createEntity(str(uuid)+"entity", str(uuid)+"manual")
+            #trucknode = self.sceneManager.getRootSceneNode().createChildSceneNode()
+            myManualObjectNode = self.sceneManager.getRootSceneNode().createChildSceneNode(str(uuid)+"node")
+            myManualObjectNode.attachObject(entity) 
+            
+            myManualObjectNode.attachObject(myManualObject)
+           
+            return myManualObjectNode, entity, mesh
+        except Exception, err:
+            log().error("error while processing truck file %s" % fn)
+            log().error(str(err))
+            return None, None, None
+
+    def getPointedPosition(self, event):
+        x, y = event.GetPosition() 
+        width, height, a, b, c = self.renderWindow.getMetrics()       
+        mouseRay = self.camera.getCameraToViewportRay((x / float(width)), (y / float(height)));
+        myRaySceneQuery = self.sceneManager.createRayQuery(ogre.Ray());
+        myRaySceneQuery.setRay(mouseRay)
+        result = myRaySceneQuery.execute()
+        if len(result) > 0 and not result[0] is None and not result[0].worldFragment is None:
+            return result[0].worldFragment.singleIntersection
+        return None
+                       
+
     def populateScene(self):  
         self.sceneManager.AmbientLight = ogre.ColourValue(0.7, 0.7, 0.7 )
 
@@ -553,72 +555,15 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 
         l = self.sceneManager.createLight("MainLight")
         l.setPosition(20,80,50)
-        
-        
 
-        #create the camera Axes object
-        self.camAxesNode = None
-        self.camAxesEnt = None
         #create ray template
         self.selectionRaySceneQuery = self.sceneManager.createRayQuery(ogre.Ray());
         self.terrainRaySceneQuery = self.sceneManager.createRayQuery(ogre.Ray());
+        
         # setup the sky plane
         plane = ogre.Plane()
-        # 5000 world units from the camera
         plane.d = 5000
-        # Above the camera, facing down
         plane.normal = -ogre.Vector3.UNIT_Y
-        self.SelectedArrow = None
-        self.StartDragLeftX, self.StartDragLeftY = (0,0)
-        self.TranslationRotationMode = False
-        self.TranslateNode = None
-        self.RotateNode = None
-        self.stickCurrentObjectToGround = False
-        self.randomcounter = 0
-
-    
-    def FixTerrainConfig(self,filename):
-        print "fixing file %s ..." % filename
-        f=open(filename, 'r')
-        content = f.readlines()
-        f.close()
-        for i in range(0, len(content)):
-            if content[i].lower().find("maxpixelerror") >= 0:
-                content[i] = "MaxPixelError=0\n"
-                print "FIXED!"
-                break
-        f=open(filename, 'w')
-        f.writelines(content)
-        f.close()        
-
-
-    def free(self):
-        self.sceneManager.clearScene()
-    	# self.sceneManager.destroyAllEntities()
-    	# self.sceneManager.destroyAllManualObjects()
-        # self.sceneManager.destroyAllAnimations()
-        # self.sceneManager.destroyAllLights()
-        
-        # if self.selectionRaySceneQuery:
-            # self.sceneManager.destroyQuery(self.selectionRaySceneQuery)
-            # self.sceneManager.destroyQuery(self.terrainRaySceneQuery)
-        # if self.renderWindow:
-            # self.renderWindow.removeAllViewports()
-        #ogre.ResourceGroupManager.getSingleton().destroyResourceGroup("General")
-        #ogre.ResourceGroupManager.getSingleton().destroyResourceGroup("Bootstrap")
-        
-        #self.SceneInitialisation()
-        
-    def LoadTerrain(self, filename):
-        # create scene 
-        self.free()
-        dirname = os.path.dirname(filename)
-        self.LoadTerrnFile(filename)
-        cfgname = os.path.join(dirname, self.TerrainConfig)
-        self.FixTerrainConfig(cfgname)
-        self.sceneManager.setWorldGeometry(cfgname)
-        self.TerrainLoaded = True
-        
 
     def toggleTranslationRotationMode(self):
         self.TranslationRotationMode = not self.TranslationRotationMode
@@ -634,13 +579,12 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         return nPos
 
     def ObjectResetRotation(self):
-        if self.mSelected:
-            self.mSelected.getParentNode().resetOrientation()
-            self.mSelected.getParentNode().rotate(ogre.Vector3.UNIT_X, ogre.Degree(-90),relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+        if self.selectedEntry:
+            self.selectedEntry.node.resetOrientation()
+            self.selectedEntry.node.rotate(ogre.Vector3.UNIT_X, ogre.Degree(-90),relativeTo=ogre.Node.TransformSpace.TS_WORLD)
             self.RotateNode.resetOrientation()
             self.RotateNode.rotate(ogre.Vector3.UNIT_X, ogre.Degree(-90),relativeTo=ogre.Node.TransformSpace.TS_WORLD)
             
-
     def selectarrow(self, arrow):
         if self.SelectedArrow.getSubEntity(0).getMaterialName()[-3:] != "sel":
             self.SelectedArrow.setMaterialName(self.SelectedArrow.getSubEntity(0).getMaterialName()+"sel")
@@ -651,7 +595,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         
     def selectTerrain(self, event):
         self.deselectSelection()
-        self.mSelected = None
+        self.selectedEntry = None
         self.selectedCoords = self.getPointedPosition(event)
         self.selectedCoords += ogre.Vector3(0,1,0)
         self.TerrainSelectNode.setPosition(self.selectedCoords)
@@ -674,12 +618,16 @@ class RoRTerrainOgreWindow(wxOgreWindow):
                     self.selectarrow(self.SelectedArrow)
                     return
         selectedSomething = False
+        ignorearray = []
+        ignorearray.append("circlepointer")
+        if not self.terrain.WaterHeight is None:
+            ignorearray.append(self.waterentity.getName())
         for r in result:
             if not r is None and not r.movable is None and r.movable.getMovableType() == "Entity":
-                if r.movable.getName() in ["waterent", "circlepointer"]:
+                if r.movable.getName() in ignorearray:
                     # you cannot select these objects
                     continue
-                if not self.mSelected is None and self.mSelected.getName() == r.movable.getName():
+                if not self.selectedEntry is None and self.selectedEntry.entity.getName() == r.movable.getName():
                     continue
                 #print r.movable.getMovableType(), r.movable.getName()
                 if not self.SelectedArrow is None:
@@ -722,190 +670,37 @@ class RoRTerrainOgreWindow(wxOgreWindow):
             if self.stickCurrentObjectToGround:
                 self.TranslateNode.setPosition(self.StickVectorToGround(self.TranslateNode.getPosition()))
             self.RotateNode.setPosition(self.TranslateNode.getPosition())
-            if self.mSelected:
-                self.mSelected.getParentNode().setPosition(self.TranslateNode.getPosition())
+            if self.selectedEntry:
+                self.selectedEntry.node.setPosition(self.TranslateNode.getPosition())
         elif self.SelectedArrow.getName() == 'movearrowsY':
             self.TranslateNode.translate(0,0,forcex,relativeTo=ogre.Node.TransformSpace.TS_LOCAL)
             if self.stickCurrentObjectToGround:
                 self.TranslateNode.setPosition(self.StickVectorToGround(self.TranslateNode.getPosition()))
             self.RotateNode.setPosition(self.TranslateNode.getPosition())
-            if self.mSelected:
-                self.mSelected.getParentNode().setPosition(self.TranslateNode.getPosition())
+            if self.selectedEntry:
+                self.selectedEntry.node.setPosition(self.TranslateNode.getPosition())
         elif self.SelectedArrow.getName() == 'movearrowsZ':
             self.TranslateNode.translate(0,forcex,0,relativeTo=ogre.Node.TransformSpace.TS_LOCAL)
             if self.stickCurrentObjectToGround:
                 self.TranslateNode.setPosition(self.StickVectorToGround(self.TranslateNode.getPosition()))
             self.RotateNode.setPosition(self.TranslateNode.getPosition())
-            if self.mSelected:
-                self.mSelected.getParentNode().setPosition(self.TranslateNode.getPosition())
+            if self.selectedEntry:
+                self.selectedEntry.node.setPosition(self.TranslateNode.getPosition())
         elif self.SelectedArrow.getName() == 'rotatearrowsX':
             self.RotateNode.yaw(forceDegree)
-            if self.mSelected:
-                self.mSelected.getParentNode().yaw(forceDegree)
+            if self.selectedEntry:
+                self.selectedEntry.node.yaw(forceDegree)
         elif self.SelectedArrow.getName() == 'rotatearrowsY':
             self.RotateNode.pitch(forceDegree)
-            if self.mSelected:
-                self.mSelected.getParentNode().pitch(forceDegree)
+            if self.selectedEntry:
+                self.selectedEntry.node.pitch(forceDegree)
         elif self.SelectedArrow.getName() == 'rotatearrowsZ':
             self.RotateNode.roll(forceDegree)
-            if self.mSelected:
-                self.mSelected.getParentNode().roll(forceDegree)
-
-    def addMeshToTerrain(self, fn):
-        if self.selectedCoords is None:
-            return False
-
-        self.randomcounter += 1
-        meshname = os.path.basename(fn)
-        (firstobjname, fileExtension) = os.path.splitext(meshname)
-            
-        try:
-            (meshname, sx, sy, sz) = self.loadOdef(firstobjname)
-        except Exception, inst:
-            print inst
-            print "########## error loading odef of %s"  % firstobjname
-            sx = None
-        self.randomcounter +=1
-        n = self.sceneManager.getRootSceneNode().createChildSceneNode("object" + str(self.randomcounter)+ firstobjname)
-        entname = "objent" + str(self.randomcounter)+"_"+firstobjname
-        e = self.sceneManager.createEntity(entname, meshname) 
-        n.attachObject(e)
-
-        n.setPosition(self.selectedCoords)
-        n.rotate(ogre.Vector3.UNIT_X, ogre.Degree(-90),relativeTo=ogre.Node.TransformSpace.TS_WORLD)
-        if not sx is None:
-            n.setScale(sx, sy, sz)
-        self.meshes[entname] = n
-        self.comments[entname] = [ADDEDBY]
-        self.meshesorder.append(entname)
-        return True
-
-                
-    def addTruckToTerrain(self, fn):
-        if self.selectedCoords is None:
-            return False
-        n, entname = self.createTruckMesh(fn)
-        if not n is None:
-            n.setPosition(self.selectedCoords)
-            return True
-        else:
-            return False
-
-    def createTruckMesh(self, fn):
-        if not os.path.isfile(fn):
-            print "truck file not found: " + fn
-            return
-        p = rorparser()
-        p.parse(fn)
-        if not 'nodes' in p.tree.keys() or not 'beams' in p.tree.keys() :
-            return False
-            
-        try:
-            self.randomcounter +=1
-
-            myManualObject =  self.sceneManager.createManualObject("manual"+fn+str(self.randomcounter))
-
-            #myManualObjectMaterial = ogre.MaterialManager.getSingleton().create("manualmaterial"+truckname+str(self.randomcounter),"debugger"); 
-            #myManualObjectMaterial.setReceiveShadows(False)
-            #myManualObjectMaterial.getTechnique(0).setLightingEnabled(True)
-            #myManualObjectMaterial.getTechnique(0).getPass(0).setDiffuse(0,0,1,0)
-            #myManualObjectMaterial.getTechnique(0).getPass(0).setAmbient(0,0,1)
-            #myManualObjectMaterial.getTechnique(0).getPass(0).setSelfIllumination(0,0,1)
-            #myManualObjectMaterial.getTechnique(0).getPass(0).setCullingMode(ogre.CULL_ANTICLOCKWISE)
-
-            matname = ""
-            if fn[-4:].lower() == "load":
-                matname = 'mysimple/loadcolor'
-            elif fn[-5:].lower() == "truck":
-                matname = 'mysimple/truckcolor'
-            
-            myManualObject.useIndexes = True
-            myManualObject.estimateVertexCount(2000)
-            myManualObject.estimateIndexCount(2000)
-
-            myManualObject.begin(matname+"grid", ogre.RenderOperation.OT_LINE_LIST) 
-            for nodeobj in p.tree['nodes']:
-                if nodeobj.has_key('type'):
-                    continue
-                node = nodeobj['data']
-                myManualObject.position(float(node[1]),float(node[2]),float(node[3]))       
-            for beamobj in p.tree['beams']:
-                if beamobj.has_key('type'):
-                    continue
-                beam = beamobj['data']
-                myManualObject.index(int(beam[0]))
-                myManualObject.index(int(beam[1]))
-            myManualObject.end()
-            myManualObject.begin(matname, ogre.RenderOperation.OT_TRIANGLE_LIST) 
-            for nodeobj in p.tree['nodes']:
-                if nodeobj.has_key('type'):
-                    continue
-                node = nodeobj['data']
-                myManualObject.position(float(node[1]),float(node[2]),float(node[3]))       
-                
-            print len(p.tree['submeshgroups'])
-            if len(p.tree['submeshgroups']) > 0:
-                faces = []
-                for smobj in p.tree['submeshgroups']:
-                    for cabobj in smobj['cab']:
-                        if cabobj.has_key('type'):
-                            continue
-                        cab = cabobj['data']
-                        #print "########face"
-                        if cab != []:
-                            try:
-                                myManualObject.triangle(int(cab[0]),int(cab[1]),int(cab[2]))
-                            except:
-                                print "error with cab: " + str(cab)
-                                pass
-            else:
-                print "truck has no faces!"
-                
-            myManualObject.end()
-            mesh = myManualObject.convertToMesh("manual"+fn+str(self.randomcounter))
-            entity = self.sceneManager.createEntity("manualtruckent"+fn+str(self.randomcounter), 
-                                                    "manual"+fn+str(self.randomcounter))
-            #trucknode = self.sceneManager.getRootSceneNode().createChildSceneNode()
-            myManualObjectNode = self.sceneManager.getRootSceneNode().createChildSceneNode("manualnode"+fn+str(self.randomcounter))
-            myManualObjectNode.attachObject(entity) 
-            
-            myManualObjectNode.attachObject(myManualObject)
-           
-            truckname = os.path.basename(fn)
-            self.trucksorder.append(truckname)
-            self.trucks[truckname] = myManualObjectNode
-            return myManualObjectNode, truckname
-        except Exception, inst:
-            print str(inst)
-            print "error creating truck from file: " +  fn
-            return None, None
-
-    def getPointedPosition(self, event):
-        x, y = event.GetPosition() 
-        width, height, a, b, c = self.renderWindow.getMetrics()       
-        mouseRay = self.camera.getCameraToViewportRay((x / float(width)), (y / float(height)));
-        myRaySceneQuery = self.sceneManager.createRayQuery(ogre.Ray());
-        myRaySceneQuery.setRay(mouseRay)
-        result = myRaySceneQuery.execute()
-        if len(result) > 0 and not result[0] is None and not result[0].worldFragment is None:
-            return result[0].worldFragment.singleIntersection
-        return None
-                    
-    def createnew(self):
-        x, y = event.GetPosition() 
-        mouseRay = self.camera.getCameraToViewportRay((x / float(width)), (y / float(height)));
-        myRaySceneQuery = self.sceneManager.createRayQuery(ogre.Ray());
-        myRaySceneQuery.setRay(mouseRay)
-        result = myRaySceneQuery.execute()
-        if len(result) > 0 and not result[0] is None and not result[0].worldFragment is None:
-            self.mCount += 1
-            rent = self.sceneManager.createEntity("test%d"%self.mCount, "road.mesh")
-            mCurrentObject = self.sceneManager.getRootSceneNode().createChildSceneNode("testnode%d"%self.mCount, result[0].worldFragment.singleIntersection)
-            mCurrentObject.attachObject(rent)
-            #mCurrentObject.setScale(0.1, 0.1, 0.1)
-    
+            if self.selectedEntry:
+                self.selectedEntry.node.roll(forceDegree)
+                       
     def onMouseEvent(self,event):
-        if not self.TerrainLoaded:
+        if self.terrain is None:
             return
        
         width, height, a, b, c = self.renderWindow.getMetrics()       
@@ -934,12 +729,12 @@ class RoRTerrainOgreWindow(wxOgreWindow):
             self.camera.yaw(ogre.Degree(dx/3.0)) 
             self.camera.pitch(ogre.Degree(dy/3.0)) 
 
-        if event.LeftDown() and event.ControlDown() and not self.mSelected is None:
+        if event.LeftDown() and event.ControlDown() and not self.selectedEntry is None:
             pos = self.getPointedPosition(event)
             if not pos is None:
                 self.TranslateNode.setPosition(pos)
                 self.RotateNode.setPosition(pos)
-                self.mSelected.getParentNode().setPosition(pos)
+                self.selectedEntry.node.setPosition(pos)
             return
         if event.LeftDown():
             self.selectnew(event)
@@ -958,11 +753,11 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 
 
     def onKeyDown(self,event):
-        if not self.TerrainLoaded:
+        if self.terrain is None:
             return
 
         #print event.m_keyCode
-        d = 2
+        d = 0.5
         if event.ShiftDown():
             d *= SHIFT_SPEED_FACTOR
             
@@ -1007,7 +802,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         event.Skip()
     
     def onKeyUp(self,event):
-        if not self.TerrainLoaded:
+        if self.terrain is None:
             return
             
         if event.m_keyCode == 65: # A, wx.WXK_LEFT:

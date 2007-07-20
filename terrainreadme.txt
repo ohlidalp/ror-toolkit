@@ -6,7 +6,7 @@ D			move right
 W			move foreward
 S			move backward
 PAGEUP		move up
-PAGEDOWN		move down
+PAGEDOWN	move down
 SHIFT + above keys = faster movement
 
 
@@ -21,6 +21,7 @@ if selected an object: control + leftclick positions that object at the pointed 
 
 P           print position of the camera to the console
 Q			switch between object rotation and translation
+            (Please note, that trucks and loads cannot be rotated)
 T			switch between bilinear and trilinear filtering
 R			switch between solid, wireframe and point mode
 

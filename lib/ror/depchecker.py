@@ -169,16 +169,25 @@ class RoRDepChecker:
             else:
                 if ext == ".truck":
                     n.set('fillcolor', 'gold')
+                    n.set('group', 'truck')
                 elif ext == ".load":
                     n.set('fillcolor', 'lightyellow')
+                    n.set('group', 'load')
                 elif ext == ".material":
                     n.set('fillcolor', 'lightseagreen')
+                    n.set('group', 'material')
                 elif ext == ".terrn":
                     n.set('fillcolor', 'forestgreen')
+                    n.set('group', 'terrain')
                 elif ext == ".mesh":
                     n.set('fillcolor', 'lightsalmon')
+                    n.set('group', 'mesh')
+                elif ext == ".odef":
+                    n.set('fillcolor', 'lightsalmon')
+                    n.set('group', 'object')
                 elif ext == ".png" or ext == ".jpg" or ext == ".bmp":
                     n.set('fillcolor', 'lightblue')
+                    n.set('group', 'texture')
             
             
            
@@ -335,10 +344,14 @@ def usage():
     sys.exit(0)
             
 def main():
+    import settingsManager
     if len(sys.argv) < 3:
         usage()    
-    if not os.path.isdir(sys.argv[1]):
-        print "%s is not a valid directory!" % sys.argv[1]
+    path = sys.argv[1]
+    if path.strip() == "rordir":
+        path = settingsManager.getSettingsManager().getSetting("RigsOfRods", "BasePath")
+    if not os.path.isdir(path):
+        print "%s is not a valid directory!" % path
         usage()
     if (len(sys.argv) == 3 and sys.argv[2] in ['all', 'missing', 'unused', 'md5sum']) or (len(sys.argv) == 4 and sys.argv[2] in ['dtree']):
         pass
@@ -349,8 +362,7 @@ def main():
     dependfilename = ""
     if len(sys.argv) == 4 and sys.argv[2] in ['dtree'] and sys.argv[3].strip() != "":
         dependfilename = sys.argv[3].strip()
-    
-    RoRDepChecker(sys.argv[1], sys.argv[2], dependfilename)
+    RoRDepChecker(path , sys.argv[2], dependfilename)
 
 if __name__ == "__main__":
     main()
