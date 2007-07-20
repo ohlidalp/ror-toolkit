@@ -214,6 +214,8 @@ class MainFrame(wx.Frame):
         self.terrainOgreWin.stickCurrentObjectToGround = self.btnStickToGround.GetValue()
         
     def updateObjPosRot(self, event=None):
+        if self.terrainOgreWin.terrain is None:
+            return
         if self.terrainOgreWin.selectedEntry is None:
             self.statusbar.SetStatusText("", 1)
             return
@@ -242,12 +244,13 @@ class MainFrame(wx.Frame):
     #    pass
         
     def OnChangeTerrainNameChange(self, event=None):
-        self.terrainOgreWin.TerrainName = self.terrainNamectrl.GetValue()
+        self.terrainOgreWin.terrain.TerrainName = self.terrainNamectrl.GetValue()
         
     def OnChangeWaterLevel(self, event=None):
-        self.terrainOgreWin.terrain.WaterHeight = self.waterlevelctrl.GetValue()
-        self.waterLevelText.Label = "Water Level: %0.1f" % (self.terrainOgreWin.terrain.WaterHeight)
-        self.terrainOgreWin.updateWaterPlane()
+        if not self.terrainOgreWin.terrain is None:
+            self.terrainOgreWin.terrain.WaterHeight = self.waterlevelctrl.GetValue()
+            self.waterLevelText.Label = "Water Level: %0.1f" % (self.terrainOgreWin.terrain.WaterHeight)
+            self.terrainOgreWin.updateWaterPlane()
     
     def OnChangeOgreSettings(self, event):
         getOgreManager().getRoot().showConfigDialog()
@@ -290,7 +293,7 @@ class MainFrame(wx.Frame):
         dialog = wx.FileDialog(self, "Open Terrain", default, "", "Terrain Files (*.terrn)|*.terrn", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         res = dialog.ShowModal()
         if res == wx.ID_OK:
-            self.fileopenmenu.Enable(False)
+            #self.fileopenmenu.Enable(False)
             self.filesavemenu.Enable(True)
             self.filesaveasmenu.Enable(True)
             filename = dialog.GetPath()
@@ -305,11 +308,11 @@ class MainFrame(wx.Frame):
             #self.sharedOgreWin2 = RoRTerrainSelectedObjectTopOgreWindow(self.viewsplitterdown, wx.ID_ANY, self.terrainOgreWin)            
          
             self.terrainOgreWin.LoadTerrain(filename)
-            
-            #update some controls if finished loading
-            self.waterlevelctrl.SetValue(self.terrainOgreWin.terrain.WaterHeight)
-            self.waterLevelText.Label = "Water Level: %0.1f" % (self.terrainOgreWin.terrain.WaterHeight)
-            self.terrainNamectrl.SetValue(self.terrainOgreWin.terrain.TerrainName)
+            if not self.terrainOgreWin.terrain is None:
+                #update some controls if finished loading
+                self.waterlevelctrl.SetValue(self.terrainOgreWin.terrain.WaterHeight)
+                self.waterLevelText.Label = "Water Level: %0.1f" % (self.terrainOgreWin.terrain.WaterHeight)
+                self.terrainNamectrl.SetValue(self.terrainOgreWin.terrain.TerrainName)
 
     
     def onViewObjectDetails(self, event=None): 

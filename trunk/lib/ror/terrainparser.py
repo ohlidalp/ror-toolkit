@@ -34,7 +34,6 @@ class RoRTerrain:
     TerrainName = ""
     TerrainConfig = ""
     filename = ""
-    comments = {}
 
     trucks = []
     loads = []
@@ -62,6 +61,9 @@ class RoRTerrain:
     def __init__(self, filename):
         self.filename = filename
         content = self.loadFile(filename)
+        self.trucks = []
+        self.loads = []
+        self.objects = []
         log().info("processing terrain file: %s" % filename)
         self.processTerrnFile(content)
         self.FixTerrainConfig(os.path.join(os.path.dirname(filename), self.TerrainConfig))        
