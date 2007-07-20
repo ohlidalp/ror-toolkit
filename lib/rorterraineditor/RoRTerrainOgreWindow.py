@@ -17,6 +17,7 @@ class Entry:
     node = None
     entity = None
     data = None
+    manual = None
     
 
 class RoRTerrainOgreWindow(wxOgreWindow):
@@ -219,6 +220,8 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         self.RotateNode.setPosition(entity.getParentNode().getPosition())
         
     def createArrows(self):
+        if not self.TranslateNode is None:
+            return
         #translation nodes
         n = self.sceneManager.getRootSceneNode().createChildSceneNode("movearrowsnode") 
         nx = n.createChildSceneNode("movearrowsnodeX")
@@ -307,7 +310,42 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         self.arrowScale = self.selectedEntry.entity.getBoundingRadius() / 100
 
     def free(self):
-        self.sceneManager.clearScene()
+        #self.sceneManager.clearScene()
+        self.sceneManager.destroyAllManualObjects()
+              
+        # try to clear things up
+        #try:
+        for key in self.entries.keys():
+            entry = self.entries[key]
+            if not entry.node is None:
+                try:
+                    entry.node.detachAllObjects()
+                    self.sceneManager.destroySceneNode(entry.node.getName())
+                except:
+                    print "A"
+                    pass
+            if not entry.entity is None:
+                try:
+                    self.sceneManager.destroyEntity(entry.entity)
+                except:
+                    print "B"
+                    pass
+            if not entry.data is None:
+                del entry.data
+            del self.entries[key]
+                
+                    
+        try:
+            self.waternode.detachAllObjects()
+            self.sceneManager.destroySceneNode(self.waternode)
+            self.sceneManager.destroyEntity(self.waterentity)
+        except:
+            pass
+        
+        self.terrain = None
+        self.entries = {}
+        #except:
+        #    pass
     
     def updateDataStructures(self):
         for uuid in self.entries.keys():
@@ -327,7 +365,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
     
         if not self.terrain is None:
             self.free()
+        print filename
         self.terrain = RoRTerrain(filename)
+        print len(self.terrain.objects)
 
         cfgfile = os.path.join(os.path.dirname(filename), self.terrain.TerrainConfig)
         self.sceneManager.setWorldGeometry(cfgfile)
