@@ -14,6 +14,7 @@ MD5FILENAME = "031amd5.txt" #0.31a md5 .txt
 RORDEPSFILENAME = "031a_deps.bin"
 MD5FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), MD5FILENAME)
 RORDEPSFILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), RORDEPSFILENAME)
+GRAPHPATH = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".." ,"graphs"))
 
 class RoRDepChecker:
     def __init__(self, path, mode, dependfilename, verbose=True):
@@ -42,7 +43,7 @@ class RoRDepChecker:
         if dependfilename != "":
             self.generateSingleDep()
         
-        if mode == "all":
+        if mode == "all" and verbose:
             self.tryGraph()        
 
     def saveTree(self, filename):
@@ -76,8 +77,10 @@ class RoRDepChecker:
                     for rsub in req:
                         if rr['filename'] == rsub['filename']:
                             duplicate  = True
-                    #if not duplicate:
-                    req.append(rr)
+                    
+                    # enable for graph functions (allows  multiple arrows then)
+                    if not duplicate:
+                        req.append(rr)
             except:
                 pass
         return req
@@ -105,7 +108,7 @@ class RoRDepChecker:
         
         self.dstree = tree
         
-        if self.verbose:
+        if self.verbose and len(tree) > 1:
             self.tryGraph(tree)
         
 
@@ -144,6 +147,8 @@ class RoRDepChecker:
             
     def drawGraph(self, tree = None):
         import pydot
+        if not os.path.isdir(GRAPHPATH):
+            os.mkdir(GRAPHPATH)
         edges = []
         if tree is None:        
             for filenameA in self.filedeps.keys():
@@ -152,7 +157,7 @@ class RoRDepChecker:
                     for rel in fileA[REQUIRES][FILE]:
                         e = (filenameA, rel)
                         edges.append(e)
-            fn = 'dependencies.png'
+            os.path.join(GRAPHPATH, 'alldependencies.png')
         else:
             od = -1
             parents = []
@@ -165,18 +170,16 @@ class RoRDepChecker:
                         edges.append((parents[-1], f))
                     parents.append(f)
                 elif d == od:
-                    #print "2"
-                    edges.append((parents[-1], f))
+                    #print "2", (parents[-2], f)
+                    edges.append((parents[-2], f))
                 elif d < od:
                     for i in range(0, od - d + 1):
                         del parents[-1]
                     #print "3", od - d, (parents[-1], f)
                     edges.append((parents[-1], f))
                     parents.append(f)
-                
-                
                 od = d
-            fn = 'dependencies_single.png'
+            fn = os.path.join(GRAPHPATH, self.dependfilename + '_dependencies.png')
             pass
         
         #edges = [(1,2), (1,3), (1,4), (3,4)]
@@ -279,7 +282,8 @@ class RoRDepChecker:
                                 found = True
                                 break
                         if not found and relation != OPTIONAL:
-                            notfound[type].append(reqfile)
+                            if not reqfile in notfound[type]:
+                                notfound[type].append(reqfile)
         self.filedeps = newtree
         #print  newtree
         self.everythingfound = False

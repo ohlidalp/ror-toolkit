@@ -1,5 +1,8 @@
 import os.path, sys, installmod, time
 
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib"))
+from ror.logger import log
+from ror.settingsManager import getSettingsManager
 
 def getFiles(top):
     fl = {}
@@ -8,9 +11,9 @@ def getFiles(top):
             fn = os.path.join(root, f)
             fl[fn] = {}
     for fk in fl.keys():
-        print "%10s %s" % ("", os.path.basename(fk))
+        log().info("%10s %s" % ("", os.path.basename(fk)))
         
-    print "found %d files!" % (len(fl.keys()))
+    log().info("found %d files!" % (len(fl.keys())))
     return fl
 
 def main():
@@ -21,22 +24,21 @@ def main():
     counter = 0
     countervalid = 0
     for file in files.keys():
-        print "## %s (%d/%d)##############################################" % (os.path.basename(file), counter, len(files))
+        log().info("## %s (%d/%d)##################################" % (os.path.basename(file), counter, len(files)))
         counter += 1
-        mods = installmod.work(mode, file, True, False)
+        mods = installmod.work(mode, file, verbose=(len(sys.argv)== 4 and sys.argv[3] == "--verbose"), dryrun=True)
         if len(mods) == 0:
-            print "!!! INVALID: ", os.path.basename(file)
+            log().info("!!! INVALID: "+ os.path.basename(file))
         else:
-            print "VALID: ", os.path.basename(file)            
+            log().info("VALID: "+ os.path.basename(file))
             valid[file] = mods
-        print "#######################################################################"
+        log().info("#######################################################################")
         time.sleep(0.01)
-    print "################################################"
-    print "################################################"
-    print "################################################"
+    log().info("===========================================================")
+    log().info("===== FINISHED found, valid mods:")
     for f in valid.keys():
-        print f, valid[f]
-    print "%d of %d files containing valid mods!" % (len(valid), len(files))
+        log().info( f + str(valid[f]))
+    log().info("%d of %d files containing valid mods!" % (len(valid), len(files)))
     
 
 if __name__=="__main__":

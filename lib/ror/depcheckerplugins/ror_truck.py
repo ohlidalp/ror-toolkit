@@ -16,7 +16,6 @@ def getDependencies(filename):
     if 'props' in p.tree.keys():
         for prop in p.tree['props']:
             props.append(prop['data'][-1])
-        #print props
     
     #print truckname
     return {
