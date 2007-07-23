@@ -535,6 +535,8 @@ class rorparser:
         return True
 
     def errorMsg(self, filename, lineno, sectionname, sectiontype, argname, line, msgold):
+        if not self.verbose:
+            return
         argpath = "/%s/%s/%s" % (sectiontype, sectionname, argname)
         msg = "%20s:%04d %-30s | %-40s | %s" % \
             (os.path.basename(filename), int(lineno) + 1, argpath,
@@ -579,6 +581,7 @@ class rorparser:
 
     def parse(self, filename, verbose = True):
         self.filename = filename
+        self.verbose = verbose
         content = None
         try:
             infile = open(filename,'r')
