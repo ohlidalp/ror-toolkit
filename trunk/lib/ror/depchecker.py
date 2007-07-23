@@ -121,6 +121,7 @@ class RoRDepChecker:
             l = line.split(" ")
             md5s[l[0]] = l[1]
         self.orgMD5s = md5s
+        return md5s
             
     def readFile(self, filename):
         f=open(filename, 'rb')

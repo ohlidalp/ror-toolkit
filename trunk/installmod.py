@@ -67,24 +67,6 @@ def searchFile(filename, top):
             return os.path.join(root, filename)
     return None
 
-def usage():
-    print "usage (general): %s <filename> <mode> <additionaloptions> [--verbose] [--dryrun]" % (os.path.basename(sys.argv[0]))
-    print "<filename> list"
-    print " list all found and valid modifications in filename"
-    print ""
-    print "<filename> listall --verbose"
-    print " list all found modifications in filename (valid and invalid)"
-    print ""
-    print "<filename> installall --verbose"
-    print " install all found modifications in filename"
-    print ""
-    print "<filename> install <modification> --verbose"
-    print " install a certain modifications in filename (valid and invalid)"
-    print ""
-    print "notes: the --verbose option is optional to increase the output for debugging"
-    print "       the --dryrun option just prints out which files would be copied/installed."
-    sys.exit(0)
-
 def getTargets(verbose):
     import ror.depchecker
     dc = ror.depchecker.RoRDepChecker(TEMPDIR, "getfiles", "", False)
@@ -110,12 +92,28 @@ def getTargets(verbose):
             invalidtargets.append(target)
     return validtargets, invalidtargets
 
+def getRoRMods(verbose):
+    import ror.depchecker
+    rorpath = getSettingsManager().getSetting("RigsOfRods", "BasePath")
+    dc = ror.depchecker.RoRDepChecker(rorpath, "getfiles", "", False)
+    targets = []
+    for file in dc.files:
+        filename, extension = os.path.splitext(file)
+        if extension.lower() in ['.truck', '.terrn', '.load']:
+            targets.append(os.path.basename(file))
+    newtargets = []
+    md5s = dc.readMD5File()
+    for target in targets:
+        if not os.path.basename(target) in md5s.keys():
+            newtargets.append(target)
+    return newtargets
+
 
 def work(mode, targetfile, verbose, dryrun, installtarget=None):
-    filename = os.path.abspath(targetfile)
-    ExtractToTemp(targetfile)
     log().info("### modinstaller started with %s, %s" % (mode, targetfile))
     if mode == "install":
+        filename = os.path.abspath(targetfile)
+        ExtractToTemp(targetfile)
         target = installtarget
         log().info("### validating target ...")
         import ror.depchecker
@@ -144,6 +142,8 @@ def work(mode, targetfile, verbose, dryrun, installtarget=None):
         return [target]    
 
     elif mode == "installall":
+        filename = os.path.abspath(targetfile)
+        ExtractToTemp(targetfile)
         validtargets, invalidtargets = getTargets(verbose)
         log().info("### installing %d found modifications:" % (len(validtargets)))
         installcounter = 0
@@ -168,7 +168,10 @@ def work(mode, targetfile, verbose, dryrun, installtarget=None):
             log().info("### %d files installed, finished!" % installcounter)
         removetemp(False)
         return validtargets    
+    
     elif mode in ["list", "listall"]:
+        filename = os.path.abspath(targetfile)
+        ExtractToTemp(targetfile)
         validtargets, invalidtargets = getTargets(verbose)
         if mode == "listall":
             if len(invalidtargets) > 0:
@@ -188,23 +191,104 @@ def work(mode, targetfile, verbose, dryrun, installtarget=None):
         # todo : remove workaround!
         removetemp(False)
         return validtargets
-    return None
+
+    elif mode in ["listinstalled"]:
+        targets = getRoRMods(verbose)
+        log().info("### Found Mods:")
+        for target in targets:
+            log().info("  "+target)
+    if mode in ["uninstall"]:
+        rorpath = getSettingsManager().getSetting("RigsOfRods", "BasePath")
+        log().info("### validating target ...")
+        import ror.depchecker
+        dc = ror.depchecker.RoRDepChecker(rorpath, "dtree", targetfile, verbose)
+        if dc.invalid:
+            log().error("### target invalid! (Target not found)")
+            log().info("### please use the 'listinstalled' mode to get valid uninstallation targets")
+            return None
         
+        log().info("### target valid!")
+
+        #print dc.dstree
+        newtargets = []
+        md5s = dc.readMD5File()
+        for file in dc.dstree:
+            filename = file['filename']
+            if not os.path.basename(filename) in md5s.keys():
+                newtargets.append(filename)
+        log().info("### removed %d files from dependency tree." % (len(dc.dstree)-len(newtargets)))
+        #print newtargets
+        if dryrun:
+            log().info("### would uninstall %d file(s):" % len(newtargets))
+        else:
+            log().info("### uninstalling %d file(s):" % len(newtargets))
+        for target in newtargets:
+            filenamefound = searchFile(target, rorpath)
+            if filenamefound is None:
+                log().error("### File not found: %s" % target)
+                continue
+            log().info("   %s" % filenamefound)
+            if not dryrun:
+                os.unlink(filenamefound)
+            
+            
+
+    return None
+
+def usage():
+    print "usage (general): %s <mode> <additionaloptions> [--verbose] [--dryrun]" % (os.path.basename(sys.argv[0]))
+    print "list <filename>"
+    print " list all found and valid modifications in filename"
+    print ""
+    print "listall <filename> --verbose"
+    print " list all found modifications in filename (valid and invalid)"
+    print ""
+    print "installall <filename> --verbose --dryrun"
+    print " install all found modifications in filename"
+    print ""
+    print "install <filename> <modification> --verbose --dryrun"
+    print " install a certain modifications in filename (valid and invalid)"
+    print ""
+    print "listinstalled"
+    print " lists all installed RoR Mods"
+    print ""
+    print "uninstall <modname> --verbose --dryrun"
+    print " uninstalls a mod"
+    print ""
+    print "notes: the --verbose option is optional to increase the output for debugging"
+    print "       the --dryrun option is optional and prints out what would be done"
+    sys.exit(0)
+
 def main():
-    if len(sys.argv) < 3:
-        usage()
-    
-    targetfile = sys.argv[1]
-    if not os.path.isfile(targetfile):
-        log().error("%s is not a valid target filename!" % targetfile)
+
+    # check for valid RoR Directory!
+    import ror.settingsManager
+    rorpath = ror.settingsManager.getSettingsManager().getSetting("RigsOfRods", "BasePath")
+    if not os.path.isfile(os.path.join(rorpath,"RoR.exe")):
+        import ror.starter
+        ror.starter.startApp()
+
+    if len(sys.argv) < 2:
         usage()
 
-    mode = sys.argv[2]
-    if not mode in ['list', 'listall', 'install', 'installall']:
+    mode = sys.argv[1]
+    if not mode in ['list', 'listall', 'install', 'installall', 'listinstalled','uninstall']:
         usage()
     if len(sys.argv) < 4 and mode in ['install']:
         usage()
+            
+    if mode in ['list', 'listall', 'install', 'installall']:
+        targetfile = sys.argv[2]
+        if not os.path.isfile(targetfile):
+            log().error("%s is not a valid target filename!" % targetfile)
+            usage()
+    elif mode in ['listinstalled']:
+        targetfile = rorpath
+    elif mode == 'uninstall':
+        targetfile = sys.argv[2]
     
+
+
     # get optional flags
     verbose = False
     dryrun = False
@@ -213,12 +297,6 @@ def main():
             verbose = True
         if option == "--dryrun":
             dryrun = True
-
-    import ror.settingsManager
-    path = ror.settingsManager.getSettingsManager().getSetting("RigsOfRods", "BasePath")
-    if not os.path.isfile(os.path.join(path,"RoR.exe")):
-        import ror.starter
-        ror.starter.startApp()        
 
     # Import Psyco if available
     try:
