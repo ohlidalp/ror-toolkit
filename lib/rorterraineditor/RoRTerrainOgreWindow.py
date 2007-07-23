@@ -367,10 +367,12 @@ class RoRTerrainOgreWindow(wxOgreWindow):
     def SaveTerrain(self, fn = None):
         self.updateDataStructures()
         if not self.terrain is None:
-            return self.terrain.save(fn)
+            res = self.terrain.save(fn)
+            self.currentStatusMsg = "Terrain saved!"
+            return res
+
             
     def LoadTerrain(self, filename):
-    
         if not self.terrain is None:
             self.free()
         #print filename
@@ -396,7 +398,8 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         for object in self.terrain.objects:
             self.addObjectToTerrain(data=object)
 
-
+        self.currentStatusMsg = "Terrain loaded"
+            
             
     def loadOdef(self, odefFilename):
         f=open(odefFilename, 'r')
