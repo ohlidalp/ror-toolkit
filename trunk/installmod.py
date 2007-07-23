@@ -41,7 +41,7 @@ def ExtractToTemp(filename):
         UnZIP.unzip(filename, TEMPDIR)
         return True
     else:
-        log.info("copying "+filename+" to "+os.path.join(TEMPDIR, os.path.basename(filename)))
+        log().info("copying "+filename+" to "+os.path.join(TEMPDIR, os.path.basename(filename)))
         shutil.copyfile(filename, os.path.join(TEMPDIR, os.path.basename(filename)))
     return False
 
@@ -96,6 +96,10 @@ def getTargets(verbose):
 
     validtargets = []
     invalidtargets = []
+    if len(targets) == 0:
+        log().info("### no targets found")
+        return validtargets, invalidtargets
+    
     log().info("### found %d targets, checking them separatly now" % len(targets))
     for target in targets:
         log().info("### checking target %s..." % target)

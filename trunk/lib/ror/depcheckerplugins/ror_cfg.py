@@ -35,6 +35,8 @@ def getDependencies(filename):
         tmp = parseRE(content, re)
         if not tmp is None:
             dep.append(tmp)
+        else:
+            print "ERROR !!! required value not found in terrain config file %s!" % filename
 
     if len(dep) == 0:
         print "no configuration found in terrain config file " + filename
