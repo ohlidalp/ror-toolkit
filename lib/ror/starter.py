@@ -120,7 +120,7 @@ class SettingsDialog(wx.Frame):
     def OnDepGraph(self, event=None):
         import ror.depchecker
         ror.depchecker.RoRDepChecker(self.rordir, "all", "")
-        file = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..\\..\\dependencies.png"))
+        file = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..\\..\\graphs\\alldependencies.png"))
         print file
         if os.path.isfile(file):
             dlg = wx.MessageDialog(self, "Graph successfully created:\n"+file, "Info", wx.OK | wx.ICON_INFORMATION)

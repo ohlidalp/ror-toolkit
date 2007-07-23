@@ -157,7 +157,7 @@ class RoRDepChecker:
                     for rel in fileA[REQUIRES][FILE]:
                         e = (filenameA, rel)
                         edges.append(e)
-            os.path.join(GRAPHPATH, 'alldependencies.png')
+            fn = os.path.join(GRAPHPATH, 'alldependencies.png')
         else:
             od = -1
             parents = []
