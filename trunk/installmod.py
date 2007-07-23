@@ -41,7 +41,7 @@ def ExtractToTemp(filename):
         UnZIP.unzip(filename, TEMPDIR)
         return True
     else:
-        print filename, " to ", os.path.join(TEMPDIR, os.path.basename(filename))
+        log.info("copying "+filename+" to "+os.path.join(TEMPDIR, os.path.basename(filename)))
         shutil.copyfile(filename, os.path.join(TEMPDIR, os.path.basename(filename)))
     return False
 
@@ -96,7 +96,9 @@ def getTargets(verbose):
 
     validtargets = []
     invalidtargets = []
+    log().info("### found %d targets, checking them separatly now" % len(targets))
     for target in targets:
+        log().info("### checking target %s..." % target)
         dc = ror.depchecker.RoRDepChecker(TEMPDIR, "dtree", target, verbose)
         if dc.everythingfound:
             validtargets.append(target)
@@ -108,6 +110,7 @@ def getTargets(verbose):
 def work(mode, targetfile, verbose, dryrun, installtarget=None):
     filename = os.path.abspath(targetfile)
     ExtractToTemp(targetfile)
+    log().info("### modinstaller started with %s, %s" % (mode, targetfile))
     if mode == "install":
         target = installtarget
         log().info("### validating target ...")

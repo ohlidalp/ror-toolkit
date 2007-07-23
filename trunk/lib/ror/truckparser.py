@@ -521,7 +521,7 @@ class rorparser:
 
     # tree of the actual file's data
     tree = None
-    ### this will hold all comments
+    # this will hold all comments
     comments = None
 
     links = [
@@ -654,15 +654,26 @@ class rorparser:
                         newargs.append(args[argnum])
                     args = newargs
                     #ok
+                    # continue to next line, do not further parse it!
+                    continue
                 else:
                     # no other args except the command itself
                     args = []
+                    # continue to next line, do not further parse it!
+                    continue
                 argumentsection = self.commands[cmdcheck]
                 argumentsection_str = "command"
             else:
                 argumentsection = self.sections[actualsection]
                 argumentsection_str = "section"
             argumenttree = []
+            
+            # debug stuff: 
+            #print actualsection, argnum, args
+            #print (args), (argumentsection)
+            #if  len(args) < len(argumentsection):
+            #    print "too short!!"
+            
             for argnum in range(0, len(argumentsection)):
                 if argnum >= len(args) and not self.argIsRequired(argumentsection[argnum]):
                     continue
