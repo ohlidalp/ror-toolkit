@@ -359,7 +359,7 @@ class RoRDepChecker:
                     fl[fn]['md5'] = self.md5Sum(fn)
         if self.verbose:                    
             for fk in fl.keys():
-                infostr = "%10s %s" % ("", fk)
+                infostr = "%10s %s" % ("", os.path.basename(fk))
                 log().info(infostr)
             log().info("found %d files!" % (len(fl.keys())))
         self.files = fl

@@ -169,8 +169,9 @@ class rorparser:
                     {'name':'second node', 'type':'node'},
                     {'name':'options', 'type':'string',
                                              'required':False,
-                                             'default':None,
+                                             'default':'n',
                                              'validvalues':[
+                                                'n', # visible, default
                                                 'v', # visible, default
                                                 'i', # this beam is invisible. Very usefull to hide "cheating" structural beam, or to improve performances once the truck is textured.
                                                 'r', # this beam is a rope (opposes no force to compression)

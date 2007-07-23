@@ -1,5 +1,5 @@
 import sys, os, os.path, re
-import subprocess 
+import subprocess,os,sys,signal,pty,time,errno,thread 
 
 from deptools import *
 
@@ -19,12 +19,58 @@ def convertToXML(filename):
     print "calling " + cmd
     
     p = subprocess.Popen(cmd, shell = False, cwd = os.path.dirname(CONVERTERBIN), stderr = subprocess.PIPE, stdout = subprocess.PIPE)
-    p.wait()
+    smart_wait_for_subprocess(p, 10)
     if not os.path.isfile(os.path.join(os.path.dirname(filename), os.path.basename(filename)+".xml")):
         print "conversion of mesh file %s failed!" % filename
     
     print "mesh converted: " + filename
 
+def smart_wait_for_subprocess(sp,timeout=30):
+    """
+    Will wait for Process given to expire, and then kill it if
+    the time elapses (or never if timeout==0). 
+    @param sp: Subprocess to watch
+    @param timeout: timeout length in seconds
+    """
+    running=1
+    try:
+        sleeps=timeout*4
+        #Just wait around for termination...
+        
+        while sp.poll()==None:
+            #print>>efp,"WAITING:",sleeps
+            sleeps-=1
+            time.sleep(.25)
+            os.kill(sp.pid,0)
+            if sleeps<=0 and timeout>0:
+                os.kill(sp.pid,signal.SIGTERM)
+                break
+            elif sleeps<=0:
+                break
+        #Did it REALLY exit? 
+        try:
+            os.kill(sp.pid,0)
+            sleeps=20
+            while sp.poll()==None:
+                #print>>efp,"KILLING:",sleeps
+                sleeps-=1
+                time.sleep(.25)
+                
+                #No? KILL IT!
+                if sleeps<=0 and timeout>0:
+                    #print>>efp,"KILLING2:",sleeps
+                    os.kill(sp.pid,signal.SIGKILL)
+                    break
+                elif sleeps<=0:
+                    break
+        except:
+            running=0
+    except:
+        #Make REALLY effing sure it exited.
+        os.kill(sp.pid,signal.SIGKILL)
+        #print>>efp,"KILLING2:",sleeps
+   
+    
 def parseRE(content):
     deps = []
     for line in content:
