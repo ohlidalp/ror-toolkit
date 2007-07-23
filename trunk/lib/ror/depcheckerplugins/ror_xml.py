@@ -1,5 +1,6 @@
-import os, os.path, re
 from deptools import *
+
+# ignore xml files!
 
 def getDependencies(filename):
     return {OPTIONAL:{},REQUIRES:{},PROVIDES:{}}

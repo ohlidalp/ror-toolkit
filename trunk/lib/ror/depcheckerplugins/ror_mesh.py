@@ -15,10 +15,14 @@ def readFile(filename):
 
 def convertToXML(filename):
     # try to convert to .msh.xml first!
-    cmd = CONVERTERBIN + " " + filename
+    cmd = CONVERTERBIN + " \"" + filename+"\""
     print "calling " + cmd
+    
     p = subprocess.Popen(cmd, shell = False, cwd = os.path.dirname(CONVERTERBIN), stderr = subprocess.PIPE, stdout = subprocess.PIPE)
     p.wait()
+    if not os.path.isfile(os.path.join(os.path.dirname(filename), os.path.basename(filename)+".xml")):
+        print "conversion of mesh file %s failed!" % filename
+    
     print "mesh converted: " + filename
 
 def parseRE(content):
@@ -41,6 +45,7 @@ def getDependencies(filename):
         content = readFile(xmlfilename)
     except Exception, e:
         print e
+        return
     dep = parseRE(content)
     if len(dep) == 0:
         print "no material found for file " + filename

@@ -260,11 +260,7 @@ class MainFrame(wx.Frame):
         dlg.Destroy()          
         
     def OnFileSave(self, event):
-        if self.terrainOgreWin.SaveTerrain():
-            dlg = wx.MessageDialog(self, "saved","info", wx.OK | wx.ICON_INFORMATION)
-            dlg.ShowModal()
-            dlg.Destroy()           
-        else:
+        if not self.terrainOgreWin.SaveTerrain():
             dlg = wx.MessageDialog(self, "error while saving, see console!\n","error", wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
@@ -276,11 +272,7 @@ class MainFrame(wx.Frame):
         dialog = wx.FileDialog(self, "Save Terrain as", default, "", "Terrain Files (*.terrn)|*.terrn", wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
         res = dialog.ShowModal()
         if res == wx.ID_OK:
-            if self.terrainOgreWin.SaveTerrain(dialog.GetPath()):
-                dlg = wx.MessageDialog(self, "saved","info", wx.OK | wx.ICON_INFORMATION)
-                dlg.ShowModal()
-                dlg.Destroy()           
-            else:
+            if not self.terrainOgreWin.SaveTerrain(dialog.GetPath()):
                 dlg = wx.MessageDialog(self, "error while saving as another file, see console!\n","error", wx.OK | wx.ICON_INFORMATION)
                 dlg.ShowModal()
                 dlg.Destroy()
@@ -298,15 +290,6 @@ class MainFrame(wx.Frame):
             self.filesavemenu.Enable(True)
             self.filesaveasmenu.Enable(True)
             filename = dialog.GetPath()
-            print filename
-
-            #del self.terrainOgreWin
-            #del self.sharedOgreWin
-            #del self.sharedOgreWin2
-            # getOgreManager().restart()
-            #self.terrainOgreWin = RoRTerrainOgreWindow(self.splitterleft, wx.ID_ANY)            
-            #self.sharedOgreWin = RoRTerrainSelectedObjectOgreWindow(self.viewsplitterup, wx.ID_ANY, self.terrainOgreWin)            
-            #self.sharedOgreWin2 = RoRTerrainSelectedObjectTopOgreWindow(self.viewsplitterdown, wx.ID_ANY, self.terrainOgreWin)            
          
             self.terrainOgreWin.LoadTerrain(filename)
             if not self.terrainOgreWin.terrain is None:

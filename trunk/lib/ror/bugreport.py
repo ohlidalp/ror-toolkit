@@ -4,7 +4,7 @@ from ror.logger import log
 from ror.settingsManager import getSettingsManager
 
 BUGREPORT_FILENAME = "hwinfo.txt"
-ATTACHEDLOGFILES = ['Ogre.log', 'ogre.cfg', 'editor.ini']
+ATTACHEDLOGFILES = ['editorlog.log', 'Ogre.log', 'ogre.cfg', 'editor.ini']
 
 class BugReportFrame(wx.Frame): 
     def __init__(self, *args, **kwds): 
@@ -63,7 +63,10 @@ some tips:
         for f in files:
             try:
                 txt += "==|==|== %s\n" % f
-                txt += self.readFile(f)
+                if os.path.isfile(f):
+                    txt += self.readFile(f)
+                else:
+                    txt += "file %s not found!" % f
             except Exception, e:
                 txt += "ERROR: %s\n" % str(e)
                 pass
