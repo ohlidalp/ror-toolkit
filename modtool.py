@@ -194,9 +194,13 @@ def work(mode, targetfile, verbose, dryrun, installtarget=None):
 
     elif mode in ["listinstalled"]:
         targets = getRoRMods(verbose)
-        log().info("### Found Mods:")
-        for target in targets:
-            log().info("  "+target)
+        if len(targets) > 0:
+            log().info("### Found Mods:")
+            for target in targets:
+                log().info("  "+target)
+        else:
+            log().info("### No Mods found!")
+            
     if mode in ["uninstall"]:
         rorpath = getSettingsManager().getSetting("RigsOfRods", "BasePath")
         log().info("### validating target ...")
@@ -230,8 +234,6 @@ def work(mode, targetfile, verbose, dryrun, installtarget=None):
             log().info("   %s" % filenamefound)
             if not dryrun:
                 os.unlink(filenamefound)
-            
-            
 
     return None
 
