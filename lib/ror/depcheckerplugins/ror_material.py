@@ -26,7 +26,8 @@ def getDependencies(filename):
     dep = parseRE(content, RE1)
     prov = parseRE(content, RE2)
     if len(dep) == 0:
-        print "no texture found in material file " + filename
+        #print "no texture found in material file " + filename
+        pass
     if len(prov) == 0:
         print "no material found in material file " + filename        
     else:
