@@ -11,6 +11,7 @@ def removetemp(reporterrors=True):
     if os.path.isdir(TEMPDIR):
         try:
             shutil.rmtree(TEMPDIR)
+            #os.rmdir(TEMPDIR)
         except Exception, err:
             if not reporterrors:
                 return
@@ -20,14 +21,18 @@ def removetemp(reporterrors=True):
 
 def ExtractToTemp(filename):
     file, extension = os.path.splitext(filename)
-    removetemp()
+    removetemp(False)
+    os.mkdir(TEMPDIR)
     if extension.lower() == ".rar":
         import UnRAR        
-        os.mkdir(TEMPDIR)
         dst = os.path.join(TEMPDIR, os.path.basename(filename))
         shutil.copyfile(filename, dst)
         os.chdir(TEMPDIR)
-        UnRAR.Archive(os.path.basename(filename)).extract() 
+        UnRAR.Archive(os.path.basename(filename)).extract()
+        
+        # remove .rar file instantly
+        os.unlink(os.path.join(TEMPDIR, os.path.basename(filename)))
+        
         # change back to current path
         os.chdir(os.path.dirname(os.path.abspath(__file__)))
         return True
@@ -36,7 +41,8 @@ def ExtractToTemp(filename):
         UnZIP.unzip(filename, TEMPDIR)
         return True
     else:
-        shutil.copyfile(filename, dst)
+        print filename, " to ", os.path.join(TEMPDIR, os.path.basename(filename))
+        shutil.copyfile(filename, os.path.join(TEMPDIR, os.path.basename(filename)))
     return False
 
 def installfile(maintarget, srcfile, dryrun):
@@ -81,7 +87,7 @@ def usage():
 
 def getTargets(verbose):
     import ror.depchecker
-    dc = ror.depchecker.RoRDepChecker(TEMPDIR, "getfiles", "", verbose)
+    dc = ror.depchecker.RoRDepChecker(TEMPDIR, "getfiles", "", False)
     targets = []
     for file in dc.files:
         filename, extension = os.path.splitext(file)
@@ -98,7 +104,85 @@ def getTargets(verbose):
             invalidtargets.append(target)
     return validtargets, invalidtargets
 
-    
+
+def work(mode, targetfile, verbose, dryrun, installtarget=None):
+    filename = os.path.abspath(targetfile)
+    ExtractToTemp(targetfile)
+    if mode == "install":
+        target = installtarget
+        log().info("### validating target ...")
+        import ror.depchecker
+        dc = ror.depchecker.RoRDepChecker(TEMPDIR, "dtree", target, verbose)
+        if dc.invalid:
+            log().error("### target invalid!")
+            log().info("### please use the list mode to get valid targets")
+            usage()
+        
+        log().info("### target valid!")
+        #print dc.dstree
+        installcounter = 0
+        for file in dc.dstree:
+            filename = file['filename']
+            filenamefound = searchFile(filename, TEMPDIR)
+            if filenamefound is None:
+                log().error("File %s not found in %s!" % (filename, TEMPDIR))
+                sys.exit(1)
+            installfile(target, filenamefound, dryrun)
+            installcounter += 1
+        if dryrun:
+            log().info("### would install %d files." % installcounter)
+        else:
+            log().info("### %d files installed, finished!" % installcounter)
+        removetemp(False)
+        return [target]    
+
+    elif mode == "installall":
+        validtargets, invalidtargets = getTargets(verbose)
+        log().info("### installing %d found modifications:" % (len(validtargets)))
+        installcounter = 0
+        for target in validtargets:
+            log().info("### installing modification '%s'" % target)
+            import ror.depchecker
+            dc = ror.depchecker.RoRDepChecker(TEMPDIR, "dtree", target, verbose)
+            if dc.dstree is None:
+                log().error("no dependenytree for File %s!" % (filename))
+                continue
+            for file in dc.dstree:
+                filename = file['filename']
+                filenamefound = searchFile(filename, TEMPDIR)
+                if filenamefound is None:
+                    log().error("File %s not found in %s!" % (filename, TEMPDIR))
+                    sys.exit(1)
+                installfile(target, filenamefound, dryrun)
+                installcounter += 1
+        if dryrun:
+            log().info("### would install %d files." % installcounter)
+        else:
+            log().info("### %d files installed, finished!" % installcounter)
+        removetemp(False)
+        return validtargets    
+    elif mode in ["list", "listall"]:
+        validtargets, invalidtargets = getTargets(verbose)
+        if mode == "listall":
+            if len(invalidtargets) > 0:
+                log().info("broken modifications found:")
+                for v in invalidtargets:
+                    log().info("  %-20s" % v)
+                log().info("use the --verbose flag to find the missing files!")
+            else:
+                log().info("no broken modifications found")
+
+        if len(validtargets) > 0:
+            log().info("installable modifications found:")
+            for v in validtargets:
+                log().info("  %-20s" % v)
+        else:
+            log().info("no installable modifications found! :(")           
+        # todo : remove workaround!
+        removetemp(False)
+        return validtargets
+    return None
+        
 def main():
     if len(sys.argv) < 3:
         usage()
@@ -123,7 +207,6 @@ def main():
         if option == "--dryrun":
             dryrun = True
 
-
     import ror.settingsManager
     path = ror.settingsManager.getSettingsManager().getSetting("RigsOfRods", "BasePath")
     if not os.path.isfile(os.path.join(path,"RoR.exe")):
@@ -137,73 +220,12 @@ def main():
     except ImportError:
         pass
         
-    filename = os.path.abspath(targetfile)
-    ExtractToTemp(filename)
-    
-    if mode == "install":
-        target = sys.argv[3]
-        import ror.depchecker
-        log().info("### validating target ...")
-        dc = ror.depchecker.RoRDepChecker(TEMPDIR, "dtree", target, verbose)
-        if dc.invalid:
-            log().error("### target invalid!")
-            log().info("### please use the list mode to get valid targets")
-            usage()
-        
-        log().info("### target valid!")
-        #print dc.dstree
-        installcounter = 0
-        for file in dc.dstree:
-            filename = file['filename']
-            filenamefound = searchFile(filename, TEMPDIR)
-            if filenamefound is None:
-                log().error("File %s not found in %s!" % (filename, TEMPDIR))
-                sys.exit(1)
-            installfile(target, filenamefound, dryrun)
-            installcounter += 1
-        if dryrun:
-            log().info("### would install %d files." % installcounter)
-        else:
-            log().info("### %d files installed, finished!" % installcounter)
-    
-    elif mode == "installall":
-        validtargets, invalidtargets = getTargets(verbose)
-        log().info("### installing %d found modifications:" % (len(validtargets)))
-        installcounter = 0
-        for target in validtargets:
-            log().info("### installing modification '%s'" % target)
-            dc = ror.depchecker.RoRDepChecker(TEMPDIR, "dtree", target, verbose)
-            for file in dc.dstree:
-                filename = file['filename']
-                filenamefound = searchFile(filename, TEMPDIR)
-                if filenamefound is None:
-                    log().error("File %s not found in %s!" % (filename, TEMPDIR))
-                    sys.exit(1)
-                installfile(target, filenamefound, dryrun)
-                installcounter += 1
-        if dryrun:
-            log().info("### would install %d files." % installcounter)
-        else:
-            log().info("### %d files installed, finished!" % installcounter)
+    if len(sys.argv) == 4:
+        installtarget = sys.argv[3]
+    else:
+        installtarget = None
+    work(mode, targetfile, verbose, dryrun, installtarget)
 
-    elif mode in ["list", "listall"]:
-        validtargets, invalidtargets = getTargets(verbose)
-        if mode == "listall":
-            if len(invalidtargets) > 0:
-                print "broken modifications found:"
-                for v in invalidtargets:
-                    print "  %-20s" % v
-                print "use the --verbose flag to find the missing files!"
-            else:
-                print "no broken modifications found:"
-
-        if len(validtargets) > 0:
-            print "installable modifications found: "
-            for v in validtargets:
-                print "  %-20s" % v
-        else:
-            print "no installable modifications found! :("            
-    removetemp(False)
     
 
 if __name__=="__main__":
