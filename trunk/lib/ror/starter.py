@@ -63,6 +63,9 @@ class SettingsDialog(wx.Frame):
         
         self.btnDepGraph = wx.Button(self.panel, wx.ID_ANY, "Create dependency Graph")
         self.Bind(wx.EVT_BUTTON, self.OnDepGraph, self.btnDepGraph)
+
+        self.btnRepClient = wx.Button(self.panel, wx.ID_ANY, "Open Repository Client")
+        self.Bind(wx.EVT_BUTTON, self.OnRepClient, self.btnRepClient)
         
         self.btnExit = wx.Button(self.panel, wx.ID_ANY, "Exit")
         self.Bind(wx.EVT_BUTTON, self.OnExit, self.btnExit)
@@ -77,6 +80,10 @@ class SettingsDialog(wx.Frame):
         
         self.renderSystem = RENDERSYSTEMS[0]
 
+    def OnRepClient(self, event=None):
+        import repomanager
+        repomanager.main()
+        
     def displayRoRDir(self):
         if self.rordir == "":
             self.btnStartRoR.Enable(False)
@@ -241,6 +248,7 @@ class SettingsDialog(wx.Frame):
         sizer_panel.Add(self.btnBugReport, 0, wx.EXPAND, 0)
         sizer_panel.Add(self.btnUpdate, 0, wx.EXPAND, 0)
         sizer_panel.Add(self.btnDepGraph, 0, wx.EXPAND, 0)
+        sizer_panel.Add(self.btnRepClient, 0, wx.EXPAND, 0)
         sizer_panel.Add(self.btnExit, 0, wx.EXPAND, 0)
         self.panel.SetSizer(sizer_panel)
 
