@@ -27,7 +27,11 @@ def parseRE(content, r):
             if valname == "truck":
                 valname = valnameg[-1].strip()
             if not valname in vals:
-                vals.append(valname)
+                try:
+                    # workaround to ignore float numbers in here!
+                    str(int(valname.replace(".",""))) == valname.replace(".","")
+                except:
+                    vals.append(valname)
     # remove position info
     if len(vals) > 0:
         del vals[0]
