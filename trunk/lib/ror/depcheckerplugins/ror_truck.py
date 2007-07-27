@@ -6,7 +6,7 @@ def getDependencies(filename):
     p = rorparser()
     p.parse(filename, verbose=False)
     if not 'globals' in p.tree.keys():
-        print "truck parsing error on file " + filename
+        log().error("truck parsing error on file " + filename)
     truckfilename = os.path.basename(filename)
     truckname, ext = os.path.splitext(truckfilename)
     matname = p.tree['globals'][0]['data'][2]

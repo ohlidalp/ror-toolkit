@@ -8,8 +8,9 @@ class MyLog(ogre.LogListener):
                  
     def messageLogged(self, message, level, debug, logName):
         # This should be called by Ogre instead of logging
-        print 'Python Logger Called -- Listener works !!!'
-        print ">>>", message
+        #print 'Python Logger Called -- Listener works !!!'
+        #print ">>>", message
+        pass
 
 def initOgreLogging():
     # Create the global log manager instance

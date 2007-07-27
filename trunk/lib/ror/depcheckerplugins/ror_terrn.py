@@ -62,7 +62,7 @@ def getDependencies(filename):
     terrnname, ext = os.path.splitext(os.path.basename(filename))
     
     if len(dep) == 0:
-        print "no objects found in terrain file " + filename
+        log().error("no objects found in terrain file " + filename)
     else:
         return {
                 OPTIONAL:{

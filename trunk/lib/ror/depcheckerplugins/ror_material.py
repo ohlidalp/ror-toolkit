@@ -29,7 +29,7 @@ def getDependencies(filename):
         #print "no texture found in material file " + filename
         pass
     if len(prov) == 0:
-        print "no material found in material file " + filename        
+        log().info("no material found in material file " + filename)
     else:
         return {
                 OPTIONAL:{

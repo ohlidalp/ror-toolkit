@@ -23,7 +23,7 @@ def notify(event_dict):
     global changes
     changes += 1
     #print event_dict
-    print str(event_dict['action']) + ", " + event_dict['path']
+    log().info(str(event_dict['action']) + ", " + event_dict['path'])
 
 def getRevision(client=None, path=None):
     if client is None:
@@ -46,7 +46,7 @@ def checkForUpdate():
              strict_node_history=True,
              limit=0)
         for e in log:
-            print "--- r%d, author: %s:\n%s\n" %(e['revision'].number, e['author'], e['message'])            
+            log().info("--- r%d, author: %s:\n%s\n" %(e['revision'].number, e['author'], e['message']))
         if len(log) > 0:
             return True
     except:
@@ -65,11 +65,11 @@ def getLog(client, startrev, endrev):
          limit=0)
 
 def showLog(client, startrev, endrev):
-    print "------------------------------------"
-    print "Changelog from revision %d to revision %d\n" % (startrev, endrev)
+    log().info("------------------------------------")
+    log().info("Changelog from revision %d to revision %d\n" % (startrev, endrev))
     log = getLog(client, startrev, endrev)
     for e in log:
-        print "--- r%d, author: %s:\n%s\n" %(e['revision'].number, e['author'], e['message'])
+        log().info("--- r%d, author: %s:\n%s\n" %(e['revision'].number, e['author'], e['message']))
          
 def svnupdate(callback = None):
     global changes
@@ -86,7 +86,7 @@ def svnupdate(callback = None):
             pass
         
         revision_before = getRevision(client, path)
-        print "updating from revision %d ..." % revision_before
+        log().info("updating from revision %d ..." % revision_before)
         if callback is None:
             client.callback_notify = notify
         else:
@@ -97,21 +97,21 @@ def svnupdate(callback = None):
                       revision = pysvn.Revision(pysvn.opt_revision_kind.head),
                       ignore_externals = False)
         revision_after = getRevision(client, path)
-        print "updated to revision %d." % revision_after
+        log().info("updated to revision %d." % revision_after)
         if revision_before == revision_after and changes == 2:
-            print "already up to date!"
+            log().info("already up to date!")
         elif changes > 2:
             if revision_before != revision_after:
-                print "updated! please restart the application!"
+                log().info("updated! please restart the application!")
                 showLog(client, revision_before + 1, revision_after)
             else:
-                print "no files updated, but restored! please restart the application!"
+                log().info("no files updated, but restored! please restart the application!")
     except Exception, inst:
-        print "error while updating: " + str(inst)
-        print "done."
+        log().error( "error while updating: " + str(inst))
+        log().error("done.")
     
 def svncheckout():
-    print "checkout"
+    log().info("checkout")
     path = getRootPath()
     changes = 0
     try:
@@ -119,7 +119,7 @@ def svncheckout():
         client.callback_notify = notify
         client.checkout(URL, path)
     except:
-        print "error while checkout!"
+        log().error("error while checkout!")
 
 def createBackup():
     import shutil
