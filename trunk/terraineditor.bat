@@ -1,1 +1,2 @@
-@%systemdrive%\python25\python.exe terraineditor.py %1 %2 %3 %4 %5 %6 %7 %8 %9
+@postinstall.bat terraineditor
+@%systemdrive%\python25\python.exe terraineditor.py %*
