@@ -2,7 +2,7 @@ import sys, os, os.path, subprocess
 
 def getBATFiles():
     batfiles = []
-    dir = os.path.dirname(os.path.abspath(__file__))
+    dir = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
     for filename in os.listdir(dir):
         filenameonly, extension = os.path.splitext(filename)
         if extension.lower() == ".bat":
@@ -18,6 +18,8 @@ def addPath(filename, installpath):
     basename = os.path.basename(filename)
     filenameonly, extension = os.path.splitext(basename)
     thispath = os.path.join(installpath, filenameonly+".py")
+    if not os.path.isfile(thispath):
+        thispath = os.path.join(installpath, filenameonly+".pyw")
     pythonpath = "%systemdrive%\python25\pythonw.exe"
     content = ["@%s %s %%*" % (pythonpath, thispath)]
     saveFile(filename, content)

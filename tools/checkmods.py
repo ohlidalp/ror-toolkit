@@ -1,6 +1,6 @@
 import os.path, sys, installmod, time
 
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib"))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib"))
 from ror.logger import log
 from ror.settingsManager import getSettingsManager
 

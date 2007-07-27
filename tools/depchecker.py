@@ -18,7 +18,7 @@ def main():
     main method
     """
 
-    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib"))
+    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib"))
     import ror.settingsManager
     path = ror.settingsManager.getSettingsManager().getSetting("RigsOfRods", "BasePath")
     if not os.path.isfile(os.path.join(path,"RoR.exe")):
