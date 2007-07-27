@@ -1,10 +1,13 @@
 #!/bin/env python
 # Thomas Fischer 16/05/2007 thomas (at) thomasfischer.biz
 import sys, os, os.path, tempfile, pickle
-    ## default values: required:True
-    ## please note: unkown args are marked with 'WHAT IS THIS'
+from ror.logger import log
+from ror.settingsManager import getSettingsManager
+
+    # default values: required:True
+    # please note: unkown args are marked with 'WHAT IS THIS'
 class rorparser:
-    ### This specifies all valid commands
+    # This specifies all valid commands
     commands = {
                 # set_beam_defaults changes the beams (but also the hydros and ropes) default characteristics that will be used for the beams declared after the line. You can use this line many times to make different groups of beams that have different characteristics (e.g. stronger chassis, softer cab, etc.). This method is better than the globeams command that is now deprecated. The parameters comes on the same line, after set_beam_defaults. You can use the first parameters (most usefull) and safely ignore the last parameters.
                 'set_beam_defaults':[
@@ -605,7 +608,7 @@ class rorparser:
             line = content[lineno]
             # strip line-endings
             line = line.strip()
-            #print lineno, line
+            #log.info(lineno+","+ line)
             if line.strip() == "":
                 # add blank lines to comments
                 self.addComment(actualsection, line, lineno, False)
@@ -741,14 +744,15 @@ class rorparser:
     def save(self):
         #(fid, filename) = tempfile.mkstemp(suffix='.RoRObject')
         filename = self.filename + "_pickle"
-        print "trying to save Settings to file %s for file %s" % (filename, os.path.basename(self.filename))
+        log().info("trying to save Settings to file %s for file %s" % (filename, os.path.basename(self.filename)))
         try:
             fh = open(filename, 'w')
             pickle.dump(self.tree, fh)
             fh.close()
-            print "saving successfull!"
-        except:
-            print "error while saving settings"
+            log().info("saving successfull!")
+        except Exception, err:
+            log().error("error while saving settings")
+            log().error(str(err))
 
 
     def isFloat(self, s):
@@ -759,32 +763,34 @@ class rorparser:
         return i
 
     def printtree(self):
+        rstr = ""
         for s in self.tree.keys():
             if len(self.tree[s]) == 0:
                 continue
-            print ""
-            print "==========================================================================================================================================================================="
-            print "%s: %d" % (s, len(self.tree[s]))
+            rstr += "\n"
+            rstr += "===========================================================================================================================================================================\n"
+            rstr +=  "%s: %d\n" % (s, len(self.tree[s]))
             # for non original columns (generated ones)
             if not self.sections.has_key(s):
-                print self.tree[s]
+                rstr += self.tree[s]
                 continue
             for column in self.sections[s]:
-                sys.stdout.write("| %-15s" % (column['name'][0:15]))
-            sys.stdout.write("\n")
-            print "---------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
+                rstr += "| %-15s" % (column['name'][0:15])
+            rstr += "\n"
+            rstr +=  "---------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"
             for line in self.tree[s]:
                 for arg in line['data']:
                     try:
                         if arg.isdigit() or self.isFloat(arg):
-                            sys.stdout.write("|%15.3f " % (round(float(arg),4)))
+                            rstr +=  "|%15.3f " % (round(float(arg),4))
                         else:
-                            sys.stdout.write("|%15s " % (str(arg)[0:15]))
+                            rstr +=  "|%15s " % (str(arg)[0:15])
                     except:
-                        sys.stdout.write("|%15s " % (str(arg)[0:15]))
+                        rstr += "|%15s " % (str(arg)[0:15])
                 if 'errors' in line.keys():
-                    sys.stdout.write("[ERRORS: %d] "%(len(line['errors'])))
-                sys.stdout.write("(origin: %d)\n"%(line['originline']))
+                    rstr +=  "[ERRORS: %d] "%(len(line['errors']))
+                rstr += "(origin: %d)\n"%(line['originline'])
+        log().info(rstr)
 
     def getLine(self, lineno):
         for skey in self.tree.keys():
@@ -820,8 +826,8 @@ class rorparser:
             result.append(data)
             n = self.getnextLine(n['originline'])
         
-        for r in result:
-            print r
+        #for r in result:
+        #    print r
 
     def getnextLine(self, lineno):
         value = {'originline':9999999999}

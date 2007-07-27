@@ -25,7 +25,7 @@ class ImagePanel(wx.Panel):
             jpg1 = wx.Image(imageFile, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             wx.StaticBitmap(self, wx.ID_ANY, jpg1, (0, 0), (jpg1.GetWidth(), jpg1.GetHeight()))
         except IOError:
-            print "Image file %s not found" % imageFile
+            log().error("Image file %s not found" % imageFile)
             raise SystemExit
 
 
@@ -128,7 +128,7 @@ class SettingsDialog(wx.Frame):
         import ror.depchecker
         ror.depchecker.RoRDepChecker(self.rordir, "all", "")
         file = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..\\..\\graphs\\alldependencies.png"))
-        print file
+        #print file
         if os.path.isfile(file):
             dlg = wx.MessageDialog(self, "Graph successfully created:\n"+file, "Info", wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
