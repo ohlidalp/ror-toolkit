@@ -2,7 +2,7 @@
 
 import repoclient
 
-import wx, wx.grid, wx.html, os, os.path, base64
+import wx, wx.grid, wx.html, os, os.path, base64, sys
 from datetime import *
 
 class HtmlRenderer(wx.grid.PyGridCellRenderer):
@@ -79,7 +79,14 @@ class RepoClientTest(wx.Frame):
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
         self.grid_1 = wx.grid.Grid(self, -1, size=(1, 1))
-        self.data = repoclient.getFiles(-1)
+        try:
+            self.data = repoclient.getFiles(-1)
+        except:
+            dlg = wx.MessageDialog(self, "Repository Server is unavailable right now. Please note that the server is in a beta stage and that it is not online every time.", "Info", wx.OK | wx.ICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
+            self.Close()
+            return
         self.__set_properties()
         self.__do_layout()
 
