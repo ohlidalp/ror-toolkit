@@ -127,7 +127,7 @@ class SettingsDialog(wx.Frame):
     def OnDepGraph(self, event=None):
         import ror.depchecker
         ror.depchecker.RoRDepChecker(self.rordir, "all", "")
-        file = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..\\..\\graphs\\alldependencies.png"))
+        file = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "graphs", "alldependencies.png"))
         #print file
         if os.path.isfile(file):
             dlg = wx.MessageDialog(self, "Graph successfully created:\n"+file, "Info", wx.OK | wx.ICON_INFORMATION)
@@ -135,6 +135,10 @@ class SettingsDialog(wx.Frame):
             dlg.Destroy()
             cmd = file
             p = subprocess.Popen(cmd, shell = True, stderr = subprocess.PIPE, stdout = subprocess.PIPE)
+        else:
+            dlg = wx.MessageDialog(self, "Graph creation failed :(", "Info", wx.OK | wx.ICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
     
         
     def OnUpdate(self, event=None):

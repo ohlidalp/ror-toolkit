@@ -42,6 +42,8 @@ CRCCheck on
 !insertmacro MUI_PAGE_WELCOME
 ; License page
 !insertmacro MUI_PAGE_LICENSE "readme-installer.txt"
+; Components page
+!insertmacro MUI_PAGE_COMPONENTS
 ; Directory page
 !insertmacro MUI_PAGE_DIRECTORY
 ; Instfiles page
@@ -84,6 +86,7 @@ OutFile "RoRToolkitSetup.exe"
 InstallDir "c:\rortoolkit"
 ShowInstDetails show
 ShowUnInstDetails show
+
 
 Var /GLOBAL PYOK
 Var /GLOBAL PYPATH
@@ -186,18 +189,18 @@ Function InstallGraphViz
 FunctionEnd
 
 Function InstallRoRRepoReg
-        InitPluginsDir
-        File /oname=$PLUGINSDIR\graphviz-2.12.exe "..\rorrepo.reg"
-        Banner::show /NOUNLOAD "Installing RoR Repository Protocol Extensions ..."
-        ExecWait '"regedit /s $PLUGINSDIR\rorrepo.reg"'
-        Delete $PLUGINSDIR\rorrepo.reg
-        Banner::destroy
+         Banner::show /NOUNLOAD "Updating RoR Repository Protocol Extensions ..."
+         WriteRegStr HKCR "RoRRepo" "" "URL:RoRRepo Protocol"
+         WriteRegStr HKCR "RoRRepo" "URL Protocol" ""
+         WriteRegStr HKCR "RoRRepo\shell" "" ""
+         WriteRegStr HKCR "RoRRepo\shell\open" "" ""
+         WriteRegStr HKCR "RoRRepo\shell\open\command" "" "'$INSTPATH' 'installrepo' '%1'"
+         Banner::destroy
 FunctionEnd
-
 
 Function .onInit
         InitPluginsDir
-        File /oname=$PLUGINSDIR\..bmp "splash.bmp"
+        File /oname=$PLUGINSDIR\splash.bmp "splash.bmp"
         advsplash::show 1000 1300 600 -1 $PLUGINSDIR\splash
         Pop $0
         Delete $PLUGINSDIR\splash.bmp
@@ -213,13 +216,13 @@ Section "Install Tools" SEC02
   Call InstallPyWin32
   Call InstallPyParsing
   Call InstallGraphViz
-  Call InstallRoRRepoReg
+  Call ChangeRoRRepoReg
 SectionEnd
 
 Section "Full Installation" SEC03
   SetOutPath "$INSTDIR"
   SetOverwrite try
-  File "/r" "..\..\*"
+  File /r /x *.pyc /x .svn /x ..\..\tools\3rdparty /x ..\devtools ..\..\*
 SectionEnd
 
 Function "LaunchPostInstallation"
@@ -270,3 +273,147 @@ Section Uninstall
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
   SetAutoClose false
 SectionEnd
+
+# tools following:
+Function AdvReplaceInFile
+Exch $0 ;file to replace in
+Exch
+Exch $1 ;number to replace after
+Exch
+Exch 2
+Exch $2 ;replace and onwards
+Exch 2
+Exch 3
+Exch $3 ;replace with
+Exch 3
+Exch 4
+Exch $4 ;to replace
+Exch 4
+Push $5 ;minus count
+Push $6 ;universal
+Push $7 ;end string
+Push $8 ;left string
+Push $9 ;right string
+Push $R0 ;file1
+Push $R1 ;file2
+Push $R2 ;read
+Push $R3 ;universal
+Push $R4 ;count (onwards)
+Push $R5 ;count (after)
+Push $R6 ;temp file name
+
+  GetTempFileName $R6
+  FileOpen $R1 $0 r ;file to search in
+  FileOpen $R0 $R6 w ;temp file
+   StrLen $R3 $4
+   StrCpy $R4 -1
+   StrCpy $R5 -1
+
+loop_read:
+ ClearErrors
+ FileRead $R1 $R2 ;read line
+ IfErrors exit
+
+   StrCpy $5 0
+   StrCpy $7 $R2
+
+loop_filter:
+   IntOp $5 $5 - 1
+   StrCpy $6 $7 $R3 $5 ;search
+   StrCmp $6 "" file_write2
+   StrCmp $6 $4 0 loop_filter
+
+StrCpy $8 $7 $5 ;left part
+IntOp $6 $5 + $R3
+IntCmp $6 0 is0 not0
+is0:
+StrCpy $9 ""
+Goto done
+not0:
+StrCpy $9 $7 "" $6 ;right part
+done:
+StrCpy $7 $8$3$9 ;re-join
+
+IntOp $R4 $R4 + 1
+StrCmp $2 all file_write1
+StrCmp $R4 $2 0 file_write2
+IntOp $R4 $R4 - 1
+
+IntOp $R5 $R5 + 1
+StrCmp $1 all file_write1
+StrCmp $R5 $1 0 file_write1
+IntOp $R5 $R5 - 1
+Goto file_write2
+
+file_write1:
+ FileWrite $R0 $7 ;write modified line
+Goto loop_read
+
+file_write2:
+ FileWrite $R0 $R2 ;write unmodified line
+Goto loop_read
+
+exit:
+  FileClose $R0
+  FileClose $R1
+
+   SetDetailsPrint none
+  Delete $0
+  Rename $R6 $0
+  Delete $R6
+   SetDetailsPrint both
+
+Pop $R6
+Pop $R5
+Pop $R4
+Pop $R3
+Pop $R2
+Pop $R1
+Pop $R0
+Pop $9
+Pop $8
+Pop $7
+Pop $6
+Pop $5
+Pop $0
+Pop $1
+Pop $2
+Pop $3
+Pop $4
+FunctionEnd
+
+
+Function StrRep
+  Exch $R4 ; $R4 = Replacement String
+  Exch
+  Exch $R3 ; $R3 = String to replace (needle)
+  Exch 2
+  Exch $R1 ; $R1 = String to do replacement in (haystack)
+  Push $R2 ; Replaced haystack
+  Push $R5 ; Len (needle)
+  Push $R6 ; len (haystack)
+  Push $R7 ; Scratch reg
+  StrCpy $R2 ""
+  StrLen $R5 $R3
+  StrLen $R6 $R1
+loop:
+  StrCpy $R7 $R1 $R5
+  StrCmp $R7 $R3 found
+  StrCpy $R7 $R1 1 ; - optimization can be removed if U know len needle=1
+  StrCpy $R2 "$R2$R7"
+  StrCpy $R1 $R1 $R6 1
+  StrCmp $R1 "" done loop
+found:
+  StrCpy $R2 "$R2$R4"
+  StrCpy $R1 $R1 $R6 $R5
+  StrCmp $R1 "" done loop
+done:
+  StrCpy $R3 $R2
+  Pop $R7
+  Pop $R6
+  Pop $R5
+  Pop $R2
+  Pop $R1
+  Pop $R4
+  Exch $R3
+FunctionEnd

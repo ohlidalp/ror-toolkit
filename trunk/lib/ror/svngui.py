@@ -23,8 +23,7 @@ class svnUpdate():
         del self.pr
         
     def restart(self):
-        path = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),"..\\.."))
-        path = os.path.join(path, "updaterestart.bat")
+        path = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "updaterestart.py"))
         log().info("restarting ...")
         p = Popen(path, shell = True)
         sys.exit(0)
