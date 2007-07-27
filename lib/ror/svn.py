@@ -80,9 +80,24 @@ def svnupdate(callback = None):
         
         # try to restore previous broken updates
         try:
-            client.unlock(path)
             client.cleanup(path)
-        except:
+        except Exception, err:
+            log().error("Error while svn cleanup:")
+            log().error(str(err))
+            pass
+
+        try:
+            client.resolved(path, reverse=True)
+        except Exception, err:
+            log().error("Error while svn resolved:")
+            log().error(str(err))
+            pass
+
+        try:
+            client.unlock(path)
+        except Exception, err:
+            log().error("Error while svn unlock:")
+            log().error(str(err))
             pass
         
         revision_before = getRevision(client, path)

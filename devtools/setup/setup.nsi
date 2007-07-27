@@ -55,7 +55,7 @@ CRCCheck on
 
 !define MUI_FINISHPAGE_NOAUTOCLOSE
 !define MUI_FINISHPAGE_RUN
-!define MUI_FINISHPAGE_RUN_NOTCHECKED
+;!define MUI_FINISHPAGE_RUN_NOTCHECKED
 !define MUI_FINISHPAGE_RUN_TEXT "Update and start (Can take some time)"
 !define MUI_FINISHPAGE_RUN_FUNCTION "LaunchPostInstallation"
 !insertmacro MUI_PAGE_FINISH
@@ -78,6 +78,9 @@ CRCCheck on
 ; Reserve files
 !insertmacro MUI_RESERVEFILE_INSTALLOPTIONS
 
+InstType /NOCUSTOM
+InstType "full"
+InstType "minimal"
 ; MUI end ------
 
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
@@ -86,7 +89,6 @@ OutFile "RoRToolkitSetup.exe"
 InstallDir "c:\rortoolkit"
 ShowInstDetails show
 ShowUnInstDetails show
-
 
 Var /GLOBAL PYOK
 Var /GLOBAL PYPATH
@@ -188,13 +190,13 @@ Function InstallGraphViz
         Banner::destroy
 FunctionEnd
 
-Function InstallRoRRepoReg
+Function ChangeRoRRepoReg
          Banner::show /NOUNLOAD "Updating RoR Repository Protocol Extensions ..."
          WriteRegStr HKCR "RoRRepo" "" "URL:RoRRepo Protocol"
          WriteRegStr HKCR "RoRRepo" "URL Protocol" ""
          WriteRegStr HKCR "RoRRepo\shell" "" ""
          WriteRegStr HKCR "RoRRepo\shell\open" "" ""
-         WriteRegStr HKCR "RoRRepo\shell\open\command" "" "'$INSTPATH' 'installrepo' '%1'"
+         WriteRegStr HKCR "RoRRepo\shell\open\command" "" "'$INSTDIR' 'installrepo' '%1'"
          Banner::destroy
 FunctionEnd
 
@@ -207,23 +209,37 @@ Function .onInit
         !insertmacro MUI_LANGDLL_DISPLAY
 FunctionEnd
 
-Section "Install Python" SEC01
+Section "-Install Python" SEC01
+  SectionIn 1 2 RO
   Call CheckForPython
 SectionEnd
 
-Section "Install Tools" SEC02
+Section "Required Tools" SEC02
+  SectionIn 1 2 RO
   Call InstallDirectX
+SectionEnd
+
+Section /o "Optional Tools" SEC03
+  SectionIn 1
   Call InstallPyWin32
   Call InstallPyParsing
   Call InstallGraphViz
-  Call ChangeRoRRepoReg
 SectionEnd
 
-Section "Full Installation" SEC03
+Section "!RoR Toolkit" SEC04
+  SectionIn 1 2 RO
   SetOutPath "$INSTDIR"
   SetOverwrite try
-  File /r /x *.pyc /x .svn /x ..\..\tools\3rdparty /x ..\devtools ..\..\*
+  File /r /x *.pyc /x ..\..\tools\3rdparty /x ..\..\downloaded /x ..\..\graphs /x .. ..\..\*
 SectionEnd
+
+
+!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+!insertmacro MUI_DESCRIPTION_TEXT ${SEC01} "installs python 2.5"
+!insertmacro MUI_DESCRIPTION_TEXT ${SEC02} "installs required Tools (directX)"
+!insertmacro MUI_DESCRIPTION_TEXT ${SEC03} "installs optional Tools (PyWin32 for bugreporting, PyParsing and GraphViz for Dependency Graphs)"
+!insertmacro MUI_DESCRIPTION_TEXT ${SEC04} "installs the RoR Toolkit. It includes the Truckeditor, Terraineditor and various tools"
+!insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 Function "LaunchPostInstallation"
   ExecWait '"$INSTDIR\update.bat"'
@@ -241,6 +257,7 @@ Section -AdditionalIcons
 SectionEnd
 
 Section -Post
+  Call ChangeRoRRepoReg
   WriteUninstaller "$INSTDIR\uninst.exe"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\uninst.exe"
@@ -273,147 +290,3 @@ Section Uninstall
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
   SetAutoClose false
 SectionEnd
-
-# tools following:
-Function AdvReplaceInFile
-Exch $0 ;file to replace in
-Exch
-Exch $1 ;number to replace after
-Exch
-Exch 2
-Exch $2 ;replace and onwards
-Exch 2
-Exch 3
-Exch $3 ;replace with
-Exch 3
-Exch 4
-Exch $4 ;to replace
-Exch 4
-Push $5 ;minus count
-Push $6 ;universal
-Push $7 ;end string
-Push $8 ;left string
-Push $9 ;right string
-Push $R0 ;file1
-Push $R1 ;file2
-Push $R2 ;read
-Push $R3 ;universal
-Push $R4 ;count (onwards)
-Push $R5 ;count (after)
-Push $R6 ;temp file name
-
-  GetTempFileName $R6
-  FileOpen $R1 $0 r ;file to search in
-  FileOpen $R0 $R6 w ;temp file
-   StrLen $R3 $4
-   StrCpy $R4 -1
-   StrCpy $R5 -1
-
-loop_read:
- ClearErrors
- FileRead $R1 $R2 ;read line
- IfErrors exit
-
-   StrCpy $5 0
-   StrCpy $7 $R2
-
-loop_filter:
-   IntOp $5 $5 - 1
-   StrCpy $6 $7 $R3 $5 ;search
-   StrCmp $6 "" file_write2
-   StrCmp $6 $4 0 loop_filter
-
-StrCpy $8 $7 $5 ;left part
-IntOp $6 $5 + $R3
-IntCmp $6 0 is0 not0
-is0:
-StrCpy $9 ""
-Goto done
-not0:
-StrCpy $9 $7 "" $6 ;right part
-done:
-StrCpy $7 $8$3$9 ;re-join
-
-IntOp $R4 $R4 + 1
-StrCmp $2 all file_write1
-StrCmp $R4 $2 0 file_write2
-IntOp $R4 $R4 - 1
-
-IntOp $R5 $R5 + 1
-StrCmp $1 all file_write1
-StrCmp $R5 $1 0 file_write1
-IntOp $R5 $R5 - 1
-Goto file_write2
-
-file_write1:
- FileWrite $R0 $7 ;write modified line
-Goto loop_read
-
-file_write2:
- FileWrite $R0 $R2 ;write unmodified line
-Goto loop_read
-
-exit:
-  FileClose $R0
-  FileClose $R1
-
-   SetDetailsPrint none
-  Delete $0
-  Rename $R6 $0
-  Delete $R6
-   SetDetailsPrint both
-
-Pop $R6
-Pop $R5
-Pop $R4
-Pop $R3
-Pop $R2
-Pop $R1
-Pop $R0
-Pop $9
-Pop $8
-Pop $7
-Pop $6
-Pop $5
-Pop $0
-Pop $1
-Pop $2
-Pop $3
-Pop $4
-FunctionEnd
-
-
-Function StrRep
-  Exch $R4 ; $R4 = Replacement String
-  Exch
-  Exch $R3 ; $R3 = String to replace (needle)
-  Exch 2
-  Exch $R1 ; $R1 = String to do replacement in (haystack)
-  Push $R2 ; Replaced haystack
-  Push $R5 ; Len (needle)
-  Push $R6 ; len (haystack)
-  Push $R7 ; Scratch reg
-  StrCpy $R2 ""
-  StrLen $R5 $R3
-  StrLen $R6 $R1
-loop:
-  StrCpy $R7 $R1 $R5
-  StrCmp $R7 $R3 found
-  StrCpy $R7 $R1 1 ; - optimization can be removed if U know len needle=1
-  StrCpy $R2 "$R2$R7"
-  StrCpy $R1 $R1 $R6 1
-  StrCmp $R1 "" done loop
-found:
-  StrCpy $R2 "$R2$R4"
-  StrCpy $R1 $R1 $R6 $R5
-  StrCmp $R1 "" done loop
-done:
-  StrCpy $R3 $R2
-  Pop $R7
-  Pop $R6
-  Pop $R5
-  Pop $R2
-  Pop $R1
-  Pop $R4
-  Exch $R3
-FunctionEnd
