@@ -1,0 +1,12 @@
+REGEDIT4
+
+[HKEY_CLASSES_ROOT\RoRRepo]
+@="URL:RoRRepo Protocol"
+"URL Protocol"=""
+
+[HKEY_CLASSES_ROOT\RoRRepo\shell]
+
+[HKEY_CLASSES_ROOT\RoRRepo\shell\open]
+
+[HKEY_CLASSES_ROOT\RoRRepo\shell\open\command]
+@="\"D:\\projects\\sfproject\\svn\\trunk\\modtool.bat\" \"installrepo\" \"%1\"" 
