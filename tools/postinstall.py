@@ -17,10 +17,14 @@ def saveFile(filename, lines):
 def addPath(filename, installpath):
     basename = os.path.basename(filename)
     filenameonly, extension = os.path.splitext(basename)
+    
+    # with console
     thispath = os.path.join(installpath, filenameonly+".py")
+    pythonpath = "%systemdrive%\python25\python.exe"
     if not os.path.isfile(thispath):
+        # without console
         thispath = os.path.join(installpath, filenameonly+".pyw")
-    pythonpath = "%systemdrive%\python25\pythonw.exe"
+        pythonpath = "%systemdrive%\python25\pythonw.exe"
     content = ["@%s %s %%*" % (pythonpath, thispath)]
     saveFile(filename, content)
 
