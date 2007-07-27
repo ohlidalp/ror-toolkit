@@ -18,7 +18,7 @@ def addPath(filename, installpath):
     basename = os.path.basename(filename)
     filenameonly, extension = os.path.splitext(basename)
     thispath = os.path.join(installpath, filenameonly+".py")
-    pythonpath = "%systemdrive%\python25\python.exe"
+    pythonpath = "%systemdrive%\python25\pythonw.exe"
     content = ["@%s %s %%*" % (pythonpath, thispath)]
     saveFile(filename, content)
 
