@@ -188,7 +188,7 @@ FunctionEnd
 
 Function .onInit
         InitPluginsDir
-        File /oname=$PLUGINSDIR\splash.bmp "splash.bmp"
+        File /oname=$PLUGINSDIR\..bmp "splash.bmp"
         advsplash::show 1000 1300 600 -1 $PLUGINSDIR\splash
         Pop $0
         Delete $PLUGINSDIR\splash.bmp
@@ -209,7 +209,7 @@ SectionEnd
 Section "Full Installation" SEC03
   SetOutPath "$INSTDIR"
   SetOverwrite try
-  File "/r" "*"
+  File "/r" "..\..\*"
 SectionEnd
 
 Function "LaunchPostInstallation"
