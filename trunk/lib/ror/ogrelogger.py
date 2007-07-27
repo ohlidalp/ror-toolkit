@@ -25,5 +25,5 @@ def initOgreLogging():
     currentLog.addListener ( myLog )    
 
     # And test it
-    ogre.LogManager.getSingletonPtr().logMessage('Should Not Appear',
-                                                 ogre.LML_CRITICAL, False) 
+    #ogre.LogManager.getSingletonPtr().logMessage('Should Not Appear',
+    #                                             ogre.LML_CRITICAL, False) 
