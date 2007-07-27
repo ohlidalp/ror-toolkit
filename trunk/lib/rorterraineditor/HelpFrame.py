@@ -8,7 +8,7 @@ class HelpFrame(wx.Frame):
         self.btnExit = wx.Button(self, wx.ID_ANY, "OK")
         self.Bind(wx.EVT_BUTTON, self.onExit , self.btnExit)
         self.__do_layout()
-        self.filename = "terrainreadme.txt"
+        self.filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "terrainreadme.txt")
         self.LoadHelp()
 
     def LoadHelp(self):
