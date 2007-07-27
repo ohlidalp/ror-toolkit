@@ -150,7 +150,7 @@ FunctionEnd
 
 Function InstallDirectX
         InitPluginsDir
-        File /oname=$PLUGINSDIR\dxwebsetup.exe "tools\dxwebsetup.exe"
+        File /oname=$PLUGINSDIR\dxwebsetup.exe "..\..\tools\3rdparty\dxwebsetup.exe"
         Banner::show /NOUNLOAD "Installing lastest DirectX ..."
         ExecWait '"$PLUGINSDIR\dxwebsetup.exe /Q"'
         Delete $PLUGINSDIR\dxwebsetup.exe
@@ -160,7 +160,7 @@ FunctionEnd
 
 Function InstallPyWin32
         InitPluginsDir
-        File /oname=$PLUGINSDIR\pywin32-setup.exe "tools\pywin32-setup.exe"
+        File /oname=$PLUGINSDIR\pywin32-setup.exe "..\..\tools\3rdparty\pywin32-setup.exe"
         Banner::show /NOUNLOAD "Installing Python for Windows ..."
         ExecWait '"$PLUGINSDIR\pywin32-setup.exe"'
         Delete $PLUGINSDIR\pywin32-setup.exe
@@ -169,7 +169,7 @@ FunctionEnd
 
 Function InstallPyParsing
         InitPluginsDir
-        File /oname=$PLUGINSDIR\pyparsing-1.4.6.win32.exe "tools\pyparsing-1.4.6.win32.exe"
+        File /oname=$PLUGINSDIR\pyparsing-1.4.6.win32.exe "..\..\tools\3rdparty\pyparsing-1.4.6.win32.exe"
         Banner::show /NOUNLOAD "Installing PyParsing Python Module ..."
         ExecWait '"$PLUGINSDIR\pyparsing-1.4.6.win32.exe"'
         Delete $PLUGINSDIR\pyparsing-1.4.6.win32.exe
@@ -178,7 +178,7 @@ FunctionEnd
 
 Function InstallGraphViz
         InitPluginsDir
-        File /oname=$PLUGINSDIR\graphviz-2.12.exe "tools\graphviz-2.12.exe"
+        File /oname=$PLUGINSDIR\graphviz-2.12.exe "..\..\tools\3rdparty\graphviz-2.12.exe"
         Banner::show /NOUNLOAD "Installing Graphviz for Windows ..."
         ExecWait '"$PLUGINSDIR\graphviz-2.12.exe"'
         Delete $PLUGINSDIR\graphviz-2.12.exe
@@ -222,7 +222,7 @@ Section -AdditionalIcons
   WriteIniStr "$INSTDIR\${PRODUCT_NAME}.url" "InternetShortcut" "URL" "${PRODUCT_WEB_SITE}"
   CreateDirectory "$SMPROGRAMS\RoRToolkit"
 #  CreateShortCut "$SMPROGRAMS\RoRToolkit\RoR Truck Editor.lnk" "$INSTDIR\terraineditor.bat" "" "$INSTDIR\ror.ico"
-  CreateShortCut "$SMPROGRAMS\RoRToolkit\RoR Toolkit.lnk" "$INSTDIR\rortoolkit.bat" "" "$INSTDIR\ror.ico"
+  CreateShortCut "$SMPROGRAMS\RoRToolkit\RoR Toolkit.lnk" "%systemdrive%\python25\pythonw.exe $INSTDIR\rortoolkit.pyw" "" "$INSTDIR\ror.ico"
   CreateShortCut "$SMPROGRAMS\RoRToolkit\Website.lnk" "$INSTDIR\${PRODUCT_NAME}.url"
   CreateShortCut "$SMPROGRAMS\RoRToolkit\Uninstall.lnk" "$INSTDIR\uninst.exe"
 SectionEnd

@@ -1,2 +1,2 @@
 @postinstall.bat terraineditor
-@%systemdrive%\python25\python.exe terraineditor.py %*
+@%systemdrive%\python25\pythonw.exe terraineditor.pyw %*
