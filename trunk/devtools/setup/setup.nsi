@@ -2,7 +2,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "RoRToolkit"
-!define PRODUCT_VERSION "0.1.138"
+!define PRODUCT_VERSION "0.1.139"
 !define PRODUCT_PUBLISHER "Thomas Fischer"
 !define PRODUCT_WEB_SITE "http://wiki.rigsofrods.com/index.php?title=RoRToolkit"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -196,7 +196,7 @@ Function ChangeRoRRepoReg
          WriteRegStr HKCR "RoRRepo" "URL Protocol" ""
          WriteRegStr HKCR "RoRRepo\shell" "" ""
          WriteRegStr HKCR "RoRRepo\shell\open" "" ""
-         WriteRegStr HKCR "RoRRepo\shell\open\command" "" "'$INSTDIR' 'installrepo' '%1'"
+         WriteRegStr HKCR 'RoRRepo\shell\open\command' '' '"c:\python25\pythonw.exe" "$INSTDIR\tools\modgui.py installrepo" "%1"'
          Banner::destroy
 FunctionEnd
 
