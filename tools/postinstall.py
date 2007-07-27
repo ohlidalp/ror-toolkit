@@ -2,7 +2,7 @@ import sys, os, os.path, subprocess
 
 def getBATFiles():
     batfiles = []
-    dir = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+    dir = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__))))
     for filename in os.listdir(dir):
         filenameonly, extension = os.path.splitext(filename)
         if extension.lower() == ".bat":
