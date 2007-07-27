@@ -1,1 +1,0 @@
-@%systemdrive%\python25\python.exe postinstall.py %*
