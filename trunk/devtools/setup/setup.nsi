@@ -185,6 +185,15 @@ Function InstallGraphViz
         Banner::destroy
 FunctionEnd
 
+Function InstallRoRRepoReg
+        InitPluginsDir
+        File /oname=$PLUGINSDIR\graphviz-2.12.exe "..\rorrepo.reg"
+        Banner::show /NOUNLOAD "Installing RoR Repository Protocol Extensions ..."
+        ExecWait '"regedit /s $PLUGINSDIR\rorrepo.reg"'
+        Delete $PLUGINSDIR\rorrepo.reg
+        Banner::destroy
+FunctionEnd
+
 
 Function .onInit
         InitPluginsDir
@@ -204,6 +213,7 @@ Section "Install Tools" SEC02
   Call InstallPyWin32
   Call InstallPyParsing
   Call InstallGraphViz
+  Call InstallRoRRepoReg
 SectionEnd
 
 Section "Full Installation" SEC03
