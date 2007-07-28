@@ -384,19 +384,35 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 
         self.createWaterPlane()
         self.createArrows()
-        if not self.terrain.CharacterStartPosition is None:
-            self.camera.setPosition(self.terrain.CharacterStartPosition)
-        else:
-            self.camera.setPosition(self.terrain.CameraStartPosition)
+        try:
+            if not self.terrain.CharacterStartPosition is None:
+                self.camera.setPosition(self.terrain.CharacterStartPosition)
+            else:
+                self.camera.setPosition(self.terrain.CameraStartPosition)
+        except Exception, err:
+            log().error("Error while setting initial camera:")
+            log().error(str(err))
         
         for truck in self.terrain.trucks:
-            self.addTruckToTerrain(data=truck)
+            try:
+                self.addTruckToTerrain(data=truck)
+            except Exception, err:
+                log().error("Error while adding a truck to the terrain:")
+                log().error(str(err))
 
         for load in self.terrain.loads:
-            self.addTruckToTerrain(data=load)
+            try:
+                self.addTruckToTerrain(data=load)
+            except Exception, err:
+                log().error("Error while adding a load to the terrain:")
+                log().error(str(err))
 
         for object in self.terrain.objects:
-            self.addObjectToTerrain(data=object)
+            try:
+                self.addObjectToTerrain(data=object)
+            except Exception, err:
+                log().error("Error while adding an object to the terrain:")
+                log().error(str(err))
 
         self.currentStatusMsg = "Terrain loaded"
             

@@ -77,7 +77,7 @@ some tips:
         try:
             import sysinfo
         except:
-            dlg = wx.MessageDialog(self, "You must install pywin32 first.\nYou can find the setup in INSTALLDIR/tools/pywin32-setup.exe\nPLease note that you must restart this program after the pywin installation.", "Error", wx.OK | wx.ICON_INFORMATION)
+            dlg = wx.MessageDialog(self, "You must install pywin32 first.\nYou can find the setup in INSTALLDIR\tools\3rdparty\pywin32-setup.exe (This means you must install it by hand!)\nPlease note that you must restart this program after the pywin installation.", "Error", wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()    
             self.Close()

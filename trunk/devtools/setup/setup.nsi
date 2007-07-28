@@ -2,7 +2,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "RoRToolkit"
-!define PRODUCT_VERSION "0.1.139"
+!define PRODUCT_VERSION "0.1.140"
 !define PRODUCT_PUBLISHER "Thomas Fischer"
 !define PRODUCT_WEB_SITE "http://wiki.rigsofrods.com/index.php?title=RoRToolkit"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -17,7 +17,7 @@ SetCompressor lzma
 BrandingText "Rigs of Rods Toolkit"
 InstProgressFlags smooth colored
 XPStyle on
-ShowInstDetails show
+#ShowInstDetails show
 ShowUninstDetails show
 SetDateSave on
 #SetDatablockOptimize on
@@ -196,7 +196,8 @@ Function ChangeRoRRepoReg
          WriteRegStr HKCR "RoRRepo" "URL Protocol" ""
          WriteRegStr HKCR "RoRRepo\shell" "" ""
          WriteRegStr HKCR "RoRRepo\shell\open" "" ""
-         WriteRegStr HKCR 'RoRRepo\shell\open\command' '' '"%systemdrive%\python25\pythonw.exe" "$INSTDIR\tools\modgui.py installrepo" "%1"'
+         ReadEnvStr $0 SYSTEMDRIVE
+         WriteRegStr HKCR 'RoRRepo\shell\open\command' '' '"$0\python25\python.exe" "$INSTDIR\tools\modtool.py" "installrepo" "%1"'
          Banner::destroy
 FunctionEnd
 
@@ -231,31 +232,33 @@ Section "!RoR Toolkit" SEC04
   SectionIn 1 2 RO
   SetOutPath "$INSTDIR"
   SetOverwrite try
-  File /r /x *.pyc /x doc /x devtools /x 3rdparty /x downloaded /x graphs ..\..\*
+  File /r /x *.pyc /x *.pyo /x doc /x devtools /x 3rdparty /x downloaded /x graphs ..\..\*
 SectionEnd
 
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
-!insertmacro MUI_DESCRIPTION_TEXT ${SEC01} "installs python 2.5"
-!insertmacro MUI_DESCRIPTION_TEXT ${SEC02} "installs required Tools (directX)"
-!insertmacro MUI_DESCRIPTION_TEXT ${SEC03} "installs optional Tools (PyWin32 for bugreporting, PyParsing and GraphViz for Dependency Graphs)"
-!insertmacro MUI_DESCRIPTION_TEXT ${SEC04} "installs the RoR Toolkit. It includes the Truckeditor, Terraineditor and various tools"
+!insertmacro MUI_DESCRIPTION_TEXT ${SEC01} "python 2.5"
+!insertmacro MUI_DESCRIPTION_TEXT ${SEC02} "required Tools (directX)"
+!insertmacro MUI_DESCRIPTION_TEXT ${SEC03} "optional Tools (PyWin32 for bugreporting, PyParsing and GraphViz for Dependency Graphs)"
+!insertmacro MUI_DESCRIPTION_TEXT ${SEC04} "the RoR Toolkit. It includes the Truckeditor, Terraineditor and various other tools"
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 Function "LaunchPostInstallation"
-  ExecWait "$INSTDIR\tools\update.py"
-  ExecWait "%systemdrive%\python25\pythonw.exe $INSTDIR\rortoolkit.py"
+  ReadEnvStr $0 SYSTEMDRIVE
+  ExecWait "$0\python25\python.exe $INSTDIR\tools\update.py"
+  ExecWait "$0\python25\python.exe $INSTDIR\rortoolkit.py"
 FunctionEnd
 
 Section -AdditionalIcons
+  ReadEnvStr $0 SYSTEMDRIVE
   SetOutPath $INSTDIR
   WriteIniStr "$INSTDIR\${PRODUCT_NAME}.url" "InternetShortcut" "URL" "${PRODUCT_WEB_SITE}"
   CreateDirectory "$SMPROGRAMS\RoRToolkit"
   CreateShortCut "$SMPROGRAMS\RoRToolkit\Website.lnk" "$INSTDIR\${PRODUCT_NAME}.url"
   CreateShortCut "$SMPROGRAMS\RoRToolkit\Uninstall.lnk" "$INSTDIR\uninst.exe"
-  CreateShortCut '$SMPROGRAMS\RoRToolkit\RoR Terrain Editor.lnk' '"%systemdrive%\python25\pythonw.exe" "$INSTDIR\terraineditor.py"' '' '$INSTDIR\ror.ico'
-  CreateShortCut '$SMPROGRAMS\RoRToolkit\RoR Truck Editor.lnk' '"%systemdrive%\python25\pythonw.exe" "$INSTDIR\truckeditor.py"' '' '$INSTDIR\ror.ico'
-  CreateShortCut '$SMPROGRAMS\RoRToolkit\RoR Toolkit.lnk' '"%systemdrive%\python25\pythonw.exe" "$INSTDIR\rortoolkit.py"' '' '$INSTDIR\ror.ico'
+  CreateShortCut '$SMPROGRAMS\RoRToolkit\RoR Terrain Editor.lnk' '"$0\python25\python.exe" "$INSTDIR\terraineditor.py"' '' '$INSTDIR\ror.ico'
+  CreateShortCut '$SMPROGRAMS\RoRToolkit\RoR Truck Editor.lnk' '"$0\python25\python.exe" "$INSTDIR\truckeditor.py"' '' '$INSTDIR\ror.ico'
+  CreateShortCut '$SMPROGRAMS\RoRToolkit\RoR Toolkit.lnk' '"$0\python25\python.exe" "$INSTDIR\rortoolkit.py"' '' '$INSTDIR\ror.ico'
 SectionEnd
 
 Section -Post

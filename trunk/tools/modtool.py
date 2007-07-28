@@ -3,6 +3,9 @@ import sys, os, os.path, shutil
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib"))
 
+from ror.logger import log
+from ror.settingsManager import getSettingsManager
+
 def usage():
     print "usage (general): %s <mode> <additionaloptions> [--verbose] [--dryrun]" % (os.path.basename(sys.argv[0]))
     print "list <filename>"
@@ -31,7 +34,7 @@ def usage():
     sys.exit(0)
 
 def main():
-    guiVersion = (os.path.basename(sys.executable).lower() == "pythonw.exe")
+    guiVersion = True #(os.path.basename(sys.executable).lower() == "pythonw.exe")
     if guiVersion:
         log().info("using GUI version")
         import wx
@@ -91,7 +94,7 @@ def main():
     if guiVersion:
         msg = "Installation failed! :( Please have a look at the file editorlog.log"
         if result:
-            msg = "Installation successfull! You can now use the Mod."
+            msg = "Installation successfull! You can now use the Mod.\n more details can be found in the log window!\n(The Log Window will close when you click OK)"
         dlg = wx.MessageDialog(None, msg, "Info", wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()

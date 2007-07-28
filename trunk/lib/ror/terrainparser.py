@@ -232,16 +232,25 @@ class RoRTerrain:
         lines.append(self.SkyColorLine.strip()+"\n")
 
         ar = []
-        ar.append(str(self.TruckStartPosition[0]))
-        ar.append(str(self.TruckStartPosition[1]))
-        ar.append(str(self.TruckStartPosition[2]))
-        ar.append(str(self.CameraStartPosition[0]))
-        ar.append(str(self.CameraStartPosition[1]))
-        ar.append(str(self.CameraStartPosition[2]))
+        try:
+            ar.append(str(self.TruckStartPosition[0]))
+            ar.append(str(self.TruckStartPosition[1]))
+            ar.append(str(self.TruckStartPosition[2]))
+        except Exception, err:
+            log().error(str(err))
+        try:
+            ar.append(str(self.CameraStartPosition[0]))
+            ar.append(str(self.CameraStartPosition[1]))
+            ar.append(str(self.CameraStartPosition[2]))
+        except Exception, err:
+            log().error(str(err))
         if not self.CharacterStartPosition is None:
-            ar.append(str(self.CharacterStartPosition[0]))
-            ar.append(str(self.CharacterStartPosition[1]))
-            ar.append(str(self.CharacterStartPosition[2]))
+            try:
+                ar.append(str(self.CharacterStartPosition[0]))
+                ar.append(str(self.CharacterStartPosition[1]))
+                ar.append(str(self.CharacterStartPosition[2]))
+            except Exception, err:
+                log().error(str(err))
         startline = ", ".join(ar)+"\n"
         lines.append(startline)
 
