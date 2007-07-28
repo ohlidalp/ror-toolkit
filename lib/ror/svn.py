@@ -97,8 +97,8 @@ def svnupdate(callback = None):
         try:
             client.unlock(path)
         except Exception, err:
-            log().error("Error while svn unlock:")
-            log().error(str(err))
+            #log().error("Error while svn unlock:")
+            #log().error(str(err))
             pass
         
         revision_before = getRevision(client, path)
