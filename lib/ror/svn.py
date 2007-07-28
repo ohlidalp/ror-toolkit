@@ -78,6 +78,7 @@ def svnupdate(callback = None):
     try:
         client = pysvn.Client()
         
+        log().info("svn update on this path: %s" % path)
         # try to restore previous broken updates
         try:
             client.cleanup(path)
@@ -87,7 +88,7 @@ def svnupdate(callback = None):
             pass
 
         try:
-            client.resolved(path, reverse=True)
+            client.resolved(path)
         except Exception, err:
             log().error("Error while svn resolved:")
             log().error(str(err))

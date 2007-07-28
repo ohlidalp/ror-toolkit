@@ -2,7 +2,7 @@ import sys, os, os.path
 
 def main():
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib"))
-    guiVersion = True
+    guiVersion = (os.path.basename(sys.executable).lower() == "pythonw.exe")
     if guiVersion:
         import wx
         

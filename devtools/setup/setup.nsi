@@ -196,7 +196,7 @@ Function ChangeRoRRepoReg
          WriteRegStr HKCR "RoRRepo" "URL Protocol" ""
          WriteRegStr HKCR "RoRRepo\shell" "" ""
          WriteRegStr HKCR "RoRRepo\shell\open" "" ""
-         WriteRegStr HKCR 'RoRRepo\shell\open\command' '' '"c:\python25\pythonw.exe" "$INSTDIR\tools\modgui.py installrepo" "%1"'
+         WriteRegStr HKCR 'RoRRepo\shell\open\command' '' '"%systemdrive%\python25\pythonw.exe" "$INSTDIR\tools\modgui.py installrepo" "%1"'
          Banner::destroy
 FunctionEnd
 
@@ -220,6 +220,7 @@ Section "Required Tools" SEC02
 SectionEnd
 
 Section /o "Optional Tools" SEC03
+  AddSize 20000
   SectionIn 1
   Call InstallPyWin32
   Call InstallPyParsing
@@ -230,7 +231,7 @@ Section "!RoR Toolkit" SEC04
   SectionIn 1 2 RO
   SetOutPath "$INSTDIR"
   SetOverwrite try
-  File /r /x *.pyc /x ..\..\tools\3rdparty /x ..\..\downloaded /x ..\..\graphs /x .. ..\..\*
+  File /r /x *.pyc /x doc /x devtools /x 3rdparty /x downloaded /x graphs ..\..\*
 SectionEnd
 
 
@@ -242,18 +243,19 @@ SectionEnd
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 Function "LaunchPostInstallation"
-  ExecWait '"$INSTDIR\update.bat"'
-  ExecWait '"$INSTDIR\rortoolkit.bat"'
+  ExecWait "$INSTDIR\tools\update.py"
+  ExecWait "%systemdrive%\python25\pythonw.exe $INSTDIR\rortoolkit.py"
 FunctionEnd
 
 Section -AdditionalIcons
   SetOutPath $INSTDIR
   WriteIniStr "$INSTDIR\${PRODUCT_NAME}.url" "InternetShortcut" "URL" "${PRODUCT_WEB_SITE}"
   CreateDirectory "$SMPROGRAMS\RoRToolkit"
-#  CreateShortCut "$SMPROGRAMS\RoRToolkit\RoR Truck Editor.lnk" "$INSTDIR\terraineditor.bat" "" "$INSTDIR\ror.ico"
-  CreateShortCut "$SMPROGRAMS\RoRToolkit\RoR Toolkit.lnk" "%systemdrive%\python25\pythonw.exe $INSTDIR\rortoolkit.pyw" "" "$INSTDIR\ror.ico"
   CreateShortCut "$SMPROGRAMS\RoRToolkit\Website.lnk" "$INSTDIR\${PRODUCT_NAME}.url"
   CreateShortCut "$SMPROGRAMS\RoRToolkit\Uninstall.lnk" "$INSTDIR\uninst.exe"
+  CreateShortCut '$SMPROGRAMS\RoRToolkit\RoR Terrain Editor.lnk' '"%systemdrive%\python25\pythonw.exe" "$INSTDIR\terraineditor.py"' '' '$INSTDIR\ror.ico'
+  CreateShortCut '$SMPROGRAMS\RoRToolkit\RoR Truck Editor.lnk' '"%systemdrive%\python25\pythonw.exe" "$INSTDIR\truckeditor.py"' '' '$INSTDIR\ror.ico'
+  CreateShortCut '$SMPROGRAMS\RoRToolkit\RoR Toolkit.lnk' '"%systemdrive%\python25\pythonw.exe" "$INSTDIR\rortoolkit.py"' '' '$INSTDIR\ror.ico'
 SectionEnd
 
 Section -Post
