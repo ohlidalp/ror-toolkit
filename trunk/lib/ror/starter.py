@@ -64,6 +64,9 @@ class SettingsDialog(wx.Frame):
         self.btnDepGraph = wx.Button(self.panel, wx.ID_ANY, "Create dependency Graph")
         self.Bind(wx.EVT_BUTTON, self.OnDepGraph, self.btnDepGraph)
 
+        self.btnModUninstaller = wx.Button(self.panel, wx.ID_ANY, "Mod Uninstaller")
+        self.Bind(wx.EVT_BUTTON, self.OnModUninstaller, self.btnModUninstaller)
+
         self.btnRepClient = wx.Button(self.panel, wx.ID_ANY, "Open Repository Client")
         self.Bind(wx.EVT_BUTTON, self.OnRepClient, self.btnRepClient)
         
@@ -140,7 +143,12 @@ class SettingsDialog(wx.Frame):
             dlg.ShowModal()
             dlg.Destroy()
     
-        
+    def OnModUninstaller(self, event=None):
+        import modgui
+        gui = modgui.ModGUI(None, -1, "")
+        gui.Show()
+        del gui
+    
     def OnUpdate(self, event=None):
         import svngui
         gui = svngui.svnUpdate()
@@ -253,6 +261,7 @@ class SettingsDialog(wx.Frame):
         sizer_panel.Add(self.btnUpdate, 0, wx.EXPAND, 0)
         sizer_panel.Add(self.btnDepGraph, 0, wx.EXPAND, 0)
         sizer_panel.Add(self.btnRepClient, 0, wx.EXPAND, 0)
+        sizer_panel.Add(self.btnModUninstaller, 0, wx.EXPAND, 0)
         sizer_panel.Add(self.btnExit, 0, wx.EXPAND, 0)
         self.panel.SetSizer(sizer_panel)
 
