@@ -2,7 +2,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "RoRToolkit"
-!define PRODUCT_VERSION "0.1.140"
+!define PRODUCT_VERSION "0.1.142"
 !define PRODUCT_PUBLISHER "Thomas Fischer"
 !define PRODUCT_WEB_SITE "http://wiki.rigsofrods.com/index.php?title=RoRToolkit"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -250,15 +250,15 @@ Function "LaunchPostInstallation"
 FunctionEnd
 
 Section -AdditionalIcons
-  ReadEnvStr $0 SYSTEMDRIVE
+  #ReadEnvStr $0 SYSTEMDRIVE
   SetOutPath $INSTDIR
   WriteIniStr "$INSTDIR\${PRODUCT_NAME}.url" "InternetShortcut" "URL" "${PRODUCT_WEB_SITE}"
   CreateDirectory "$SMPROGRAMS\RoRToolkit"
   CreateShortCut "$SMPROGRAMS\RoRToolkit\Website.lnk" "$INSTDIR\${PRODUCT_NAME}.url"
   CreateShortCut "$SMPROGRAMS\RoRToolkit\Uninstall.lnk" "$INSTDIR\uninst.exe"
-  CreateShortCut '$SMPROGRAMS\RoRToolkit\RoR Terrain Editor.lnk' '"$0\python25\python.exe" "$INSTDIR\terraineditor.py"' '' '$INSTDIR\ror.ico'
-  CreateShortCut '$SMPROGRAMS\RoRToolkit\RoR Truck Editor.lnk' '"$0\python25\python.exe" "$INSTDIR\truckeditor.py"' '' '$INSTDIR\ror.ico'
-  CreateShortCut '$SMPROGRAMS\RoRToolkit\RoR Toolkit.lnk' '"$0\python25\python.exe" "$INSTDIR\rortoolkit.py"' '' '$INSTDIR\ror.ico'
+  CreateShortCut '$SMPROGRAMS\RoRToolkit\RoR Terrain Editor.lnk' '$INSTDIR\terraineditor.py' '' '$INSTDIR\ror.ico'
+  CreateShortCut '$SMPROGRAMS\RoRToolkit\RoR Truck Editor.lnk' '$INSTDIR\truckeditor.py' '' '$INSTDIR\ror.ico'
+  CreateShortCut '$SMPROGRAMS\RoRToolkit\RoR Toolkit.lnk' '$INSTDIR\rortoolkit.py' '' '$INSTDIR\ror.ico'
 SectionEnd
 
 Section -Post
@@ -285,7 +285,6 @@ FunctionEnd
 Section Uninstall
   Delete "$INSTDIR\${PRODUCT_NAME}.url"
   Delete "$INSTDIR\uninst.exe"
-  #RMDir  "/r" "$INSTDIR\media"
   RMDir  "/r" "$INSTDIR"
 
   RMDir  "/r" "$SMPROGRAMS\RoRToolkit"
