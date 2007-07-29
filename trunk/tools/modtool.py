@@ -34,13 +34,6 @@ def usage():
     sys.exit(0)
 
 def main():
-    guiVersion = True #(os.path.basename(sys.executable).lower() == "pythonw.exe")
-    if guiVersion:
-        log().info("using GUI version")
-        import wx
-        MainApp = wx.PySimpleApp(0) 
-        wx.InitAllImageHandlers() #you may or may not need this    
-    
     # check for valid RoR Directory!
     import ror.settingsManager
     rorpath = ror.settingsManager.getSettingsManager().getSetting("RigsOfRods", "BasePath")
@@ -91,13 +84,7 @@ def main():
         installtarget = None
     import ror.modtool
     result = ror.modtool.ModTool().work(mode, targetfile, verbose, dryrun, installtarget)
-    if guiVersion:
-        msg = "Installation failed! :( Please have a look at the file editorlog.log"
-        if result:
-            msg = "Installation successfull! You can now use the Mod.\n more details can be found in the log window!\n(The Log Window will close when you click OK)"
-        dlg = wx.MessageDialog(None, msg, "Info", wx.OK | wx.ICON_INFORMATION)
-        dlg.ShowModal()
-        dlg.Destroy()
+    
 
 if __name__=="__main__":
     main()
