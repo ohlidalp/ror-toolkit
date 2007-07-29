@@ -61,13 +61,13 @@ class SettingsDialog(wx.Frame):
         self.btnUpdate = wx.Button(self.panel, wx.ID_ANY, "Update")
         self.Bind(wx.EVT_BUTTON, self.OnUpdate, self.btnUpdate)
         
-        self.btnDepGraph = wx.Button(self.panel, wx.ID_ANY, "Create dependency Graph")
+        self.btnDepGraph = wx.Button(self.panel, wx.ID_ANY, "Dependency Graph")
         self.Bind(wx.EVT_BUTTON, self.OnDepGraph, self.btnDepGraph)
 
         self.btnModUninstaller = wx.Button(self.panel, wx.ID_ANY, "Mod Uninstaller")
         self.Bind(wx.EVT_BUTTON, self.OnModUninstaller, self.btnModUninstaller)
 
-        self.btnRepClient = wx.Button(self.panel, wx.ID_ANY, "Open Repository Client")
+        self.btnRepClient = wx.Button(self.panel, wx.ID_ANY, "Repository Client")
         self.Bind(wx.EVT_BUTTON, self.OnRepClient, self.btnRepClient)
         
         self.btnExit = wx.Button(self.panel, wx.ID_ANY, "Exit")
@@ -241,27 +241,45 @@ class SettingsDialog(wx.Frame):
         sys.exit(0)
 
     def __set_properties(self): 
-        try:
-            import ror.svn
-            self.SetTitle("RoR Toolkit r%d" % ror.svn.getRevision())
-        except:
-            self.SetTitle("RoR Toolkit")
+        #try:
+        import ror.svn
+        self.SetTitle("RoR Toolkit r%d" % ror.svn.getRevision())
+        #except:
+        #    self.SetTitle("RoR Toolkit")
 
     def __do_layout(self): 
         
         sizer_panel = wx.BoxSizer(wx.VERTICAL)
         sizer_panel.Add(self.image, 0, wx.EXPAND, 0)
-        sizer_panel.Add(self.lblRoRDir, 0, wx.EXPAND, 0)
-        sizer_panel.Add(self.btnSelectRoRDir, 0, wx.EXPAND, 0)
-        sizer_panel.Add(self.cbbRenderEngine, 0, wx.EXPAND, 0)
-        sizer_panel.Add(self.btnStartRoR, 0, wx.EXPAND, 0) 
-        sizer_panel.Add(self.btnStartTerrainEditor, 0, wx.EXPAND, 0)
-        sizer_panel.Add(self.btnStartTruckEditor, 0, wx.EXPAND, 0)
-        sizer_panel.Add(self.btnBugReport, 0, wx.EXPAND, 0)
-        sizer_panel.Add(self.btnUpdate, 0, wx.EXPAND, 0)
-        sizer_panel.Add(self.btnDepGraph, 0, wx.EXPAND, 0)
-        sizer_panel.Add(self.btnRepClient, 0, wx.EXPAND, 0)
-        sizer_panel.Add(self.btnModUninstaller, 0, wx.EXPAND, 0)
+        
+        sizer_a = wx.BoxSizer(wx.HORIZONTAL)        
+        sizer_a.Add(self.lblRoRDir, 1, wx.EXPAND, 0)
+        sizer_a.Add(self.btnSelectRoRDir, 0, wx.EXPAND, 0)
+        sizer_panel.Add(sizer_a, 0, wx.EXPAND, 0)
+        
+        sizer_b = wx.BoxSizer(wx.HORIZONTAL)        
+        sizer_b.Add(self.btnStartRoR, 0, wx.EXPAND, 0) 
+
+        sizer_c = wx.BoxSizer(wx.VERTICAL)
+        sizer_c.Add(self.btnStartTruckEditor, 1, wx.EXPAND, 0)
+        sizer_c.Add(self.btnStartTerrainEditor, 1, wx.EXPAND, 0)
+        sizer_b.Add(sizer_c, 1, wx.EXPAND, 0)
+        
+        sizer_b.Add(self.cbbRenderEngine, 0, wx.EXPAND, 0)
+        sizer_panel.Add(sizer_b, 1, wx.EXPAND, 0)
+
+        sizer_d = wx.BoxSizer(wx.HORIZONTAL)
+        sizer_d.Add(self.btnBugReport, 1, wx.EXPAND, 0)
+        sizer_d.Add(self.btnUpdate, 1, wx.EXPAND, 0)
+        sizer_panel.Add(sizer_d, 0, wx.EXPAND, 0)
+        
+        
+        sizer_e = wx.BoxSizer(wx.HORIZONTAL)
+        sizer_e.Add(self.btnDepGraph, 1, wx.EXPAND, 0)
+        sizer_e.Add(self.btnRepClient, 1, wx.EXPAND, 0)
+        sizer_e.Add(self.btnModUninstaller, 1, wx.EXPAND, 0)
+        sizer_panel.Add(sizer_e, 0, wx.EXPAND, 0)
+        
         sizer_panel.Add(self.btnExit, 0, wx.EXPAND, 0)
         self.panel.SetSizer(sizer_panel)
 
@@ -275,11 +293,15 @@ class SettingsDialog(wx.Frame):
         self.Layout() 
 
 def startApp():
-    MainApp = wx.PySimpleApp(0) 
+    MainApp = wx.PySimpleApp() 
     wx.InitAllImageHandlers() #you may or may not need this 
-    myFrame = SettingsDialog(None, -1, "") 
+    myFrame = SettingsDialog(None, -1, "")
 
-    MainApp.SetTopWindow(myFrame) 
+    # add icon to the window
+    icon = wx.Icon("ror.ico",wx.BITMAP_TYPE_ICO)
+    myFrame.SetIcon(icon)
+    MainApp.SetTopWindow(myFrame)
+    
     myFrame.Show()
     
     MainApp.MainLoop()
