@@ -139,10 +139,22 @@ class ModTool:
             md5s = dc.readMD5File()
             for file in dc.dstree:
                 filename = file['filename']
-                if not os.path.basename(filename) in md5s.keys():
+                if not filename in md5s.keys():
                     newtargets.append(filename)
+                else:
+                    # found in original file list, but check md5 sum first!
+                    filenamefound = self.searchFile(filename, rorpath)
+                    filemd5 = dc.md5Sum(filenamefound)
+                    if filemd5.strip() != md5s[filename].strip():
+                        newtargets.append(filename)
+
             log().info("### removed %d files from dependency tree." % (len(dc.dstree)-len(newtargets)))
-            #print newtargets
+
+            if len(newtargets) == 0:
+                log().error("Cannot uninstall original Files!")
+                return
+
+                #print newtargets
             if dryrun:
                 log().info("### would uninstall %d file(s):" % len(newtargets))
             else:
@@ -152,9 +164,7 @@ class ModTool:
                 if filenamefound is None:
                     log().error("### File not found: %s" % target)
                     continue
-                log().info("   %s" % filenamefound)
-                if not dryrun:
-                    os.unlink(filenamefound)
+                self.unInstallfile(filenamefound, dryrun)
 
         return None
         
@@ -223,6 +233,38 @@ class ModTool:
             shutil.copyfile(filename, os.path.join(TEMPDIR, os.path.basename(filename)))
         return False
 
+    def unInstallfile(self, dstfile, dryrun):
+        filename = os.path.basename(dstfile)
+        filenamesplit = filename.split(".")
+
+        backups = {}
+        for file in os.listdir(os.path.dirname(dstfile)):
+            #print file
+            tmpfilesplit = file.split(".")
+            if tmpfilesplit[0] == filenamesplit[0]:
+                if tmpfilesplit[-1] == "backup" and int(tmpfilesplit[-2]) in range(0, 99):                    
+                    backups[int(tmpfilesplit[-2])] = file
+        if len(backups) > 0:
+            # sort backups to get the latest
+            keys = backups.keys()
+            keys.sort()
+            latestbackup = backups[keys[-1]]
+            latestbackup = os.path.join(os.path.dirname(dstfile), latestbackup)
+            log().info("Latest Backup: %s" % latestbackup)
+            if dryrun:
+                log().info("would move backup file %s to %s" % (latestbackup, dstfile))
+            else:
+                log().info("moving backup file %s to %s" % (latestbackup, dstfile))
+                shutil.move(latestbackup, dstfile)
+        else:
+            if dryrun:
+                log().info("would remove file %s " % (dstfile))
+            else:
+                log().info("removing file %s " % (dstfile))
+                os.unlink(dstfile)
+            
+        
+        
     def installfile(self, maintarget, srcfile, dryrun):
         file, extension = os.path.splitext(maintarget)
         rorpath = getSettingsManager().getSetting("RigsOfRods", "BasePath")
@@ -233,9 +275,27 @@ class ModTool:
             path = os.path.join(rorpath, "data", "terrains")
         else:
             path = rorpath
+        
+        dstfile = os.path.join(path, os.path.basename(srcfile))
+        
+        backupnumber = -1
+        if os.path.isfile(dstfile):
+            for i in range(0, 99):
+                dstfile2 = dstfile + ".%02d.backup" % i
+                if not os.path.isfile(dstfile2):
+                    backupnumber = i
+                    break        
+            log().info("file existing, adding file to the backup queue. File got backup number %d." % backupnumber)
+            
+        
         if dryrun:
+            if backupnumber != -1:
+                log().info("would move original, existing file %s to %s" % (dstfile, dstfile2))
             log().info("would install %s to %s" % (os.path.basename(srcfile), path))
         else:
+            if backupnumber != -1:
+                log().info("moving original file %s to %s" % (dstfile, dstfile2))
+                shutil.move(dstfile, dstfile2)
             log().info("installing %s to %s" % (os.path.basename(srcfile), path))
             shutil.copyfile(srcfile, os.path.join(path, os.path.basename(srcfile)))
 
@@ -278,12 +338,18 @@ class ModTool:
         for file in dc.files:
             filename, extension = os.path.splitext(file)
             if extension.lower() in ['.truck', '.terrn', '.load']:
-                targets.append(os.path.basename(file))
+                targets.append(file)
         newtargets = []
         md5s = dc.readMD5File()
         for target in targets:
             if not os.path.basename(target) in md5s.keys():
-                newtargets.append(target)
+                newtargets.append(os.path.basename(target))
+            else:
+                # found in original file list, but check md5 sum first!
+                filemd5 = dc.md5Sum(target)
+                if filemd5.strip() != md5s[os.path.basename(target)].strip():
+                    newtargets.append(os.path.basename(target))
+
         return newtargets
 
     
