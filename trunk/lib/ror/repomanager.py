@@ -1,7 +1,8 @@
 #Thomas Fischer 31/05/2007, thomas@thomasfischer.biz
 
 import repoclient
-
+from logger import log
+from settingsManager import getSettingsManager
 import wx, wx.grid, wx.html, os, os.path, base64, sys
 from datetime import *
 
@@ -81,7 +82,8 @@ class RepoClientTest(wx.Frame):
         self.grid_1 = wx.grid.Grid(self, -1, size=(1, 1))
         try:
             self.data = repoclient.getFiles(-1)
-        except:
+        except Exception, err:
+            log().error(err)
             dlg = wx.MessageDialog(self, "Repository Server is unavailable right now. Please note that the server is in a beta stage and that it is not online every time.", "Info", wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
