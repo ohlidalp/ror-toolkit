@@ -58,9 +58,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
     RotateNode = None
     stickCurrentObjectToGround = False
     
-    def __init__(self, parent, ID, size = wx.Size(200,200), rordir = "", **kwargs): 
+    def __init__(self, parent, ID, size = wx.Size(200,200), rordir = "", scenemanager=None, **kwargs): 
         self.rordir = rordir
-        
+        self.sceneManager = scenemanager
         self.parent = parent
         self.size = size
         self.kwargs = kwargs
@@ -140,20 +140,22 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 
     
     def SceneInitialisation(self):
-        addresources = [self.rordir+"\\data\\terrains",self.rordir+"\\data\\trucks",self.rordir+"\\data\\objects"]
-        # only init things in the main window, not in shared ones!
-        # setup resources 
-        for r in addresources:
-            ogre.ResourceGroupManager.getSingleton().addResourceLocation(r, "FileSystem", "General", False)
+        hasparent = (not self.sceneManager is None)
+        if not hasparent:
+            addresources = [self.rordir+"\\data\\terrains",self.rordir+"\\data\\trucks",self.rordir+"\\data\\objects"]
+            # only init things in the main window, not in shared ones!
+            # setup resources 
+            for r in addresources:
+                ogre.ResourceGroupManager.getSingleton().addResourceLocation(r, "FileSystem", "General", False)
 
-        ogre.ResourceGroupManager.getSingleton().addResourceLocation("media/packs/OgreCore.zip", "Zip", "Bootstrap", False)
-        ogre.ResourceGroupManager.getSingleton().addResourceLocation("media", "FileSystem", "General", False)
-        ogre.ResourceGroupManager.getSingleton().addResourceLocation("media/materials", "FileSystem", "General", False)
-        ogre.ResourceGroupManager.getSingleton().addResourceLocation("media/models", "FileSystem", "General", False)
-        ogre.ResourceGroupManager.getSingleton().initialiseAllResourceGroups() 
+            ogre.ResourceGroupManager.getSingleton().addResourceLocation("media/packs/OgreCore.zip", "Zip", "Bootstrap", False)
+            ogre.ResourceGroupManager.getSingleton().addResourceLocation("media", "FileSystem", "General", False)
+            ogre.ResourceGroupManager.getSingleton().addResourceLocation("media/materials", "FileSystem", "General", False)
+            ogre.ResourceGroupManager.getSingleton().addResourceLocation("media/models", "FileSystem", "General", False)
+            ogre.ResourceGroupManager.getSingleton().initialiseAllResourceGroups() 
 
-        #get the scenemanager
-        self.sceneManager = getOgreManager().createSceneManager(ogre.ST_EXTERIOR_CLOSE)
+            #get the scenemanager
+            self.sceneManager = getOgreManager().createSceneManager(ogre.ST_EXTERIOR_CLOSE)
 
         # create a camera
         cameraUUID = randomID()
@@ -176,8 +178,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         self.Bind(wx.EVT_KEY_UP, self.onKeyUp) 
         self.Bind(wx.EVT_MOUSE_EVENTS, self.onMouseEvent)
         
-        #create objects
-        self.populateScene()
+        if not hasparent:
+            #create objects
+            self.populateScene()
         
 
     def updateWaterPlane(self):
@@ -192,7 +195,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         # see http://www.ogre3d.org/docs/api/html/classOgre_1_1MeshManager.html#Ogre_1_1MeshManagera5
         waterid = str(randomID())
         mesh = ogre.MeshManager.getSingleton().createPlane(waterid+'WaterPlane', "General", plane, 3000, 3000, 
-                                                    20, 20, True, 1, 50.0, 50.0, ogre.Vector3(0, 0, 1),
+                                                    20, 20, True, 1, 200.0, 200.0, ogre.Vector3(0, 0, 1),
                                                     ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, 
                                                     ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, 
                                                     True, True)

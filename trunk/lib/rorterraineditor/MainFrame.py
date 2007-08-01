@@ -1,4 +1,5 @@
-#Thomas Fischer 31/05/2007, thomas@thomasfischer.biz
+import sys, os, os.path
+
 from wxogre.OgreManager import *
 from ror.RoROgreWindow import *
 
@@ -10,209 +11,254 @@ from RoRTerrainOgreWindow import *
 from RoRTerrainSelectedObjectOgreWindow import *
 from RoRTerrainSelectedObjectTopOgreWindow import *
 
-ID_ABOUT    = 101
-ID_OPENFILE = 102
-ID_SAVEFILE = 103
-ID_VIEWOBJ  = 104
-ID_OGRESET  = 105
-ID_SHOWHELP = 106
-ID_ADDTRUCK = 107
-ID_ADDMESH  = 108
-ID_CHECKUPDATE = 109
-ID_SAVEFILEAS = 110
-ID_TERRAINCOLLISION = 111
-ID_EXIT     = 199
+from MainFrame_Tools import *
+    
+import wx
+import wx.grid
+import wx.html
+import wx.aui
+
+import cStringIO
+
+ID_OpenTerrain = wx.NewId()
+ID_SaveTerrain = wx.NewId()
+ID_SaveTerrainAs = wx.NewId()
+ID_AddObject = wx.NewId()
+ID_DeleteSelection = wx.NewId()
+ID_CopySelection = wx.NewId()
+ID_PasteSelection = wx.NewId()
+ID_UndoAction = wx.NewId()
+ID_RedoAction = wx.NewId()
+ID_FindObject = wx.NewId()
+ID_Quit = wx.NewId()
+
+ID_CreateOgre = wx.NewId()
+
+ID_CreateTree = wx.NewId()
+ID_CreateGrid = wx.NewId()
+ID_CreateText = wx.NewId()
+ID_CreateHTML = wx.NewId()
+ID_CreateSizeReport = wx.NewId()
+ID_GridContent = wx.NewId()
+ID_TextContent = wx.NewId()
+ID_TreeContent = wx.NewId()
+ID_HTMLContent = wx.NewId()
+ID_SizeReportContent = wx.NewId()
+ID_CreatePerspective = wx.NewId()
+ID_CopyPerspective = wx.NewId()
+
+ID_Settings = wx.NewId()
+ID_About = wx.NewId()
+ID_FirstPerspective = ID_CreatePerspective+1000
 
 DATADIR     = "data"
 TRUCKDIR    = os.path.join(DATADIR, "trucks")
 TERRAINDIR  = os.path.join(DATADIR, "terrains")
 OBJECTDIR   = os.path.join(DATADIR, "objects")
 
-       
-class MainFrame(wx.Frame): 
-    def __init__(self, *args, **kwds): 
-        kwds["style"] = wx.MINIMIZE_BOX | wx.MAXIMIZE_BOX | wx.RESIZE_BORDER | wx.SYSTEM_MENU | wx.CAPTION | wx.CLIP_CHILDREN
+class MainFrame(wx.Frame):
+    
+    def __init__(self, parent, id=-1, title="", pos=wx.DefaultPosition,
+                 size=wx.DefaultSize, style=wx.DEFAULT_FRAME_STYLE |
+                                            wx.SUNKEN_BORDER |
+                                            wx.CLIP_CHILDREN):
+
+        wx.Frame.__init__(self, parent, id, title, pos, size, style)
         
-        wx.Frame.__init__(self, *args, **kwds) 
-
-
-        #main splitter
-        self.splitter = wx.SplitterWindow(self, wx.ID_ANY, style=wx.SP_PERMIT_UNSPLIT|wx.SP_3DSASH)
-        self.splitterleft = wx.Panel(self.splitter, wx.ID_ANY)
-        self.splitterright = wx.Panel(self.splitter, wx.ID_ANY)
-        self.splitter.SetSashGravity(1)
-        self.splitter.SetSashPosition(100)
-        self.splitter.SetMinimumPaneSize(200)
-
-        #viewsplitter
-        self.viewsplitter = wx.SplitterWindow(self.splitterright, wx.ID_ANY)
-        self.viewsplitterup = wx.Panel(self.viewsplitter, wx.ID_ANY)
-        self.viewsplitterdown = wx.Panel(self.viewsplitter, wx.ID_ANY)
-        self.splitter.SetSashGravity(0.5)
-        self.splitter.SetSashPosition(100)
-        self.splitter.SetMinimumPaneSize(200)
+        # tell FrameManager to manage this frame        
+        self._mgr = wx.aui.AuiManager()
+        self._mgr.SetManagedWindow(self)
         
-        self.rordir = getSettingsManager().getSetting("RigsOfRods", "BasePath")
-
-        #ogre windows
-        self.terrainOgreWin = RoRTerrainOgreWindow(self.splitterleft, wx.ID_ANY, rordir=self.rordir)
-        self.sharedOgreWin = RoRTerrainSelectedObjectOgreWindow(self.viewsplitterup, wx.ID_ANY, self.terrainOgreWin)            
-        self.sharedOgreWin2 = RoRTerrainSelectedObjectTopOgreWindow(self.viewsplitterdown, wx.ID_ANY, self.terrainOgreWin)            
+        self._perspectives = []
+        self.n = 0
+        self.x = 0
         
-        #some labels
-        #self.helptext = wx.StaticText(self.splitterleft, wx.ID_ANY, "short help: right click  = rotate; ctrl + right click, AWSD, mouse wheel = move") 
-        #self.rotatingLabel = wx.StaticText(self.viewsplitterup, wx.ID_ANY, "rotating") 
-        #self.topLabel = wx.StaticText(self.viewsplitterdown, wx.ID_ANY, "top") 
+        self.SetIcon(wx.Icon('ror.ico',wx.BITMAP_TYPE_ICO))
 
-        #Timer creation (for label updates)
-        self.timer = wx.Timer() 
-        self.timer.SetOwner(self) #Sets the timer to notify self: binding the timer event is not enough 
-        self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
-        self.timer.Start(200)
+        # create menu
+        mb = wx.MenuBar()
 
+        file_menu = wx.Menu()
+        file_menu.Append(ID_OpenTerrain, "Open Terrain")
+        file_menu.Append(wx.ID_EXIT, "Exit")
+
+        view_menu = wx.Menu()
+        view_menu.Append(ID_CreateOgre, "Create OgreWindow")
+        view_menu.Append(ID_CreateText, "Create Text Control")
+        view_menu.Append(ID_CreateHTML, "Create HTML Control")
+        view_menu.Append(ID_CreateTree, "Create Tree")
+        view_menu.Append(ID_CreateGrid, "Create Grid")
+        view_menu.Append(ID_CreateSizeReport, "Create Size Reporter")
+        view_menu.AppendSeparator()
+        view_menu.Append(ID_GridContent, "Use a Grid for the Content Pane")
+        view_menu.Append(ID_TextContent, "Use a Text Control for the Content Pane")
+        view_menu.Append(ID_HTMLContent, "Use an HTML Control for the Content Pane")
+        view_menu.Append(ID_TreeContent, "Use a Tree Control for the Content Pane")
+        view_menu.Append(ID_SizeReportContent, "Use a Size Reporter for the Content Pane")    
+           
+        
+        self.managerInit()
+        options_menu = wx.Menu()
+        options_menu.Append(ID_Settings, "GUI Settings Pane")
+
+        self._perspectives_menu = wx.Menu()
+        self._perspectives_menu.Append(ID_CreatePerspective, "Create Perspective")
+        self._perspectives_menu.Append(ID_CopyPerspective, "Copy Perspective Data To Clipboard")
+        self._perspectives_menu.AppendSeparator()
+        self._perspectives_menu.Append(ID_FirstPerspective+0, "Default Startup")
+        self._perspectives_menu.Append(ID_FirstPerspective+1, "All Panes")
+
+        help_menu = wx.Menu()
+        help_menu.Append(ID_About, "About...")
+        
+        mb.Append(file_menu, "File")
+        mb.Append(view_menu, "View")
+        mb.Append(self._perspectives_menu, "Perspectives")
+        mb.Append(options_menu, "Options")
+        mb.Append(help_menu, "Help")
+        
+        self.SetMenuBar(mb)
+
+        self.statusbar = self.CreateStatusBar(5, 0, wx.ID_ANY, "mainstatusbar")
+        self.statusbar.SetStatusWidths([-1, 200, 130, 250, 80])
+
+        # min size for the frame itself isn't completely done.
+        # see the end up FrameManager::Update() for the test
+        # code. For now, just hard code a frame minimum size
+        self.SetMinSize(wx.Size(600, 400))
+        try:
+            import ror.svn
+            self.SetTitle("Rigs of Rods Terrain Editor revision %d" % ror.svn.getRevision())
+        except:
+            self.SetTitle("Rigs of Rods Terrain Editor")       
+        
+        # create some toolbars
+        tb1 = wx.ToolBar(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TB_FLAT | wx.TB_NODIVIDER)
+        tb1.SetToolBitmapSize(wx.Size(16,16))
+        tb1.AddLabelTool(ID_OpenTerrain, "Open Terrain", wx.ArtProvider_GetBitmap(wx.ART_FILE_OPEN))
+        tb1.AddLabelTool(ID_SaveTerrain, "Save Terrain", wx.ArtProvider_GetBitmap(wx.ART_FILE_SAVE))
+        tb1.AddLabelTool(ID_SaveTerrainAs, "Save Terrain as", wx.ArtProvider_GetBitmap(wx.ART_FILE_SAVE_AS))
+        tb1.AddSeparator()
+        tb1.AddLabelTool(ID_AddObject, "Add Something", wx.ArtProvider_GetBitmap(wx.ART_NEW))
+        tb1.AddLabelTool(ID_DeleteSelection, "Delete Selection", wx.ArtProvider_GetBitmap(wx.ART_DELETE))
+        tb1.AddSeparator()        
+        tb1.AddLabelTool(ID_CopySelection, "Copy Selection", wx.ArtProvider_GetBitmap(wx.ART_COPY))
+        tb1.AddLabelTool(ID_PasteSelection, "Paste Selection", wx.ArtProvider_GetBitmap(wx.ART_PASTE))
+        tb1.AddSeparator()        
+        tb1.AddLabelTool(ID_UndoAction, "Undo last Action", wx.ArtProvider_GetBitmap(wx.ART_UNDO))
+        tb1.AddLabelTool(ID_RedoAction, "Redo last Undo", wx.ArtProvider_GetBitmap(wx.ART_REDO))
+        tb1.AddSeparator()        
+        tb1.AddLabelTool(ID_FindObject, "Find Object", wx.ArtProvider_GetBitmap(wx.ART_FIND))
+        tb1.AddSeparator()        
+        tb1.AddLabelTool(ID_Quit, "Quit", wx.ArtProvider_GetBitmap(wx.ART_QUIT))
+        tb1.EnableTool(ID_SaveTerrain, False)
+        tb1.EnableTool(ID_SaveTerrainAs, False)
+        tb1.Realize()
+        self.tb1 = tb1
+        
+        # add a bunch of panes
+        self._mgr.AddPane(self.CreateSizeReportCtrl(), wx.aui.AuiPaneInfo().
+                          Name("test1").Caption("Pane Caption").Top().
+                          CloseButton(True).MaximizeButton(True))
+        
+        self._mgr.AddPane(SettingsPanel(self, self), wx.aui.AuiPaneInfo().
+                          Name("settings").Caption("Dock Manager Settings").
+                          Dockable(False).Float().Hide().CloseButton(True).MaximizeButton(True))
+                          
+        # create some center panes
+        self._mgr.AddPane(self.CreateTreeCtrl(), wx.aui.AuiPaneInfo().Name("tree_content").
+                          CenterPane().Hide())
+                      
+        self._mgr.AddPane(self.CreateSizeReportCtrl(), wx.aui.AuiPaneInfo().Name("sizereport_content").
+                          CenterPane().Hide())
+
+        self._mgr.AddPane(self.CreateTextCtrl(), wx.aui.AuiPaneInfo().Name("text_content").
+                          CenterPane().Hide())
+
+        self._mgr.AddPane(self.CreateHTMLCtrl(), wx.aui.AuiPaneInfo().Name("grid_content").
+                          CenterPane().Hide())
+        
         #Timer creation  (for rendering)
         self.ogreTimer = wx.Timer() 
         self.ogreTimer.SetOwner(self)
         self.Bind(wx.EVT_TIMER, self.onUpdateRender, self.ogreTimer)
         self.ogreTimer.Start(25)
         
-        #create statusbar
-        self.statusbar = self.CreateStatusBar(5, 0, wx.ID_ANY, "mainstatusbar")
-        self.statusbar.SetStatusWidths([-1, 200, 130, 250, 80])
-        #self.statusbar.SetStatusText("", 1)
+        # create timer for gui update
+        self.guitimer = wx.Timer() 
+        self.guitimer.SetOwner(self) #Sets the timer to notify self: binding the timer event is not enough 
+        self.Bind(wx.EVT_TIMER, self.OnGUITimer, self.guitimer)
+        self.guitimer.Start(200)
 
-        #create toolbar
-        #self.toolbar  = wx.ToolBar(self, wx.ID_ANY, style = wx.TB_HORZ_TEXT)
-        #self.SetToolBar(self.toolbar )
-        #bitmap = wx.Bitmap("media/gui/OpenFile.gif", wx.BITMAP_TYPE_GIF)
-        #self.toolbar.DoAddTool(0, "Open Terrain", bitmap, bitmap, wx.ITEM_NORMAL, "Open Terrain", "Opens a new terrain for edit")
         
-        #create general settings
-        #self.GeneralSettingsPanel = wx.Panel(self, wx.ID_ANY)
-        self.terrainName = wx.StaticText(self, wx.ID_ANY, "Terrain Name:") 
-        self.terrainNamectrl = wx.TextCtrl(self, wx.ID_ANY)
-        self.Bind(wx.EVT_TEXT, self.OnChangeTerrainNameChange, self.terrainNamectrl)
+        self.rordir = getSettingsManager().getSetting("RigsOfRods", "BasePath")
+        self.terrainOgreWin = RoRTerrainOgreWindow(self, wx.ID_ANY, rordir=self.rordir)
+        self._mgr.AddPane(self.terrainOgreWin, wx.aui.AuiPaneInfo().Name("ogre_content").
+                          CenterPane())
+                                
+        # add the toolbars to the manager
+                        
+        self._mgr.AddPane(tb1, wx.aui.AuiPaneInfo().
+                          Name("tb1").
+                          Caption("General Toolbar").
+                          ToolbarPane().Top().
+                          LeftDockable(False).
+                          RightDockable(False)
+                          )
 
-        self.waterLevelText = wx.StaticText(self, wx.ID_ANY, "Water Level: 0") 
-        self.waterlevelctrl = wx.Slider(self, wx.ID_ANY)
-        self.waterlevelctrl.max =  300
-        self.Bind(wx.EVT_SCROLL, self.OnChangeWaterLevel, self.waterlevelctrl)
+        # make some default perspectives
+        perspective_all = self._mgr.SavePerspective()
+        
+        # all - perspective
+        all_panes = self._mgr.GetAllPanes()       
+        for ii in xrange(len(all_panes)):
+            if not all_panes[ii].IsToolbar():
+                all_panes[ii].Hide()                
+        self._mgr.GetPane("ogre_content").Show()
+        perspective_default = self._mgr.SavePerspective()
 
-        #self.CurrEntName = wx.StaticText(self, wx.ID_ANY, "\n\n\n") 
-        #self.PosText = wx.StaticText(self, wx.ID_ANY, "Position: x,y,z") 
-        #self.terrPosX = wx.TextCtrl(self, wx.ID_ANY)
-        #self.terrPosY = wx.TextCtrl(self, wx.ID_ANY)
-        #self.terrPosZ = wx.TextCtrl(self, wx.ID_ANY)
-        #self.RotText = wx.StaticText(self, wx.ID_ANY, "Rotation: x,y,z") 
-        #self.terrRotX = wx.TextCtrl(self, wx.ID_ANY)
-        #self.terrRotY = wx.TextCtrl(self, wx.ID_ANY)
-        #self.terrRotZ = wx.TextCtrl(self, wx.ID_ANY)
-        #self.Bind(wx.EVT_TEXT, self.OnChangeObjPosRot, self.terrPosX)
-        #self.Bind(wx.EVT_TEXT, self.OnChangeObjPosRot, self.terrPosY)
-        #self.Bind(wx.EVT_TEXT, self.OnChangeObjPosRot, self.terrPosZ)
-        #self.Bind(wx.EVT_TEXT, self.OnChangeObjPosRot, self.terrRotX)
-        #self.Bind(wx.EVT_TEXT, self.OnChangeObjPosRot, self.terrRotY)
-        #self.Bind(wx.EVT_TEXT, self.OnChangeObjPosRot, self.terrRotZ)
+        self._perspectives.append(perspective_default)
+        self._perspectives.append(perspective_all)
 
-        self.btnResetRotation = wx.Button(self, wx.ID_ANY, "Reset Rotation")
-        self.Bind(wx.EVT_BUTTON, self.OnBtnResetRotation, self.btnResetRotation)
-        self.btnStickToGround = wx.ToggleButton(self, wx.ID_ANY, "Stick to Ground")
-        self.Bind(wx.EVT_TOGGLEBUTTON, self.OnBtnStickToGroundChange, self.btnStickToGround)
-        
-        
-        #menu creation
-        menuBar = wx.MenuBar()
-        file_menu = wx.Menu()
-        self.fileopenmenu = file_menu.Append(ID_OPENFILE, "&Open", "Open Terrain")
-        self.filesavemenu = file_menu.Append(ID_SAVEFILE, "&Save", "Save Terrain")
-        self.filesaveasmenu = file_menu.Append(ID_SAVEFILEAS, "&Save as", "Save Terrain as")
-      
-        self.filesavemenu.Enable(False)
-        self.filesaveasmenu.Enable(False)
-        file_menu.AppendSeparator()
-        file_menu.Append(ID_EXIT, "E&xit", "Terminate the program")
-        menuBar.Append(file_menu, "&File");
-        
-        view_menu = wx.Menu()
-        self.mnuterraincollision = view_menu.AppendCheckItem(ID_TERRAINCOLLISION, "Camera collides with Terrain", "")
-        self.mnuterraincollision.Check(True)
-        view_menu.AppendSeparator()
-        self.viewObjectDetails = view_menu.AppendCheckItem(ID_VIEWOBJ, "&Additional Object View Window", "creates two additional views")
-        self.viewObjectDetails.Check(False)
-        view_menu.AppendSeparator()
-        view_menu.Append(ID_OGRESET, "&Ogre Settings", "Change Ogre Display Settings")
-        menuBar.Append(view_menu, "&View");
-        
-        add_menu = wx.Menu()
-        add_menu.Append(ID_ADDTRUCK, "&Truck/Load", "add a Truck or a Load to the terrain")
-        self.Bind(wx.EVT_MENU, self.OnAddTruck, id=ID_ADDTRUCK)
-        add_menu.Append(ID_ADDMESH, "&Object", "add a static Object to the terrain")
-        self.Bind(wx.EVT_MENU, self.OnAddMesh, id=ID_ADDMESH)
-        menuBar.Append(add_menu, "&Add");
 
-        help_menu = wx.Menu()
-        help_menu.Append(ID_SHOWHELP, "Show &Help", "view the documentation")
-        help_menu.AppendSeparator()
-        help_menu.Append(ID_ABOUT, "&About", "More information about this program")
-        menuBar.Append(help_menu, "&Help");
-        
-        #bindings
-        self.SetMenuBar(menuBar)
-        self.__set_properties() 
-        self.__do_layout() 
-        self.Bind(wx.EVT_MENU, self.OnExit, id=ID_EXIT)
-        self.Bind(wx.EVT_MENU, self.OnFileOpen, id=ID_OPENFILE)
-        self.Bind(wx.EVT_MENU, self.OnFileSave, id=ID_SAVEFILE)
-        self.Bind(wx.EVT_MENU, self.OnFileSaveAs, id=ID_SAVEFILEAS)
-        self.Bind(wx.EVT_MENU, self.OnAbout, id=ID_ABOUT)
-        self.Bind(wx.EVT_MENU, self.onViewObjectDetails, id=ID_VIEWOBJ)
-        self.Bind(wx.EVT_MENU, self.OnChangeOgreSettings, id=ID_OGRESET)
-        self.Bind(wx.EVT_MENU, self.OnCameraTerrainCollision, id=ID_TERRAINCOLLISION)
+        # "commit" all changes made to FrameManager   
+        self._mgr.Update()
 
-    def OnAbout(self, event=None):
-        ShowOnAbout()
-        
-    def OnCheckUpdate(self, event=None):
-        pass
-        
-    def OnCameraTerrainCollision(self, event=None):
-        self.terrainOgreWin.CameraLandCollision(self.mnuterraincollision.IsChecked())
-        
-    def OnHelp(self, event=None):
-        import HelpFrame
-        HelpFrame.showHelpFrame()
-        
-    def OnAddTruck(self, event=None):
-        default = ""
-        if self.rordir:
-            default = os.path.join(self.rordir, TRUCKDIR)
-        dialog = wx.FileDialog(self, "Add Truck", default, "", "Truck and Load Files (*.truck,*.load)|*.truck;*.load", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
-        res = dialog.ShowModal()
-        if res == wx.ID_OK:
-            if not self.terrainOgreWin.addTruckToTerrain(truckFilename=dialog.GetPath()):
-                dlg = wx.MessageDialog(self, "You must select a position on the ground first!", "error", wx.OK | wx.ICON_INFORMATION)
-                dlg.ShowModal()
-                dlg.Destroy()          
+        self.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground)
+        self.Bind(wx.EVT_SIZE, self.OnSize)
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
 
-    def OnAddMesh(self, event=None):
-        default = ""
-        if self.rordir:
-            default = os.path.join(self.rordir, OBJECTDIR)
-        dialog = wx.FileDialog(self, "Add Object", default, "", "RoR Object Definitions (*.odef)|*.odef", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
-        res = dialog.ShowModal()
-        if res == wx.ID_OK:
-            if not self.terrainOgreWin.addObjectToTerrain(odefFilename=dialog.GetPath()):
-                dlg = wx.MessageDialog(self, "You must select a position on the ground first!", "error", wx.OK | wx.ICON_INFORMATION)
-                dlg.ShowModal()
-                dlg.Destroy()          
-                
+        # Show How To Use The Closing Panes Event
+        self.Bind(wx.aui.EVT_AUI_PANE_CLOSE, self.OnPaneClose)
 
-    def OnBtnResetRotation(self, event=None):
-        self.terrainOgreWin.ObjectResetRotation()
-
-    def OnBtnStickToGroundChange(self, event=None):
-        self.terrainOgreWin.stickCurrentObjectToGround = self.btnStickToGround.GetValue()
         
+        self.Bind(wx.EVT_MENU, self.OnOpenTerrain, id=ID_OpenTerrain)
+        self.Bind(wx.EVT_MENU, self.OnSaveTerrain, id=ID_SaveTerrain)
+        self.Bind(wx.EVT_MENU, self.OnSaveTerrainAs, id=ID_SaveTerrainAs)
+        
+        self.Bind(wx.EVT_MENU, self.OnCreateOgre, id=ID_CreateOgre)
+        
+        self.Bind(wx.EVT_MENU, self.OnCreateTree, id=ID_CreateTree)
+        self.Bind(wx.EVT_MENU, self.OnCreateGrid, id=ID_CreateGrid)
+        self.Bind(wx.EVT_MENU, self.OnCreateText, id=ID_CreateText)
+        self.Bind(wx.EVT_MENU, self.OnCreateHTML, id=ID_CreateHTML)
+        self.Bind(wx.EVT_MENU, self.OnCreateSizeReport, id=ID_CreateSizeReport)
+        self.Bind(wx.EVT_MENU, self.OnCreatePerspective, id=ID_CreatePerspective)
+        self.Bind(wx.EVT_MENU, self.OnCopyPerspective, id=ID_CopyPerspective)
+
+        self.Bind(wx.EVT_MENU, self.OnSettings, id=ID_Settings)
+        
+        self.Bind(wx.EVT_MENU, self.OnChangeContentPane, id=ID_GridContent)
+        self.Bind(wx.EVT_MENU, self.OnChangeContentPane, id=ID_TreeContent)
+        self.Bind(wx.EVT_MENU, self.OnChangeContentPane, id=ID_TextContent)
+        self.Bind(wx.EVT_MENU, self.OnChangeContentPane, id=ID_SizeReportContent)
+        self.Bind(wx.EVT_MENU, self.OnChangeContentPane, id=ID_HTMLContent)
+        self.Bind(wx.EVT_MENU, self.OnExit, id=wx.ID_EXIT)
+        self.Bind(wx.EVT_MENU, self.OnAbout, id=ID_About)
+    
+        self.Bind(wx.EVT_MENU_RANGE, self.OnRestorePerspective, id=ID_FirstPerspective,
+                  id2=ID_FirstPerspective+1000)
+    
     def updateObjPosRot(self, event=None):
         self.statusbar.SetStatusText(self.terrainOgreWin.currentStatusMsg, 1)
         if self.terrainOgreWin.terrain is None:
@@ -232,40 +278,36 @@ class MainFrame(wx.Frame):
         txt = "%0.2f, %0.2f, %0.2f / %0.2f, %0.2f, %0.2f" % (posx, posy, posz, rotx, roty, rotz)
         self.statusbar.SetStatusText(txt, 3)
 
-        #pos = n.getPosition()
-        #self.terrPosX.SetValue(str(round(pos.x,2)))
-        #self.terrPosY.SetValue(str(round(pos.y,2)))
-        #self.terrPosZ.SetValue(str(round(pos.z,2)))
-        #rot = n.getOrientation()
-        #self.terrRotX.SetValue(str(round(ogre.Radian(rot.getPitch(False)+90).valueDegrees(),2)))
-        #self.terrRotY.SetValue(str(round(ogre.Radian(rot.getYaw(False)).valueDegrees(),2)))
-        #self.terrRotZ.SetValue(str(round(ogre.Radian(rot.getRoll(False)).valueDegrees(),2)))
+    def OnGUITimer(self, event):
+        #fill labels with some information, all windows have the same FPS!
+        txt = "%0.2f FPS" % (self.terrainOgreWin.renderWindow.getStatistics().lastFPS)
+        self.statusbar.SetStatusText(txt, 4)
+        self.updateObjPosRot()
         
-    #def OnChangeObjPosRot(self, event=None):
-    #    pass
-        
-    def OnChangeTerrainNameChange(self, event=None):
-        self.terrainOgreWin.terrain.TerrainName = self.terrainNamectrl.GetValue()
-        
-    def OnChangeWaterLevel(self, event=None):
-        if not self.terrainOgreWin.terrain is None:
-            self.terrainOgreWin.terrain.WaterHeight = self.waterlevelctrl.GetValue()
-            self.waterLevelText.Label = "Water Level: %0.1f" % (self.terrainOgreWin.terrain.WaterHeight)
-            self.terrainOgreWin.updateWaterPlane()
-    
-    def OnChangeOgreSettings(self, event):
-        getOgreManager().getRoot().showConfigDialog()
-        dlg = wx.MessageDialog(self, "You must restart the program for the settings to get active", "Ogre Settings", wx.OK | wx.ICON_INFORMATION)
-        dlg.ShowModal()
-        dlg.Destroy()          
-        
-    def OnFileSave(self, event):
+    def onUpdateRender(self, event=None): 
+        getOgreManager().RenderAll()
+        pass
+
+    def OnOpenTerrain(self, event=None):
+        default = ""
+        if self.rordir:
+            default = os.path.join(self.rordir, TERRAINDIR)
+        dialog = wx.FileDialog(self, "Open Terrain", default, "", "Terrain Files (*.terrn)|*.terrn", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+        res = dialog.ShowModal()
+        if res == wx.ID_OK:
+            filename = dialog.GetPath()
+            self.terrainOgreWin.LoadTerrain(filename)
+            self.tb1.EnableTool(ID_SaveTerrain, True)
+            self.tb1.EnableTool(ID_SaveTerrainAs, True)
+
+
+    def OnSaveTerrain(self, event=None):
         if not self.terrainOgreWin.SaveTerrain():
             dlg = wx.MessageDialog(self, "error while saving, see console!\n","error", wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
 
-    def OnFileSaveAs(self, event):
+    def OnSaveTerrainAs(self, event=None):
         default = ""
         if self.rordir:
             default = os.path.join(self.rordir, TERRAINDIR)
@@ -277,136 +319,227 @@ class MainFrame(wx.Frame):
                 dlg.ShowModal()
                 dlg.Destroy()
 
+    def OnPaneClose(self, event):
+        caption = event.GetPane().caption
 
-    def OnFileOpen(self, event=None):
-        default = ""
-        if self.rordir:
-            default = os.path.join(self.rordir, TERRAINDIR)
-        #print default
-        dialog = wx.FileDialog(self, "Open Terrain", default, "", "Terrain Files (*.terrn)|*.terrn", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
-        res = dialog.ShowModal()
-        if res == wx.ID_OK:
-            #self.fileopenmenu.Enable(False)
-            self.filesavemenu.Enable(True)
-            self.filesaveasmenu.Enable(True)
-            filename = dialog.GetPath()
-         
-            self.terrainOgreWin.LoadTerrain(filename)
-            if not self.terrainOgreWin.terrain is None:
-                #update some controls if finished loading
-                self.waterlevelctrl.SetValue(self.terrainOgreWin.terrain.WaterHeight)
-                self.waterLevelText.Label = "Water Level: %0.1f" % (self.terrainOgreWin.terrain.WaterHeight)
-                self.terrainNamectrl.SetValue(self.terrainOgreWin.terrain.TerrainName)
+        if caption in ["Tree Pane", "Dock Manager Settings", "Fixed Pane"]:
+            msg = "Are You Sure You Want To Close This Pane?"
+            dlg = wx.MessageDialog(self, msg, "AUI Question",
+                                   wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
 
-    
-    def onViewObjectDetails(self, event=None): 
-        # split/unsplit
-        if self.viewObjectDetails.IsChecked():
-            self.viewObjectDetails.Check(True)
-            self.splitter.SetSashPosition(600, True)
-            self.splitter.SplitVertically(self.splitterleft, self.splitterright)
-        else:
-            self.viewObjectDetails.Check(False)
-            self.splitter.Unsplit()
+            if dlg.ShowModal() in [wx.ID_NO, wx.ID_CANCEL]:
+                event.Veto()
+            dlg.Destroy()
         
-    def onUpdateRender(self, event=None): 
-        getOgreManager().RenderAll()
-        pass
 
-    def OnTimer(self, event):
-        #fill labels with some information, all windows have the same FPS!
-        txt = "%0.2f FPS" % (self.terrainOgreWin.renderWindow.getStatistics().lastFPS)
-        self.statusbar.SetStatusText(txt, 4)
-        self.updateObjPosRot()
-        
+    def OnClose(self, event):
+        self._mgr.UnInit()
+        del self._mgr
+        self.Destroy()
+
+
     def OnExit(self, event):
-        self.Close(True)
-        del self
-        sys.exit(0)
+        self.Close()
+
+    def OnAbout(self, event):
+        ShowOnAbout()
+
+    def GetDockArt(self):
+        return self._mgr.GetArtProvider()
+
+
+    def DoUpdate(self):
+        self._mgr.Update()
+
+
+    def OnEraseBackground(self, event):
+        event.Skip()
+
+
+    def OnSize(self, event):
+        event.Skip()
+
+
+    def OnSettings(self, event):
+        # show the settings pane, and float it
+        floating_pane = self._mgr.GetPane("settings").Float().Show()
+
+        if floating_pane.floating_pos == wx.DefaultPosition:
+            floating_pane.FloatingPosition(self.GetStartPosition())
+
+        self._mgr.Update()
+
+    def managerInit(self):
+        flags = self._mgr.GetFlags()
+        # based on default settings!
+        flags |= wx.aui.AUI_MGR_ALLOW_ACTIVE_PANE
+        flags &= ~wx.aui.AUI_MGR_TRANSPARENT_DRAG
+        self._mgr.SetFlags(flags)
+
+    def OnCreatePerspective(self, event):
+        dlg = wx.TextEntryDialog(self, "Enter a name for the new perspective:", "AUI Test")
         
-    def __set_properties(self): 
-        try:
-            import ror.svn
-            self.SetTitle("RoR Terrain Editor revision %d" % ror.svn.getRevision())
-        except:
-            self.SetTitle("RoR Terrain Editor")
-            
-        self.terrainOgreWin.SetMinSize((640,480)) 
-
-    def __do_layout(self): 
-        sizer_main = wx.BoxSizer(wx.HORIZONTAL) 
-
-        sizer_left = wx.BoxSizer(wx.VERTICAL) 
-        sizer_left.Add(self.terrainOgreWin, 2, wx.EXPAND, 0) 
-        self.splitterleft.SetSizer(sizer_left)
-
+        dlg.SetValue(("Perspective %d")%(len(self._perspectives)+1))
+        if dlg.ShowModal() != wx.ID_OK:
+            return
         
-        #construct view boxes
-        sizerviewup = wx.BoxSizer(wx.VERTICAL) 
-        #sizerviewup.Add(self.rotatingLabel, 0, wx.EXPAND, 0) 
-        sizerviewup.Add(self.sharedOgreWin, 1, wx.EXPAND, 0) 
-        self.viewsplitterup.SetSizer(sizerviewup)
-
-        sizerviewdown = wx.BoxSizer(wx.VERTICAL) 
-        #sizerviewdown.Add(self.topLabel, 0, wx.EXPAND, 0) 
-        sizerviewdown.Add(self.sharedOgreWin2, 1, wx.EXPAND, 0) 
-        self.viewsplitterdown.SetSizer(sizerviewdown)
-        self.viewsplitter.SplitHorizontally(self.viewsplitterup, self.viewsplitterdown)
-
-               
-        sizer_right = wx.BoxSizer(wx.VERTICAL) 
-        sizer_right.Add(self.viewsplitter, 1, wx.EXPAND, 0) 
-        self.splitterright.SetSizer(sizer_right)
-
-
-        self.splitter.SplitVertically(self.splitterleft, self.splitterright)
-        self.splitter.Unsplit()
-        self.splitter.SetSashPosition(600)
-
+        if len(self._perspectives) == 0:
+            self._perspectives_menu.AppendSeparator()
         
-        sizer_main.Add(self.splitter, 1, wx.EXPAND, 0)
+        self._perspectives_menu.Append(ID_FirstPerspective + len(self._perspectives), dlg.GetValue())
+        self._perspectives.append(self._mgr.SavePerspective())
 
 
-        sizer_settings = wx.BoxSizer(wx.VERTICAL) 
-        sizer_settings.Add(self.waterLevelText, 0, wx.EXPAND, 0) 
-        sizer_settings.Add(self.waterlevelctrl, 0, wx.EXPAND, 0) 
-        sizer_settings.Add(self.terrainName, 0, wx.EXPAND, 0) 
-        sizer_settings.Add(self.terrainNamectrl, 0, wx.EXPAND, 0) 
+    def OnCopyPerspective(self, event):
+        s = self._mgr.SavePerspective()
         
-        #sizer_settings.Add(self.CurrEntName, 0, wx.EXPAND, 0) 
-        #sizer_settings.Add(self.PosText, 0, wx.EXPAND, 0) 
-        #sizer_terrPos = wx.BoxSizer(wx.HORIZONTAL) 
-        #sizer_terrPos.Add(self.terrPosX, 0, wx.EXPAND, 0) 
-        #sizer_terrPos.Add(self.terrPosY, 0, wx.EXPAND, 0) 
-        #sizer_terrPos.Add(self.terrPosZ, 0, wx.EXPAND, 0) 
-        #sizer_settings.Add(sizer_terrPos, 0, wx.EXPAND, 0) 
+        if wx.TheClipboard.Open():
         
-        #sizer_settings.Add(self.RotText, 0, wx.EXPAND, 0) 
-        #sizer_terrRot = wx.BoxSizer(wx.HORIZONTAL) 
-        #sizer_terrRot.Add(self.terrRotX, 0, wx.EXPAND, 0) 
-        #sizer_terrRot.Add(self.terrRotY, 0, wx.EXPAND, 0) 
-        #sizer_terrRot.Add(self.terrRotZ, 0, wx.EXPAND, 0) 
-        #sizer_settings.Add(sizer_terrRot, 0, wx.EXPAND, 0) 
+            wx.TheClipboard.SetData(wx.TextDataObject(s))
+            wx.TheClipboard.Close()
         
-        sizer_settings.Add(self.btnResetRotation, 0, wx.EXPAND, 0) 
-        sizer_settings.Add(self.btnStickToGround, 0, wx.EXPAND, 0) 
-        
-        
-        sizer_main.Add(sizer_settings, 0, wx.EXPAND, 0)
-        
-        self.SetAutoLayout(True) 
-        self.SetSizer(sizer_main) 
-        sizer_main.Fit(self) 
-        sizer_main.SetSizeHints(self) 
-        self.Layout() 
+    def OnRestorePerspective(self, event):
+        self._mgr.LoadPerspective(self._perspectives[event.GetId() - ID_FirstPerspective])
 
+
+    def GetStartPosition(self):
+        self.x = self.x + 20
+        x = self.x
+        pt = self.ClientToScreen(wx.Point(0, 0))
+        
+        return wx.Point(pt.x + x, pt.y + x)
+
+
+    def OnCreateTree(self, event):
+        self._mgr.AddPane(self.CreateTreeCtrl(), wx.aui.AuiPaneInfo().
+                          Caption("Tree Control").
+                          Float().FloatingPosition(self.GetStartPosition()).
+                          FloatingSize(wx.Size(150, 300)).CloseButton(True).MaximizeButton(True))
+        self._mgr.Update()
+
+
+    def OnCreateGrid(self, event):
+        self._mgr.AddPane(self.CreateGrid(), wx.aui.AuiPaneInfo().
+                          Caption("Grid").
+                          Float().FloatingPosition(self.GetStartPosition()).
+                          FloatingSize(wx.Size(300, 200)).CloseButton(True).MaximizeButton(True))
+        self._mgr.Update()
+
+
+    def OnCreateHTML(self, event):
+        self._mgr.AddPane(self.CreateHTMLCtrl(), wx.aui.AuiPaneInfo().
+                          Caption("HTML Content").
+                          Float().FloatingPosition(self.GetStartPosition()).
+                          FloatingSize(wx.Size(300, 200)).CloseButton(True).MaximizeButton(True))
+        self._mgr.Update()
+
+
+    def OnCreateText(self, event):
+        self._mgr.AddPane(self.CreateTextCtrl(), wx.aui.AuiPaneInfo().
+                          Caption("Text Control").
+                          Float().FloatingPosition(self.GetStartPosition()).
+                          CloseButton(True).MaximizeButton(True))
+        self._mgr.Update()
+
+
+    def OnCreateSizeReport(self, event):
+        self._mgr.AddPane(self.CreateSizeReportCtrl(), wx.aui.AuiPaneInfo().
+                          Caption("Client Size Reporter").
+                          Float().FloatingPosition(self.GetStartPosition()).
+                          CloseButton(True).MaximizeButton(True))
+        self._mgr.Update()
+
+
+    def OnChangeContentPane(self, event):
+
+        self._mgr.GetPane("grid_content").Show(event.GetId() == ID_GridContent)
+        self._mgr.GetPane("text_content").Show(event.GetId() == ID_TextContent)
+        self._mgr.GetPane("tree_content").Show(event.GetId() == ID_TreeContent)
+        self._mgr.GetPane("sizereport_content").Show(event.GetId() == ID_SizeReportContent)
+        self._mgr.GetPane("html_content").Show(event.GetId() == ID_HTMLContent)
+        self._mgr.Update()
+
+    def OnCreateOgre(self, event):
+        self._mgr.AddPane(self.CreateOgreCtrl(), wx.aui.AuiPaneInfo().
+                          Caption("Ogre Window").
+                          Float().FloatingPosition(self.GetStartPosition()).
+                          CloseButton(True).MaximizeButton(True))
+        self._mgr.Update()
     
+        
+    def CreateOgreCtrl(self):
+        return RoRTerrainOgreWindow(self, wx.ID_ANY, scenemanager=self.ogrewin.sceneManager)
+
+    def CreateTextCtrl(self):
+        text = ("This is text box %d")%(self.n + 1)
+        return wx.TextCtrl(self,-1, text, wx.Point(0, 0), wx.Size(150, 90),
+                           wx.NO_BORDER | wx.TE_MULTILINE)
+
+
+
+    def CreateGrid(self):
+        grid = wx.grid.Grid(self, -1, wx.Point(0, 0), wx.Size(150, 250),
+                            wx.NO_BORDER | wx.WANTS_CHARS)
+        grid.CreateGrid(50, 20)
+        return grid
+
+
+    def CreateTreeCtrl(self):
+        tree = wx.TreeCtrl(self, -1, wx.Point(0, 0), wx.Size(160, 250),
+                           wx.TR_DEFAULT_STYLE | wx.NO_BORDER)
+        
+        root = tree.AddRoot("AUI Project")
+        items = []
+
+        imglist = wx.ImageList(16, 16, True, 2)
+        imglist.Add(wx.ArtProvider_GetBitmap(wx.ART_FOLDER, wx.ART_OTHER, wx.Size(16,16)))
+        imglist.Add(wx.ArtProvider_GetBitmap(wx.ART_NORMAL_FILE, wx.ART_OTHER, wx.Size(16,16)))
+        tree.AssignImageList(imglist)
+
+        items.append(tree.AppendItem(root, "Item 1", 0))
+        items.append(tree.AppendItem(root, "Item 2", 0))
+        items.append(tree.AppendItem(root, "Item 3", 0))
+        items.append(tree.AppendItem(root, "Item 4", 0))
+        items.append(tree.AppendItem(root, "Item 5", 0))
+
+        for ii in xrange(len(items)):
+        
+            id = items[ii]
+            tree.AppendItem(id, "Subitem 1", 1)
+            tree.AppendItem(id, "Subitem 2", 1)
+            tree.AppendItem(id, "Subitem 3", 1)
+            tree.AppendItem(id, "Subitem 4", 1)
+            tree.AppendItem(id, "Subitem 5", 1)
+        
+        tree.Expand(root)
+
+        return tree
+
+
+    def CreateSizeReportCtrl(self, width=80, height=80):
+        ctrl = SizeReportCtrl(self, -1, wx.DefaultPosition,
+                              wx.Size(width, height), self._mgr)
+        return ctrl
+
+    def CreateHTMLCtrl(self):
+        ctrl = wx.html.HtmlWindow(self, -1, wx.DefaultPosition, wx.Size(400, 300))
+        if "gtk2" in wx.PlatformInfo:
+            ctrl.SetStandardFonts()
+        ctrl.SetPage(self.GetIntroText())        
+        return ctrl
+
+    def GetIntroText(self):
+        return overview
+
 def startApp():
     MainApp = wx.PySimpleApp(0) 
     wx.InitAllImageHandlers() #you may or may not need this 
     myFrame = MainFrame(None, -1, "") 
 
     MainApp.SetTopWindow(myFrame) 
+    
+    myFrame.SetSize((800, 600))
+    myFrame.SetFocus()            
     myFrame.Show() 
 
     MainApp.MainLoop() 
