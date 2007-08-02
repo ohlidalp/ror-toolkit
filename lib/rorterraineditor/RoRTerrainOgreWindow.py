@@ -3,10 +3,11 @@ import wx, os, os.path, copy
 import ogre.renderer.OGRE as ogre 
 from ror.truckparser import *
 from ror.terrainparser import *
+from ror.odefparser import *
 from wxogre.OgreManager import *
 from wxogre.wxOgreWindow import *
 from ror.rorcommon import *
-
+from ror.SimpleTruckRepresentation import *
 
 ADDEDBY = "//added by the terrrain editor:\n"
 SHIFT_SPEED_FACTOR = 20
@@ -26,6 +27,33 @@ class HistoryEntry:
     Position = None
     Rotation = None
 
+class MyDropTarget(wx.PyDropTarget):
+    def __init__(self, window):
+        wx.PyDropTarget.__init__(self)
+        self.do = wx.FileDataObject()
+        self.SetDataObject(self.do)
+
+    def OnEnter(self, x, y, d):
+        print "OnEnter: %d, %d, %d\n" % (x, y, d)
+        return wx.DragCopy
+
+    def OnDragOver(self, x, y, d):
+        print "OnDragOver: %d, %d, %d\n" % (x, y, d)
+        return wx.DragCopy
+
+    def OnLeave(self):
+        print "OnLeave\n"
+
+    def OnDrop(self, x, y):
+        print "OnDrop: %d %d\n" % (x, y)
+        return True
+
+    def OnData(self, x, y, d):
+        print "OnData: %d, %d, %d\n" % (x, y, d)
+        self.GetData()
+        print "%s\n" % self.do.GetFilenames()
+        return d
+    
 class RoRTerrainOgreWindow(wxOgreWindow):
     terrain = None
     
@@ -65,8 +93,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         self.size = size
         self.kwargs = kwargs
         self.ID = ID
-
         wxOgreWindow.__init__(self, self.parent, self.ID, size = self.size, **self.kwargs) 
+        myDrop = MyDropTarget(self)
+        self.SetDropTarget(myDrop)
 
     def CameraLandCollision(self, value):
         self.cameralandcollisionenabled = value
@@ -417,21 +446,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
                 log().error("Error while adding an object to the terrain:")
                 log().error(str(err))
 
-        self.currentStatusMsg = "Terrain loaded"
-            
-            
-    def loadOdef(self, odefFilename):
-        f=open(odefFilename, 'r')
-        content = f.readlines()
-        f.close()
-        meshname = content[0].strip()
-        scalearr = [1,1,1]
-        if len(content) > 2:
-            scalearr = content[1].split(",")
-
-        return (meshname, float(scalearr[0]), float(scalearr[1]), float(scalearr[2]))
-
-                        
+        self.currentStatusMsg = "Terrain loaded" 
     
     def addObjectToTerrain(self, data=None, odefFilename=None, coords=None):
         if coords is None:
@@ -460,7 +475,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         
         meshname = None
         try:
-            (meshname, sx, sy, sz) = self.loadOdef(odefFilename)
+            (meshname, sx, sy, sz) = loadOdef(odefFilename)
         except Exception, err:
             data.error=True
             log().error("error while processing odef file %s" % odefFilename)
@@ -513,7 +528,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
             
         entry = Entry()
         entry.uuid = uuid
-        entry.node, entry.entity, entry.manualobject = self.createTruckMesh(truckFilename, uuid)        
+        entry.node, entry.entity, entry.manualobject = createTruckMesh(truckFilename, uuid)        
         entry.data = data
         
         entry.node.rotate(ogre.Vector3.UNIT_Z, ogre.Degree(data.rotz).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)        
@@ -523,88 +538,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         self.entries[uuid] = entry
         return True
 
-    def createTruckMesh(self, fn, uuid):
-        if not os.path.isfile(fn):
-            #print "truck file not found: " + fn
-            return
-        p = rorparser()
-        p.parse(fn)
-        if not 'nodes' in p.tree.keys() or not 'beams' in p.tree.keys() :
-            return False
-            
-        try:
-            myManualObject =  self.sceneManager.createManualObject(str(uuid)+"manual")
 
-            #myManualObjectMaterial = ogre.MaterialManager.getSingleton().create("manualmaterial"+truckname+str(self.randomcounter),"debugger"); 
-            #myManualObjectMaterial.setReceiveShadows(False)
-            #myManualObjectMaterial.getTechnique(0).setLightingEnabled(True)
-            #myManualObjectMaterial.getTechnique(0).getPass(0).setDiffuse(0,0,1,0)
-            #myManualObjectMaterial.getTechnique(0).getPass(0).setAmbient(0,0,1)
-            #myManualObjectMaterial.getTechnique(0).getPass(0).setSelfIllumination(0,0,1)
-            #myManualObjectMaterial.getTechnique(0).getPass(0).setCullingMode(ogre.CULL_ANTICLOCKWISE)
-
-            matname = ""
-            if fn[-4:].lower() == "load":
-                matname = 'mysimple/loadcolor'
-            elif fn[-5:].lower() == "truck":
-                matname = 'mysimple/truckcolor'
-            
-            myManualObject.useIndexes = True
-            myManualObject.estimateVertexCount(2000)
-            myManualObject.estimateIndexCount(2000)
-
-            myManualObject.begin(matname+"grid", ogre.RenderOperation.OT_LINE_LIST) 
-            for nodeobj in p.tree['nodes']:
-                if nodeobj.has_key('type'):
-                    continue
-                node = nodeobj['data']
-                myManualObject.position(float(node[1]),float(node[2]),float(node[3]))       
-            for beamobj in p.tree['beams']:
-                if beamobj.has_key('type'):
-                    continue
-                beam = beamobj['data']
-                myManualObject.index(int(beam[0]))
-                myManualObject.index(int(beam[1]))
-            myManualObject.end()
-            myManualObject.begin(matname, ogre.RenderOperation.OT_TRIANGLE_LIST) 
-            for nodeobj in p.tree['nodes']:
-                if nodeobj.has_key('type'):
-                    continue
-                node = nodeobj['data']
-                myManualObject.position(float(node[1]),float(node[2]),float(node[3]))       
-                
-            #print len(p.tree['submeshgroups'])
-            if len(p.tree['submeshgroups']) > 0:
-                faces = []
-                for smobj in p.tree['submeshgroups']:
-                    for cabobj in smobj['cab']:
-                        if cabobj.has_key('type'):
-                            continue
-                        cab = cabobj['data']
-                        #print "########face"
-                        if cab != []:
-                            try:
-                                myManualObject.triangle(int(cab[0]),int(cab[1]),int(cab[2]))
-                            except:
-                                print "error with cab: " + str(cab)
-                                pass
-            else:
-                print "truck has no faces!"
-                
-            myManualObject.end()
-            mesh = myManualObject.convertToMesh(str(uuid)+"manual")
-            entity = self.sceneManager.createEntity(str(uuid)+"entity", str(uuid)+"manual")
-            #trucknode = self.sceneManager.getRootSceneNode().createChildSceneNode()
-            myManualObjectNode = self.sceneManager.getRootSceneNode().createChildSceneNode(str(uuid)+"node")
-            myManualObjectNode.attachObject(entity) 
-            
-            myManualObjectNode.attachObject(myManualObject)
-           
-            return myManualObjectNode, entity, mesh
-        except Exception, err:
-            log().error("error while processing truck file %s" % fn)
-            log().error(str(err))
-            return None, None, None
 
     def getPointedPosition(self, event):
         x, y = event.GetPosition() 

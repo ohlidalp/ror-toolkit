@@ -75,6 +75,7 @@ material mysimple/loadcolorgrid
         } 
     }
 }
+
 material mysimple/truckcolor
 {
     technique
@@ -288,4 +289,34 @@ material mysimple/truckEditorSky
 			}
 		}
 	}
+}
+
+material mysimple/terraineditor/previewwindowfloor
+{
+    technique
+    {
+        pass
+        {
+			lighting off
+            texture_unit
+            {
+                colour_op_ex source1 src_manual src_current 0.8 0.8 0.8
+            }
+        } 
+    }
+}
+
+material mysimple/terraineditor/previewwindowsky
+{
+    technique
+    {
+        pass
+        {
+			lighting off
+            texture_unit
+            {
+                colour_op_ex source1 src_manual src_current 0.8 0.8 0.8
+            }
+        } 
+    }
 }

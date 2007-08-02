@@ -14,9 +14,10 @@ def ShowOnAbout(event = None):
     dlg.ShowModal()
     dlg.Destroy()          
 
-    
-    
+
+uniqueIDs = []   
 def randomID(num_bits=64):
+    global uniqueIDs
     """Return a string representing a bitfield num_bits long.
     Maximum artbitrarily set to 1025"""
 
@@ -36,4 +37,11 @@ def randomID(num_bits=64):
 
     # The 2: removes the '0x' and :-1 removes the L
     rnd_id = hex(tmp_id)[2:-1]
-    return(rnd_id)
+    
+    # this ensure that all ids are unique
+    if rnd_id in uniqueIDs:
+        rnd_id = randomID(num_bits)
+    else:
+        uniqueIDs.append(rnd_id)
+    
+    return rnd_id
