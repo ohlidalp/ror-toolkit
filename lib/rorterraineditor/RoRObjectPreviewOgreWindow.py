@@ -202,7 +202,7 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
             dx = self.StartDragX - x
             dy = self.StartDragY - y
             self.StartDragX, self.StartDragY = x, y
-            self.camalpha -= float(dx) * (math.pi / 720)
+            self.camalpha -= float(dx) * (math.pi / 720) * 2
             self.updateCamera()
             self.dragging = True
         else:

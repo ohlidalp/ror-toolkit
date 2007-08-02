@@ -35,16 +35,10 @@ ID_RedoAction = wx.NewId()
 ID_FindObject = wx.NewId()
 ID_Quit = wx.NewId()
 
+ID_ViewHelp = wx.NewId()
+
 ID_CreateOgre = wx.NewId()
 
-ID_CreateGrid = wx.NewId()
-ID_CreateText = wx.NewId()
-ID_CreateHTML = wx.NewId()
-ID_CreateSizeReport = wx.NewId()
-ID_GridContent = wx.NewId()
-ID_TextContent = wx.NewId()
-ID_HTMLContent = wx.NewId()
-ID_SizeReportContent = wx.NewId()
 ID_CreatePerspective = wx.NewId()
 ID_CopyPerspective = wx.NewId()
 
@@ -85,16 +79,6 @@ class MainFrame(wx.Frame):
 
         view_menu = wx.Menu()
         view_menu.Append(ID_CreateOgre, "Create OgreWindow")
-        view_menu.Append(ID_CreateText, "Create Text Control")
-        view_menu.Append(ID_CreateHTML, "Create HTML Control")
-        view_menu.Append(ID_CreateGrid, "Create Grid")
-        view_menu.Append(ID_CreateSizeReport, "Create Size Reporter")
-        view_menu.AppendSeparator()
-        view_menu.Append(ID_GridContent, "Use a Grid for the Content Pane")
-        view_menu.Append(ID_TextContent, "Use a Text Control for the Content Pane")
-        view_menu.Append(ID_HTMLContent, "Use an HTML Control for the Content Pane")
-        view_menu.Append(ID_SizeReportContent, "Use a Size Reporter for the Content Pane")    
-           
         
         self.managerInit()
         options_menu = wx.Menu()
@@ -109,6 +93,7 @@ class MainFrame(wx.Frame):
 
         help_menu = wx.Menu()
         help_menu.Append(ID_About, "About...")
+        help_menu.Append(ID_ViewHelp, "View Help")
         
         mb.Append(file_menu, "File")
         mb.Append(view_menu, "View")
@@ -176,7 +161,17 @@ class MainFrame(wx.Frame):
                           MinSize(wx.Size(200,200)).
                           CloseButton(True).
                           MaximizeButton(False))
-        
+
+        self._mgr.AddPane(HelpPanel(self, self), wx.aui.AuiPaneInfo().
+                          Name("help").
+                          Caption("Help").
+                          Dockable(False).
+                          Float().
+                          Fixed().
+                          Hide().
+                          CloseButton(True).
+                          MaximizeButton(True))
+
         self._mgr.AddPane(SettingsPanel(self, self), wx.aui.AuiPaneInfo().
                           Name("settings").
                           Caption("Dock Manager Settings").
@@ -194,16 +189,7 @@ class MainFrame(wx.Frame):
                           CloseButton(True).
                           MaximizeButton(True))
                           
-        # create some center panes
-        self._mgr.AddPane(self.CreateSizeReportCtrl(), wx.aui.AuiPaneInfo().Name("sizereport_content").
-                          CenterPane().Hide())
-
-        self._mgr.AddPane(self.CreateTextCtrl(), wx.aui.AuiPaneInfo().Name("text_content").
-                          CenterPane().Hide())
-
-        self._mgr.AddPane(self.CreateHTMLCtrl(), wx.aui.AuiPaneInfo().Name("grid_content").
-                          CenterPane().Hide())
-        
+        #  create the center pane
         #Timer creation  (for rendering)
         self.ogreTimer = wx.Timer() 
         self.ogreTimer.SetOwner(self)
@@ -254,34 +240,34 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_SIZE, self.OnSize)
         self.Bind(wx.EVT_CLOSE, self.OnClose)
 
-        # Show How To Use The Closing Panes Event
-        self.Bind(wx.aui.EVT_AUI_PANE_CLOSE, self.OnPaneClose)
-
-        
         self.Bind(wx.EVT_MENU, self.OnOpenTerrain, id=ID_OpenTerrain)
         self.Bind(wx.EVT_MENU, self.OnSaveTerrain, id=ID_SaveTerrain)
         self.Bind(wx.EVT_MENU, self.OnSaveTerrainAs, id=ID_SaveTerrainAs)
+        self.Bind(wx.EVT_MENU, self.OnViewHelp, id=ID_ViewHelp)
         
         self.Bind(wx.EVT_MENU, self.OnCreateOgre, id=ID_CreateOgre)
         
-        self.Bind(wx.EVT_MENU, self.OnCreateGrid, id=ID_CreateGrid)
-        self.Bind(wx.EVT_MENU, self.OnCreateText, id=ID_CreateText)
-        self.Bind(wx.EVT_MENU, self.OnCreateHTML, id=ID_CreateHTML)
-        self.Bind(wx.EVT_MENU, self.OnCreateSizeReport, id=ID_CreateSizeReport)
         self.Bind(wx.EVT_MENU, self.OnCreatePerspective, id=ID_CreatePerspective)
         self.Bind(wx.EVT_MENU, self.OnCopyPerspective, id=ID_CopyPerspective)
 
         self.Bind(wx.EVT_MENU, self.OnSettings, id=ID_Settings)
         
-        self.Bind(wx.EVT_MENU, self.OnChangeContentPane, id=ID_GridContent)
-        self.Bind(wx.EVT_MENU, self.OnChangeContentPane, id=ID_TextContent)
-        self.Bind(wx.EVT_MENU, self.OnChangeContentPane, id=ID_SizeReportContent)
-        self.Bind(wx.EVT_MENU, self.OnChangeContentPane, id=ID_HTMLContent)
+        self.Bind(wx.EVT_MENU, self.OnExit, id=ID_Quit)
         self.Bind(wx.EVT_MENU, self.OnExit, id=wx.ID_EXIT)
         self.Bind(wx.EVT_MENU, self.OnAbout, id=ID_About)
     
         self.Bind(wx.EVT_MENU_RANGE, self.OnRestorePerspective, id=ID_FirstPerspective,
                   id2=ID_FirstPerspective+1000)
+    
+    def OnViewHelp(self, event=None):
+        # show the settings pane, and float it
+        floating_pane = self._mgr.GetPane("help").Float().Show()
+
+        if floating_pane.floating_pos == wx.DefaultPosition:
+            floating_pane.FloatingPosition(self.GetStartPosition())
+
+        self._mgr.Update()
+
     
     def addStuff(self, filename):
         try:
@@ -372,24 +358,10 @@ class MainFrame(wx.Frame):
                 dlg.ShowModal()
                 dlg.Destroy()
 
-    def OnPaneClose(self, event):
-        caption = event.GetPane().caption
-
-        if caption in ["Dock Manager Settings", "Fixed Pane"]:
-            msg = "Are You Sure You Want To Close This Pane?"
-            dlg = wx.MessageDialog(self, msg, "AUI Question",
-                                   wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
-
-            if dlg.ShowModal() in [wx.ID_NO, wx.ID_CANCEL]:
-                event.Veto()
-            dlg.Destroy()
-        
-
     def OnClose(self, event):
         self._mgr.UnInit()
         del self._mgr
         self.Destroy()
-
 
     def OnExit(self, event):
         self.Close()
@@ -400,18 +372,14 @@ class MainFrame(wx.Frame):
     def GetDockArt(self):
         return self._mgr.GetArtProvider()
 
-
     def DoUpdate(self):
         self._mgr.Update()
-
 
     def OnEraseBackground(self, event):
         event.Skip()
 
-
     def OnSize(self, event):
         event.Skip()
-
 
     def OnSettings(self, event):
         # show the settings pane, and float it
@@ -462,47 +430,6 @@ class MainFrame(wx.Frame):
         
         return wx.Point(pt.x + x, pt.y + x)
 
-
-    def OnCreateGrid(self, event):
-        self._mgr.AddPane(self.CreateGrid(), wx.aui.AuiPaneInfo().
-                          Caption("Grid").
-                          Float().FloatingPosition(self.GetStartPosition()).
-                          FloatingSize(wx.Size(300, 200)).CloseButton(True).MaximizeButton(True))
-        self._mgr.Update()
-
-
-    def OnCreateHTML(self, event):
-        self._mgr.AddPane(self.CreateHTMLCtrl(), wx.aui.AuiPaneInfo().
-                          Caption("HTML Content").
-                          Float().FloatingPosition(self.GetStartPosition()).
-                          FloatingSize(wx.Size(300, 200)).CloseButton(True).MaximizeButton(True))
-        self._mgr.Update()
-
-
-    def OnCreateText(self, event):
-        self._mgr.AddPane(self.CreateTextCtrl(), wx.aui.AuiPaneInfo().
-                          Caption("Text Control").
-                          Float().FloatingPosition(self.GetStartPosition()).
-                          CloseButton(True).MaximizeButton(True))
-        self._mgr.Update()
-
-
-    def OnCreateSizeReport(self, event):
-        self._mgr.AddPane(self.CreateSizeReportCtrl(), wx.aui.AuiPaneInfo().
-                          Caption("Client Size Reporter").
-                          Float().FloatingPosition(self.GetStartPosition()).
-                          CloseButton(True).MaximizeButton(True))
-        self._mgr.Update()
-
-
-    def OnChangeContentPane(self, event):
-
-        self._mgr.GetPane("grid_content").Show(event.GetId() == ID_GridContent)
-        self._mgr.GetPane("text_content").Show(event.GetId() == ID_TextContent)
-        self._mgr.GetPane("sizereport_content").Show(event.GetId() == ID_SizeReportContent)
-        self._mgr.GetPane("html_content").Show(event.GetId() == ID_HTMLContent)
-        self._mgr.Update()
-
     def OnCreateOgre(self, event):
         self._mgr.AddPane(self.CreateOgreCtrl(), wx.aui.AuiPaneInfo().
                           Caption("Ogre Window").
@@ -510,37 +437,8 @@ class MainFrame(wx.Frame):
                           CloseButton(True).MaximizeButton(False))
         self._mgr.Update()
     
-        
     def CreateOgreCtrl(self):
         return RoRTerrainOgreWindow(self, wx.ID_ANY, scenemanager=self.terrainOgreWin.sceneManager)
-
-    def CreateTextCtrl(self):
-        text = ("This is text box %d")%(self.n + 1)
-        return wx.TextCtrl(self,-1, text, wx.Point(0, 0), wx.Size(150, 90),
-                           wx.NO_BORDER | wx.TE_MULTILINE)
-
-
-
-    def CreateGrid(self):
-        grid = wx.grid.Grid(self, -1, wx.Point(0, 0), wx.Size(150, 250),
-                            wx.NO_BORDER | wx.WANTS_CHARS)
-        grid.CreateGrid(50, 20)
-        return grid
-
-    def CreateSizeReportCtrl(self, width=80, height=80):
-        ctrl = SizeReportCtrl(self, -1, wx.DefaultPosition,
-                              wx.Size(width, height), self._mgr)
-        return ctrl
-
-    def CreateHTMLCtrl(self):
-        ctrl = wx.html.HtmlWindow(self, -1, wx.DefaultPosition, wx.Size(400, 300))
-        if "gtk2" in wx.PlatformInfo:
-            ctrl.SetStandardFonts()
-        ctrl.SetPage(self.GetIntroText())        
-        return ctrl
-
-    def GetIntroText(self):
-        return overview
 
 def startApp():
     MainApp = wx.PySimpleApp(0) 
