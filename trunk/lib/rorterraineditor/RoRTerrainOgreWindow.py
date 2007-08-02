@@ -528,7 +528,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
             
         entry = Entry()
         entry.uuid = uuid
-        entry.node, entry.entity, entry.manualobject = createTruckMesh(truckFilename, uuid)        
+        entry.node, entry.entity, entry.manualobject = createTruckMesh(self.sceneManager, truckFilename, uuid)        
         entry.data = data
         
         entry.node.rotate(ogre.Vector3.UNIT_Z, ogre.Degree(data.rotz).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)        
