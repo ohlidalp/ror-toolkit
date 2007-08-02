@@ -1,5 +1,8 @@
 import sys, os, os.path
 
+from ror.logger import log
+from ror.settingsManager import getSettingsManager
+
 import wx
 import wx.grid
 import wx.html
@@ -9,69 +12,40 @@ import cStringIO
 # -- wx.SizeReportCtrl --
 # (a utility control that always reports it's client size)
 
-class SizeReportCtrl(wx.PyControl):
+HELPFILENAME = os.path.join(os.path.dirname(os.path.abspath(__file__)), "terrainhelp.html")
 
-    def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition,
-                 size=wx.DefaultSize, mgr=None):
-
-        wx.PyControl.__init__(self, parent, id, pos, size, wx.NO_BORDER)
-            
-        self._mgr = mgr
-
-        self.Bind(wx.EVT_PAINT, self.OnPaint)
-        self.Bind(wx.EVT_SIZE, self.OnSize)
-        self.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground)
-
-
-    def OnPaint(self, event):
-
-        dc = wx.PaintDC(self)
+class HelpPanel(wx.Panel):
+    def __init__(self, parent, frame):
+        wx.Panel.__init__(self, parent, wx.ID_ANY, wx.DefaultPosition,
+                          wx.DefaultSize)
+        self._frame = frame
         
-        size = self.GetClientSize()
-        s = ("Size: %d x %d")%(size.x, size.y)
-
-        dc.SetFont(wx.NORMAL_FONT)
-        w, height = dc.GetTextExtent(s)
-        height = height + 3
-        dc.SetBrush(wx.WHITE_BRUSH)
-        dc.SetPen(wx.WHITE_PEN)
-        dc.DrawRectangle(0, 0, size.x, size.y)
-        dc.SetPen(wx.LIGHT_GREY_PEN)
-        dc.DrawLine(0, 0, size.x, size.y)
-        dc.DrawLine(0, size.y, size.x, 0)
-        dc.DrawText(s, (size.x-w)/2, ((size.y-(height*5))/2))
-        
-        if self._mgr:
-        
-            pi = self._mgr.GetPane(self)
-            
-            s = ("Layer: %d")%pi.dock_layer
-            w, h = dc.GetTextExtent(s)
-            dc.DrawText(s, (size.x-w)/2, ((size.y-(height*5))/2)+(height*1))
-           
-            s = ("Dock: %d Row: %d")%(pi.dock_direction, pi.dock_row)
-            w, h = dc.GetTextExtent(s)
-            dc.DrawText(s, (size.x-w)/2, ((size.y-(height*5))/2)+(height*2))
-            
-            s = ("Position: %d")%pi.dock_pos
-            w, h = dc.GetTextExtent(s)
-            dc.DrawText(s, (size.x-w)/2, ((size.y-(height*5))/2)+(height*3))
-            
-            s = ("Proportion: %d")%pi.dock_proportion
-            w, h = dc.GetTextExtent(s)
-            dc.DrawText(s, (size.x-w)/2, ((size.y-(height*5))/2)+(height*4))
-        
-
-    def OnEraseBackground(self, event):
-        # intentionally empty
-        pass        
+        vert = wx.BoxSizer(wx.VERTICAL)
+        self.htmlctrl = wx.html.HtmlWindow(self, wx.ID_ANY, wx.DefaultPosition, wx.Size(800, 600))
+        if "gtk2" in wx.PlatformInfo:
+            ctrl.SetStandardFonts()
+        readme = self.loadReadme()
+        if readme is None:
+            self.Hide()
+            return
+        self.htmlctrl.SetPage(readme)
+        vert.Add(self.htmlctrl, 2, wx.EXPAND, 0)
+        self.SetSizer(vert)
+        self.GetSizer().SetSizeHints(self)
     
-
-    def OnSize(self, event):
-    
-        self.Refresh()
-        event.Skip()
-    
+    def loadReadme(self):
+        if os.path.isfile(HELPFILENAME):
+            try:
+                f = open(HELPFILENAME,'r')
+                content = f.read()
+                f.close()
+                return content
+            except Exception, err:
+                log().error(str(err))
+                return None
+        else:
+            log().error("TerrainEditor Readme not found: %s" % HELPFILENAME)
+            return None
 
 ID_PaneBorderSize = wx.ID_HIGHEST + 1
 ID_SashSize = ID_PaneBorderSize + 1
@@ -366,52 +340,3 @@ class SettingsPanel(wx.Panel):
         self.UpdateColors()
 
 
-
-#----------------------------------------------------------------------
-
-class TestPanel(wx.Panel):
-    def __init__(self, parent, log):
-        self.log = log
-        wx.Panel.__init__(self, parent, -1)
-        b = wx.Button(self, -1, "Show the wx.aui Demo Frame", (50,50))
-        self.Bind(wx.EVT_BUTTON, self.OnButton, b)
-
-    def OnButton(self, evt):
-        frame = PyAUIFrame(self, wx.ID_ANY, "wx.aui wxPython Demo", size=(750, 590))
-        frame.Show()
-
-#----------------------------------------------------------------------
-
-def runTest(frame, nb, log):
-    win = TestPanel(nb, log)
-    return win
-
-#----------------------------------------------------------------------
-
-
-
-overview = """\
-<html><body>
-<h3>wx.aui, the Advanced User Interface module</h3>
-
-<br/><b>Overview</b><br/>
-
-<p>wx.aui is an Advanced User Interface library for the wxWidgets toolkit 
-that allows developers to create high-quality, cross-platform user 
-interfaces quickly and easily.</p>
-
-<p><b>Features</b></p>
-
-<p>With wx.aui developers can create application frameworks with:</p>
-
-<ul>
-<li>Native, dockable floating frames</li>
-<li>Perspective saving and loading</li>
-<li>Native toolbars incorporating real-time, &quot;spring-loaded&quot; dragging</li>
-<li>Customizable floating/docking behavior</li>
-<li>Completely customizable look-and-feel</li>
-<li>Optional transparent window effects (while dragging or docking)</li>
-</ul>
-
-</body></html>
-"""
