@@ -193,7 +193,7 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
         event.Skip()  
     
     def onMouseEvent(self, event):
-        self.SetFocus() #Gives Keyboard focus to the window 
+        #self.SetFocus() #Gives Keyboard focus to the window 
         
         if event.RightDown(): #Precedes dragging 
             self.StartDragX, self.StartDragY = event.GetPosition() #saves position of initial click 
