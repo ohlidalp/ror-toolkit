@@ -86,9 +86,11 @@ class RoRTerrainOgreWindow(wxOgreWindow):
     RotateNode = None
     stickCurrentObjectToGround = False
     
-    def __init__(self, parent, ID, size = wx.Size(200,200), rordir = "", scenemanager=None, **kwargs): 
+    def __init__(self, parent, ID, size = wx.Size(200,200), rordir = "", maininstance=None, **kwargs): 
         self.rordir = rordir
-        self.sceneManager = scenemanager
+        self.maininstance = maininstance
+        if not maininstance is None:
+            self.sceneManager = maininstance.sceneManager
         self.parent = parent
         self.size = size
         self.kwargs = kwargs
@@ -185,7 +187,8 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 
             #get the scenemanager
             self.sceneManager = getOgreManager().createSceneManager(ogre.ST_EXTERIOR_CLOSE)
-
+        else:
+            self.terrain = self.maininstance.terrain
         # create a camera
         cameraUUID = randomID()
         self.camera = self.sceneManager.createCamera(str(cameraUUID)+"camera")
@@ -206,10 +209,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         self.Bind(wx.EVT_KEY_DOWN, self.onKeyDown) 
         self.Bind(wx.EVT_KEY_UP, self.onKeyUp) 
         self.Bind(wx.EVT_MOUSE_EVENTS, self.onMouseEvent)
-        
-        if not hasparent:
-            #create objects
-            self.populateScene()
+
+        #create objects
+        self.populateScene()
         
 
     def updateWaterPlane(self):
@@ -559,8 +561,8 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         self.sceneManager.setFog(ogre.FOG_LINEAR, fadeColour, 0.001, 5000.0, 10000.0)
         self.renderWindow.getViewport(0).BackgroundColour = fadeColour
 
-        l = self.sceneManager.createLight("MainLight")
-        l.setPosition(20,80,50)
+        #l = self.sceneManager.createLight(str(randomID())+"MainLight")
+        #l.setPosition(20,80,50)
 
         #create ray template
         self.selectionRaySceneQuery = self.sceneManager.createRayQuery(ogre.Ray());
@@ -772,12 +774,16 @@ class RoRTerrainOgreWindow(wxOgreWindow):
                 self.addObjectToHistory(self.selectedEntry)
                 self.selectedEntry.node.roll(forceDegree)
                        
-    def onMouseEvent(self,event):
+    def onMouseEvent(self, event):
         if self.terrain is None:
             return
        
         width, height, a, b, c = self.renderWindow.getMetrics()       
-        self.controlArrows(event)
+        
+        try:
+            self.controlArrows(event)
+        except:
+            pass
 
         if event.RightDown() or event.LeftDown():
             self.SetFocus()
