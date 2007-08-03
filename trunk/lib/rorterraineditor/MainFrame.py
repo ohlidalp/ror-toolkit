@@ -359,11 +359,16 @@ class MainFrame(wx.Frame):
                 dlg.Destroy()
 
     def OnClose(self, event):
+        self.OnExit(event)
+        
+    def OnExit(self, event):
+        all_panes = self._mgr.GetAllPanes()
+        for ii in xrange(len(all_panes)):
+            if not all_panes[ii].IsToolbar():
+                all_panes[ii].Hide()              
         self._mgr.UnInit()
         del self._mgr
         self.Destroy()
-
-    def OnExit(self, event):
         self.Close()
 
     def OnAbout(self, event):
@@ -438,7 +443,7 @@ class MainFrame(wx.Frame):
         self._mgr.Update()
     
     def CreateOgreCtrl(self):
-        return RoRTerrainOgreWindow(self, wx.ID_ANY, scenemanager=self.terrainOgreWin.sceneManager)
+        return RoRTerrainOgreWindow(self, wx.ID_ANY, maininstance=self.terrainOgreWin)
 
 def startApp():
     MainApp = wx.PySimpleApp(0) 
