@@ -84,7 +84,6 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
                              wx.WXK_DOWN:ogre.Vector3(0.0,0.0,d), 
                              wx.WXK_PAGEUP:ogre.Vector3(0.0,d,0.0), 
                              wx.WXK_PAGEDOWN:ogre.Vector3(0.0,-d,0.0)} 
-        self.Bind(wx.EVT_KEY_DOWN, self.onKeyDown) 
         self.Bind(wx.EVT_MOUSE_EVENTS, self.onMouseEvent)
         
         #create objects
@@ -97,6 +96,7 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
             self.free()
             uuid = randomID()
             self.objnode, self.objentity, manualobject = createTruckMesh(self.sceneManager, filename, uuid)
+            print "aaa", self.objnode.getPosition()
         elif extension.lower() in [".odef"]:
             self.free()
             uuid = randomID()
@@ -139,8 +139,8 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
         self.sceneManager.setShadowTechnique(ogre.ShadowTechnique.SHADOWTYPE_STENCIL_ADDITIVE);
         self.sceneManager.setSkyDome(True, 'mysimple/terraineditor/previewwindowsky', 4.0, 8.0) 
 
-        self.MainLight = self.sceneManager.createLight('MainLight') 
-        self.MainLight.setPosition (ogre.Vector3(20, 80, 130))
+        #self.MainLight = self.sceneManager.createLight('MainLight') 
+        #self.MainLight.setPosition (ogre.Vector3(20, 80, 130))
 
         # add some fog 
         self.sceneManager.setFog(ogre.FOG_EXP, ogre.ColourValue.White, 0.0002) 
@@ -163,13 +163,11 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
 
     def updateCamera(self):
         if not self.objnode is None:
-            if self.objentity is None:
-                self.radius = 15
-                height = 2
-            else:
-                self.radius = self.objentity.getBoundingRadius() * 2
-                height = self.objentity.getBoundingBox().getMaximum().z
-            pos = self.objnode.getPosition() + ogre.Vector3(0, height*0.4, 0)
+            self.radius = self.objentity.getBoundingRadius() * 2
+            height = self.objentity.getBoundingBox().getMaximum().z
+            #pos = self.objnode.getPosition() + ogre.Vector3(0, height*0.4, 0)
+            # always look to the center!
+            pos = self.objnode.getPosition() + ogre.Vector3(0, height*0.4, 0) + (self.objentity.getBoundingBox().getMinimum() + self.objentity.getBoundingBox().getMaximum() ) / 2
             dx = math.cos(self.camalpha) * self.radius
             dy = math.sin(self.camalpha) * self.radius
             self.camera.setPosition(pos - ogre.Vector3(dx, -5, dy))
@@ -183,14 +181,6 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
     def OnFrameStarted(self):
         self.updateCamera()
         wxOgreWindow.OnFrameStarted(self)
-    
-    def onKeyDown(self,event):
-        validMove = self.ControlKeyDict.get(event.m_keyCode, False) 
-        if validMove:
-            pos = self.camera.getPosition()
-            pos += validMove
-            self.camera.setPosition(pos) 
-        event.Skip()  
     
     def onMouseEvent(self, event):
         #self.SetFocus() #Gives Keyboard focus to the window 
