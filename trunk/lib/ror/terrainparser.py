@@ -156,7 +156,7 @@ class RoRTerrain:
                 truck.setPosition(x, y, z)
                 truck.setRotation(rx, ry, -rz)
                 truck.additionaloptions = objname[1:]
-                truck.mayRotate=False
+                #truck.mayRotate=False
                 self.trucks.append(truck)
                 continue
             if objname[0][0:4] == "load" and len(objname) > 1:
@@ -168,7 +168,7 @@ class RoRTerrain:
                 load.setPosition(x, y, z)
                 load.setRotation(rx, ry, -rz)
                 load.additionaloptions = objname[1:]
-                load.mayRotate=False
+                #load.mayRotate=False
                 self.loads.append(load)
                 continue
             
