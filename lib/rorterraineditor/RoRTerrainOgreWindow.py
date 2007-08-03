@@ -214,7 +214,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         self.Bind(wx.EVT_MOUSE_EVENTS, self.onMouseEvent)
 
         self.virtualMoveNode = self.sceneManager.getRootSceneNode().createChildSceneNode()
-        self.virtualMoveNode.attachObject(self.sceneManager.createEntity("afsdfsdfsfsdfsdfasdf", "arrow.mesh") )
+        
+        # this is for debugging of the grid system:
+        #self.virtualMoveNode.attachObject(self.sceneManager.createEntity("afsdfsdfsfsdfsdfasdf", "arrow.mesh") )
 
         #create objects
         self.populateScene()
@@ -795,10 +797,13 @@ class RoRTerrainOgreWindow(wxOgreWindow):
             forcex /= 10
             forcey /= 10
         
-        LockSteps = not event.AltDown()
+        LockSteps = event.AltDown()
         
         forceDegree = ogre.Degree(forcex).valueRadians()
 
+        if not event.Dragging():
+            return
+        
         #print self.SelectedArrow.getName(), forcex, forcey
         if self.SelectedArrow.getName() == 'movearrowsX':
             self.translateSelected(ogre.Vector3(forcex, 0, 0), LockSteps)
