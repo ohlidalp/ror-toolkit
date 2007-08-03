@@ -296,6 +296,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 
         nry = nr.createChildSceneNode("rotatearrowsnodeY")
         ery = self.sceneManager.createEntity("rotatearrowsY", "roundarrow.mesh") 
+        nry.rotate(ogre.Vector3.UNIT_X, ogre.Degree(180).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
         nry.rotate(ogre.Vector3.UNIT_Y, ogre.Degree(90).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
         ery.setMaterialName("mysimple/transred")
         nry.setInheritOrientation(True)
@@ -309,10 +310,11 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         
         # terrain selection node
         nt = self.sceneManager.getRootSceneNode().createChildSceneNode("terrainselectnode") 
-        et = self.sceneManager.createEntity("circlepointer", "circlepointer.mesh") 
+        et = self.sceneManager.createEntity("circlepointer", "cylinder.mesh") 
         et.setMaterialName("mysimple/terrainselect")
         nt.rotate(ogre.Vector3.UNIT_X, ogre.Degree(90).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
         nt.attachObject(et)
+        nt.setScale(5,5,5)
        
         self.TerrainSelectNode = nt
         self.TranslateNode = n
