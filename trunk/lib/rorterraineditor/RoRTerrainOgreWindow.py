@@ -72,6 +72,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
     # movement related
     keyPress = ogre.Vector3(0,0,0)
     moveVector = ogre.Vector3(0,0,0)
+    virtualMoveNode = None
     
     # selection related
     selectionMaterial = None
@@ -85,6 +86,8 @@ class RoRTerrainOgreWindow(wxOgreWindow):
     TranslateNode = None
     RotateNode = None
     stickCurrentObjectToGround = False
+    
+    
     
     def __init__(self, parent, ID, size = wx.Size(200,200), rordir = "", maininstance=None, **kwargs): 
         self.rordir = rordir
@@ -210,6 +213,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         self.Bind(wx.EVT_KEY_UP, self.onKeyUp) 
         self.Bind(wx.EVT_MOUSE_EVENTS, self.onMouseEvent)
 
+        self.virtualMoveNode = self.sceneManager.getRootSceneNode().createChildSceneNode()
+        self.virtualMoveNode.attachObject(self.sceneManager.createEntity("afsdfsdfsfsdfsdfasdf", "arrow.mesh") )
+
         #create objects
         self.populateScene()
         
@@ -260,8 +266,12 @@ class RoRTerrainOgreWindow(wxOgreWindow):
     def reattachArrows(self, entity):
         self.TranslateNode.setPosition(entity.getParentNode().getPosition())
         self.TranslateNode.setOrientation(entity.getParentNode().getOrientation())
+        
         self.RotateNode.setOrientation(entity.getParentNode().getOrientation())
         self.RotateNode.setPosition(entity.getParentNode().getPosition())
+        
+        self.virtualMoveNode.setOrientation(entity.getParentNode().getOrientation())
+        self.virtualMoveNode.setPosition(entity.getParentNode().getPosition())
         
     def createArrows(self):
         if not self.TranslateNode is None:
@@ -714,7 +724,59 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         #self.entries[obj.uuid].node.setPosition(obj.node.getPosition)
         self.currentStatusMsg = "redo step %d of %d" % (self.historypointer+1, len(self.commandhistory))
                 
+
+
+    def rotateSelected(self, axis, amount, steps=True):
+        if not self.selectedEntry:
+            return
         
+        self.virtualMoveNode.rotate(axis, amount, relativeTo=ogre.Node.TransformSpace.TS_LOCAL)
+        newrot = self.virtualMoveNode.getOrientation()
+        
+        # todo: get this working!
+        if False:
+            print amount
+            stepsize = 10
+            rotzz = -ogre.Radian(newrot.getYaw()).valueDegrees()
+            rotz = rotzz - (rotzz % stepsize)
+            rotyy = ogre.Radian(newrot.getRoll()).valueDegrees()
+            roty = rotyy - (rotyy % stepsize)
+            rotxx = ogre.Radian(newrot.getPitch()).valueDegrees()
+            rotx = rotxx - (rotxx % stepsize)
+            print rotx, roty, rotz, rotxx, rotyy, rotzz
+            self.virtualMoveNode.resetOrientation()
+            self.virtualMoveNode.rotate(ogre.Vector3.UNIT_Z, ogre.Degree(rotz).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+            self.virtualMoveNode.rotate(ogre.Vector3.UNIT_Y, ogre.Degree(roty).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+            self.virtualMoveNode.rotate(ogre.Vector3.UNIT_X, ogre.Degree(rotx).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+        
+            newrot = self.virtualMoveNode.getOrientation()
+
+        self.RotateNode.setOrientation(newrot)        
+        self.addObjectToHistory(self.selectedEntry)
+        self.selectedEntry.node.setOrientation(newrot)
+                
+    def translateSelected(self, vector, steps=True):
+        if not self.selectedEntry:
+            return
+        self.virtualMoveNode.translate(vector, relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+        newpos = self.virtualMoveNode.getPosition()
+        
+        if steps:
+            stepsize = 2
+            x = newpos.x - (newpos.x % stepsize)
+            y = newpos.y - (newpos.y % stepsize)
+            z = newpos.z - (newpos.z % stepsize)
+            newpos = ogre.Vector3(x, y, z)
+
+        if self.stickCurrentObjectToGround:
+            newpos = self.StickVectorToGround(newpos)
+        
+
+        self.TranslateNode.setPosition(newpos)
+        self.RotateNode.setPosition(newpos)
+        self.addObjectToHistory(self.selectedEntry)
+        self.selectedEntry.node.setPosition(newpos)
+
     def controlArrows(self, event):
         if self.SelectedArrow is None:
             return
@@ -733,48 +795,23 @@ class RoRTerrainOgreWindow(wxOgreWindow):
             forcex /= 10
             forcey /= 10
         
+        LockSteps = not event.AltDown()
+        
         forceDegree = ogre.Degree(forcex).valueRadians()
-            
+
         #print self.SelectedArrow.getName(), forcex, forcey
         if self.SelectedArrow.getName() == 'movearrowsX':
-            self.TranslateNode.translate(forcex,0,0,relativeTo=ogre.Node.TransformSpace.TS_LOCAL)
-            if self.stickCurrentObjectToGround:
-                self.TranslateNode.setPosition(self.StickVectorToGround(self.TranslateNode.getPosition()))
-            self.RotateNode.setPosition(self.TranslateNode.getPosition())
-            if self.selectedEntry:
-                self.addObjectToHistory(self.selectedEntry)
-                self.selectedEntry.node.setPosition(self.TranslateNode.getPosition())
+            self.translateSelected(ogre.Vector3(forcex, 0, 0), LockSteps)
         elif self.SelectedArrow.getName() == 'movearrowsY':
-            self.TranslateNode.translate(0,0,forcex,relativeTo=ogre.Node.TransformSpace.TS_LOCAL)
-            if self.stickCurrentObjectToGround:
-                self.TranslateNode.setPosition(self.StickVectorToGround(self.TranslateNode.getPosition()))
-            self.RotateNode.setPosition(self.TranslateNode.getPosition())
-            if self.selectedEntry:
-                self.addObjectToHistory(self.selectedEntry)
-                self.selectedEntry.node.setPosition(self.TranslateNode.getPosition())
+            self.translateSelected(ogre.Vector3(0, forcex, 0), LockSteps)
         elif self.SelectedArrow.getName() == 'movearrowsZ':
-            self.TranslateNode.translate(0,forcex,0,relativeTo=ogre.Node.TransformSpace.TS_LOCAL)
-            if self.stickCurrentObjectToGround:
-                self.TranslateNode.setPosition(self.StickVectorToGround(self.TranslateNode.getPosition()))
-            self.RotateNode.setPosition(self.TranslateNode.getPosition())
-            if self.selectedEntry:
-                self.addObjectToHistory(self.selectedEntry)
-                self.selectedEntry.node.setPosition(self.TranslateNode.getPosition())
+            self.translateSelected(ogre.Vector3(0, 0, forcex), LockSteps)
         elif self.SelectedArrow.getName() == 'rotatearrowsX':
-            self.RotateNode.yaw(forceDegree)
-            if self.selectedEntry:
-                self.addObjectToHistory(self.selectedEntry)
-                self.selectedEntry.node.yaw(forceDegree)
+            self.rotateSelected(ogre.Vector3.UNIT_Y, forceDegree, LockSteps)
         elif self.SelectedArrow.getName() == 'rotatearrowsY':
-            self.RotateNode.pitch(forceDegree)
-            if self.selectedEntry:
-                self.addObjectToHistory(self.selectedEntry)
-                self.selectedEntry.node.pitch(forceDegree)
+            self.rotateSelected(ogre.Vector3.UNIT_X, forceDegree, LockSteps)
         elif self.SelectedArrow.getName() == 'rotatearrowsZ':
-            self.RotateNode.roll(forceDegree)
-            if self.selectedEntry:
-                self.addObjectToHistory(self.selectedEntry)
-                self.selectedEntry.node.roll(forceDegree)
+            self.rotateSelected(ogre.Vector3.UNIT_Z, forceDegree, LockSteps)
                        
     def onMouseEvent(self, event):
         if self.terrain is None:
@@ -782,10 +819,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
        
         width, height, a, b, c = self.renderWindow.getMetrics()       
         
-        try:
-            self.controlArrows(event)
-        except:
-            pass
+        self.controlArrows(event)
 
         if event.RightDown() or event.LeftDown():
             self.SetFocus()
