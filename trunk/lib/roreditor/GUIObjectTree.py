@@ -36,6 +36,14 @@ class RoRObjectTreeCtrl(wx.Panel):
         imglist.Add(wx.ArtProvider_GetBitmap(wx.ART_NORMAL_FILE, wx.ART_OTHER, wx.Size(16,16)))
         tree.AssignImageList(imglist)
 
+        terrains = self.getInstalledTerrains()
+        items.append(tree.AppendItem(root, "Terrains", 0))
+        for terrain in terrains:
+            terrainname, extension = os.path.splitext(os.path.basename(terrain))
+            data = wx.TreeItemData()
+            data.SetData(terrain)
+            tree.AppendItem(items[-1], terrainname, 1, data=data)
+        
         trucks = self.getInstalledTrucks()
         items.append(tree.AppendItem(root, "Trucks", 0))
         for truck in trucks:
@@ -67,14 +75,22 @@ class RoRObjectTreeCtrl(wx.Panel):
         self.GetSizer().SetSizeHints(self)
                 
         self.tree = tree
-        self.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDClick, self.tree)
+        
+        # this dows not work :(
+        #self.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDClick, self.tree)
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.onTreeSelectionChange, self.tree)
         self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnRightClick, self.tree)
         
         #self.Bind(wx.EVT_TREE_BEGIN_DRAG, self.BeginDrag, self.tree)
     def OnLeftDClick(self, event):
-        self.selectedfn = self.tree.GetItemData(event.GetItem()).GetData()
-        self.addStuff()
+        #this is just a shortcut!
+        self.selectedfn = self.tree.GetItemData(event.GetItem()).GetData()        
+        if self.selectedfn[-4:].lower() == "odef":
+            self.editOdef()
+        if self.selectedfn[-5:].lower() == "terrn":
+            self.editTerrain()
+        if self.selectedfn[-5:].lower() == 'truck' or self.selectedfn[-4:].lower() == 'load':
+            self.editTruck()
         
     def OnRightClick(self, event):
         self.selectedfn = self.tree.GetItemData(event.GetItem()).GetData()
@@ -83,24 +99,43 @@ class RoRObjectTreeCtrl(wx.Panel):
             return
         
         menu = wx.Menu()
-        item_add = menu.Append(wx.ID_ANY, "add to Terrain")
-        self.Bind(wx.EVT_MENU, self.addStuff, item_add)
+        
+        #create various menu entries
         if self.selectedfn[-4:].lower() == "odef":
-            #create odef menu entry
             item_edit_odef = menu.Append(wx.ID_ANY, "Edit in ODef Editor")
             self.Bind(wx.EVT_MENU, self.editOdef, item_edit_odef)
+        if self.selectedfn[-5:].lower() == "terrn":
+            item_edit_terrain = menu.Append(wx.ID_ANY, "Edit in Terrain Editor")
+            self.Bind(wx.EVT_MENU, self.editTerrain, item_edit_terrain)
+        if self.selectedfn[-5:].lower() == 'truck' or self.selectedfn[-4:].lower() == 'load':
+            item_edit_truck = menu.Append(wx.ID_ANY, "Edit in Truck Editor")
+            self.Bind(wx.EVT_MENU, self.editTruck, item_edit_truck)
+        menu.AppendSeparator()
+        item_add = menu.Append(wx.ID_ANY, "add to Terrain")
+        self.Bind(wx.EVT_MENU, self.addObjectToTerrain, item_add)
+            
         self.PopupMenu(menu)
         menu.Destroy()
         
+    def editTruck(self, event=None):
+        if self.selectedfn is None:
+            return
+        self.parent.editTruck(self.selectedfn)
+    
     def editOdef(self, event=None):
         if self.selectedfn is None:
             return
         self.parent.editODefFile(self.selectedfn)
-        
-    def addStuff(self, event=None):
+
+    def editTerrain(self, event=None):
         if self.selectedfn is None:
             return
-        self.parent.addStuff(self.selectedfn)
+        self.parent.openTerrain(self.selectedfn)
+        
+    def addObjectToTerrain(self, event=None):
+        if self.selectedfn is None:
+            return
+        self.parent.addObjectToTerrain(self.selectedfn)
     #def BeginDrag(self, event):
     #        '''
     #        EVT_TREE_BEGIN_DRAG handler.
@@ -117,7 +152,16 @@ class RoRObjectTreeCtrl(wx.Panel):
         if fn is None:
             return
         self.parent.previewObject(fn)
-        
+    
+    def getInstalledTerrains(self):
+        files = []
+        for filename in os.listdir(TERRAINDIR):
+            onlyfilename, extension = os.path.splitext(filename)
+            if extension.lower() == ".terrn":
+                files.append(os.path.join(TERRAINDIR, filename))
+        files.sort()
+        return files
+
     def getInstalledTrucks(self):
         files = []
         for filename in os.listdir(TRUCKDIR):

@@ -20,8 +20,8 @@ def main():
     except ImportError:
         pass
 
-    import rorterraineditor.MainFrame
-    rorterraineditor.MainFrame.startApp()
+    import roreditor.MainFrame
+    roreditor.MainFrame.startApp()
 
 
 if __name__=="__main__": 
