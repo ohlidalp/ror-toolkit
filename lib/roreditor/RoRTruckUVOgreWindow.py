@@ -16,11 +16,10 @@ import ogre.io.OIS as OIS
 
 IMGSCALE = 20
 
-class RoRUVOgreWindow(wxOgreWindow):
+class RoRTruckUVOgreWindow(wxOgreWindow):
     def __init__(self, parent, ID, size = wx.Size(200,200), **kwargs): 
         self.parent = parent
         self.rordir = getSettingsManager().getSetting("RigsOfRods", "BasePath")
-        self.World = OgreNewt.World()
         self.sceneManager = None
         self.trucktree = None
         self.clearlist = {'entity':[]}
@@ -57,12 +56,11 @@ class RoRUVOgreWindow(wxOgreWindow):
 
     
     def __del__ (self):
-        ## delete the world when we're done.
+        # delete the world when we're done.
         self.sceneManager.destroyEntity('groundent')
         #ogre.ResourceGroupManager.getSingleton().undeclareResource("UVGroundPlane", "General")
         
         del self.bodies
-        del self.World
 
         
     def OnFrameStarted(self):
@@ -111,60 +109,6 @@ class RoRUVOgreWindow(wxOgreWindow):
         #create objects
         self.populateScene()
 
-
-    def createNode(self, node):
-        id = int(node[0])
-        pos = ogre.Vector3(float(node[1]),float(node[2]),float(node[3]))
-        if len(node) == 5:
-            option = node[4]
-        else:
-            option = None
-
-        size = 0.05
-        mass = 0.5 * size
-            
-        inertia = OgreNewt.CalcBoxSolid( mass, size )
-    
-        box1node = self.sceneManager.getRootSceneNode().createChildSceneNode()
-        box1 = self.sceneManager.createEntity("NodeEntity"+str(self.EntityCount), "ellipsoid.mesh" )
-        self.clearlist['entity'].append("NodeEntity"+str(self.EntityCount))
-        self.EntityCount += 1
-        box1node.attachObject( box1 )
-        box1node.setScale(size)
-        box1.setNormaliseNormals(True)
-    
-        col = OgreNewt.Ellipsoid( self.World, size )
-        bod = OgreNewt.Body( self.World, col )
-        del col
-                    
-        bod.attachToNode( box1node )
-        bod.setMassMatrix( mass, inertia )
-        bod.setStandardForceCallback()
-    
-        matname = "TruckEditor/NodeNormal"
-        box1.setMaterialName(matname)
-        box1.setCastShadows(False)
-    
-        bod.setPositionOrientation(pos, Ogre.Quaternion.IDENTITY )
-        self.nodes[id] = [box1node, option, node]
-        return bod
-
-    def createBeam(self, id0, id1, id2, options):
-        pos1 = self.nodes[id1][0].getPosition()
-        pos2 = self.nodes[id2][0].getPosition()
-
-        idstr = str(id0) + str(id1) + str(id2)
-        line =  self.sceneManager.createManualObject("manual"+idstr)
-        mat = "TruckEditor/BeamNormal"
-        line.begin(mat, ogre.RenderOperation.OT_LINE_LIST) 
-        line.position(pos1)
-        line.position(pos2)
-        line.end()
-        line.setCastShadows(False)
-        linenode = self.sceneManager.getRootSceneNode().createChildSceneNode()
-        linenode.attachObject(line)
-        self.beams[id0] = [linenode, id1, id2, options, line]
-
     
     def populateScene(self):
         self.sceneManager.AmbientLight = ogre.ColourValue(0.7, 0.7, 0.7 )
@@ -194,14 +138,13 @@ class RoRUVOgreWindow(wxOgreWindow):
         plane.normal = ogre.Vector3(0, 1, 0) 
         plane.d = 100
         # see http://www.ogre3d.org/docs/api/html/classOgre_1_1MeshManager.html#Ogre_1_1MeshManagera5
-        import random
-        t = str(random.random())
-        ogre.MeshManager.getSingleton().createPlane('UVGroundPlane' + t, "General", plane, 2000, 2000, 
+        uuid = randomID()
+        ogre.MeshManager.getSingleton().createPlane(uuid+'UVGroundPlane', "General", plane, 2000, 2000, 
                                                 20, 20, True, 1, 200.0, 200.0, ogre.Vector3(0, 0, 1),
                                                 ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, 
                                                 ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, 
                                                 True, True)
-        entity = self.sceneManager.createEntity('groundent', 'UVGroundPlane' + t) 
+        entity = self.sceneManager.createEntity(uuid+'groundent', uuid+'UVGroundPlane') 
         
         entity.setMaterialName('TruckEditor/UVBackground') 
         self.groundplanenode = self.sceneManager.getRootSceneNode().createChildSceneNode()
@@ -229,7 +172,8 @@ class RoRUVOgreWindow(wxOgreWindow):
         matname = self.trucktree['globals'][0]['data'][2]
         
         idstr = str(smgid)
-        sm = self.sceneManager.createManualObject("manualsmg"+idstr)
+        uuid = randomID()
+        sm = self.sceneManager.createManualObject(uuid+"manualsmg"+idstr)
         sm.begin(matname, ogre.RenderOperation.OT_TRIANGLE_LIST) 
 
         uvcounter = smgid * 100
@@ -240,7 +184,7 @@ class RoRUVOgreWindow(wxOgreWindow):
 
             idstr = str(smg)+str(uvcounter)
             uvcounter += 1
-            line = self.sceneManager.createManualObject("manualuv_" + idstr)
+            line = self.sceneManager.createManualObject(uuid+"manualuv_" + idstr)
             mat = "TruckEditor/UVBeam"
             line.begin(mat, ogre.RenderOperation.OT_LINE_LIST) 
             
@@ -286,14 +230,13 @@ class RoRUVOgreWindow(wxOgreWindow):
         plane.normal = ogre.Vector3(0, 1, 0) 
         plane.d = 20
         # see http://www.ogre3d.org/docs/api/html/classOgre_1_1MeshManager.html#Ogre_1_1MeshManagera5
-        import random
-        t = str(random.random())
-        mesh = ogre.MeshManager.getSingleton().createPlane('UVPlane'+t, "General", plane, self.imgwidth/IMGSCALE, self.imgheight/IMGSCALE,
+        uuid = randomID()
+        mesh = ogre.MeshManager.getSingleton().createPlane(uuid + 'UVPlane', "General", plane, self.imgwidth/IMGSCALE, self.imgheight/IMGSCALE,
                                                     1, 1, True, 1, 1, 1, ogre.Vector3(0, 0, 1),
                                                     ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, 
                                                     ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, 
                                                     True, True)
-        entity = self.sceneManager.createEntity('uvent', 'UVPlane'+t) 
+        entity = self.sceneManager.createEntity(uuid+'uvent', uuid+'UVPlane') 
         
         #it = ogre.ResourceGroupManager.getSingleton().getResourceManagerIterator()
         #rm = it.getNext()

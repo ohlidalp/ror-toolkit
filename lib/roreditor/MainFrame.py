@@ -12,6 +12,8 @@ from RoRObjectPreviewOgreWindow import *
 from RoRTerrainSelectedObjectOgreWindow import *
 from RoRTerrainSelectedObjectTopOgreWindow import *
 from RoROdefEditorOgreWindow import *
+from RoRTruckOgreWindow import *
+from RoRTruckUVOgreWindow import *
 
 # GUI Tools:
 from GUIObjectTree import *
@@ -36,9 +38,6 @@ ID_UndoAction = wx.NewId()
 ID_RedoAction = wx.NewId()
 ID_FindObject = wx.NewId()
 ID_Quit = wx.NewId()
-
-ID_TerrainContent = wx.NewId()
-ID_ODefEditorContent = wx.NewId()
 
 ID_ViewHelp = wx.NewId()
 
@@ -80,31 +79,30 @@ class MainFrame(wx.Frame):
 
         file_menu = wx.Menu()
         file_menu.Append(ID_OpenTerrain, "Open Terrain")
-        file_menu.Append(wx.ID_EXIT, "Exit")
+        #file_menu.Append(wx.ID_EXIT, "Exit")
 
-        view_menu = wx.Menu()
-        view_menu.Append(ID_CreateOgre, "Create new 3D View")
-        view_menu.AppendSeparator()
-        view_menu.Append(ID_TerrainContent, "Terrain Editor Mode")
-        view_menu.Append(ID_ODefEditorContent, "ODef Editor Mode")
-        
+        #view_menu = wx.Menu()
+        #view_menu.Append(ID_CreateOgre, "Create new 3D View")
+
         self.managerInit()
         options_menu = wx.Menu()
         options_menu.Append(ID_Settings, "GUI Settings Pane")
 
         self._perspectives_menu = wx.Menu()
         self._perspectives_menu.Append(ID_CreatePerspective, "Create Perspective")
-        self._perspectives_menu.Append(ID_CopyPerspective, "Copy Perspective Data To Clipboard")
+        #self._perspectives_menu.Append(ID_CopyPerspective, "Copy Perspective Data To Clipboard")
         self._perspectives_menu.AppendSeparator()
         self._perspectives_menu.Append(ID_FirstPerspective+0, "Default Startup")
-        self._perspectives_menu.Append(ID_FirstPerspective+1, "All Panes")
+        self._perspectives_menu.Append(ID_FirstPerspective+1, "Terrain")
+        self._perspectives_menu.Append(ID_FirstPerspective+2, "ODef Editor")
+        self._perspectives_menu.Append(ID_FirstPerspective+3, "Truck Editor")
 
         help_menu = wx.Menu()
         help_menu.Append(ID_About, "About...")
         help_menu.Append(ID_ViewHelp, "View Help")
         
         mb.Append(file_menu, "File")
-        mb.Append(view_menu, "View")
+        #mb.Append(view_menu, "View")
         mb.Append(self._perspectives_menu, "Perspectives")
         mb.Append(options_menu, "Options")
         mb.Append(help_menu, "Help")
@@ -125,36 +123,34 @@ class MainFrame(wx.Frame):
             self.SetTitle("Rigs of Rods Terrain Editor")       
         
         # create some toolbars
-        tb1 = wx.ToolBar(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TB_FLAT | wx.TB_NODIVIDER)
-        tb1.SetToolBitmapSize(wx.Size(16,16))
-        tb1.AddLabelTool(ID_OpenTerrain, "Open Terrain", wx.ArtProvider_GetBitmap(wx.ART_FILE_OPEN))
-        tb1.AddLabelTool(ID_SaveTerrain, "Save Terrain", wx.ArtProvider_GetBitmap(wx.ART_FILE_SAVE))
-        tb1.EnableTool(ID_SaveTerrain, False)
-        tb1.AddLabelTool(ID_SaveTerrainAs, "Save Terrain as", wx.ArtProvider_GetBitmap(wx.ART_FILE_SAVE_AS))
-        tb1.EnableTool(ID_SaveTerrainAs, False)
-        tb1.AddSeparator()
-        tb1.AddLabelTool(ID_AddObject, "Add Something", wx.ArtProvider_GetBitmap(wx.ART_NEW))
-        tb1.EnableTool(ID_AddObject, False)
-        tb1.AddLabelTool(ID_DeleteSelection, "Delete Selection", wx.ArtProvider_GetBitmap(wx.ART_DELETE))
-        tb1.EnableTool(ID_DeleteSelection, False)
-        tb1.AddSeparator()        
-        tb1.AddLabelTool(ID_CopySelection, "Copy Selection", wx.ArtProvider_GetBitmap(wx.ART_COPY))
-        tb1.EnableTool(ID_CopySelection, False)
-        tb1.AddLabelTool(ID_PasteSelection, "Paste Selection", wx.ArtProvider_GetBitmap(wx.ART_PASTE))
-        tb1.EnableTool(ID_PasteSelection, False)
-        tb1.AddSeparator()        
-        tb1.AddLabelTool(ID_UndoAction, "Undo last Action", wx.ArtProvider_GetBitmap(wx.ART_UNDO))
-        tb1.EnableTool(ID_UndoAction, False)
-        tb1.AddLabelTool(ID_RedoAction, "Redo last Undo", wx.ArtProvider_GetBitmap(wx.ART_REDO))
-        tb1.EnableTool(ID_RedoAction, False)
-        tb1.AddSeparator()        
-        tb1.AddLabelTool(ID_FindObject, "Find Object", wx.ArtProvider_GetBitmap(wx.ART_FIND))
-        tb1.EnableTool(ID_FindObject, False)
-        tb1.AddSeparator()        
-        tb1.AddLabelTool(ID_Quit, "Quit", wx.ArtProvider_GetBitmap(wx.ART_QUIT))
-        tb1.Realize()
-        self.tb1 = tb1
-        
+        self.terraintoolbar = wx.ToolBar(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TB_FLAT | wx.TB_NODIVIDER)
+        self.terraintoolbar.SetToolBitmapSize(wx.Size(16,16))
+        self.terraintoolbar.AddLabelTool(ID_OpenTerrain, "Open Terrain", wx.ArtProvider_GetBitmap(wx.ART_FILE_OPEN))
+        self.terraintoolbar.AddLabelTool(ID_SaveTerrain, "Save Terrain", wx.ArtProvider_GetBitmap(wx.ART_FILE_SAVE))
+        self.terraintoolbar.EnableTool(ID_SaveTerrain, False)
+        self.terraintoolbar.AddLabelTool(ID_SaveTerrainAs, "Save Terrain as", wx.ArtProvider_GetBitmap(wx.ART_FILE_SAVE_AS))
+        self.terraintoolbar.EnableTool(ID_SaveTerrainAs, False)
+        self.terraintoolbar.AddSeparator()
+        self.terraintoolbar.AddLabelTool(ID_AddObject, "Add Something", wx.ArtProvider_GetBitmap(wx.ART_NEW))
+        self.terraintoolbar.EnableTool(ID_AddObject, False)
+        self.terraintoolbar.AddLabelTool(ID_DeleteSelection, "Delete Selection", wx.ArtProvider_GetBitmap(wx.ART_DELETE))
+        self.terraintoolbar.EnableTool(ID_DeleteSelection, False)
+        self.terraintoolbar.AddSeparator()        
+        self.terraintoolbar.AddLabelTool(ID_CopySelection, "Copy Selection", wx.ArtProvider_GetBitmap(wx.ART_COPY))
+        self.terraintoolbar.EnableTool(ID_CopySelection, False)
+        self.terraintoolbar.AddLabelTool(ID_PasteSelection, "Paste Selection", wx.ArtProvider_GetBitmap(wx.ART_PASTE))
+        self.terraintoolbar.EnableTool(ID_PasteSelection, False)
+        self.terraintoolbar.AddSeparator()        
+        self.terraintoolbar.AddLabelTool(ID_UndoAction, "Undo last Action", wx.ArtProvider_GetBitmap(wx.ART_UNDO))
+        self.terraintoolbar.EnableTool(ID_UndoAction, False)
+        self.terraintoolbar.AddLabelTool(ID_RedoAction, "Redo last Undo", wx.ArtProvider_GetBitmap(wx.ART_REDO))
+        self.terraintoolbar.EnableTool(ID_RedoAction, False)
+        self.terraintoolbar.AddSeparator()        
+        self.terraintoolbar.AddLabelTool(ID_FindObject, "Find Object", wx.ArtProvider_GetBitmap(wx.ART_FIND))
+        self.terraintoolbar.EnableTool(ID_FindObject, False)
+        self.terraintoolbar.AddSeparator()        
+        self.terraintoolbar.AddLabelTool(ID_Quit, "Quit", wx.ArtProvider_GetBitmap(wx.ART_QUIT))
+        self.terraintoolbar.Realize()
         
         self.rordir = getSettingsManager().getSetting("RigsOfRods", "BasePath")
         
@@ -165,7 +161,7 @@ class MainFrame(wx.Frame):
         self._mgr.AddPane(self.objectPreviewWindow, wx.aui.AuiPaneInfo().
                           Name("object_preview").
                           Caption("Object Preview").
-                          Left().
+                          CenterPane().
                           MinSize(wx.Size(200,200)).
                           CloseButton(True).
                           MaximizeButton(False))
@@ -191,6 +187,7 @@ class MainFrame(wx.Frame):
                           MaximizeButton(True))
 
         self._mgr.AddPane(RoRObjectTreeCtrl(self, self), wx.aui.AuiPaneInfo().
+                          Name("object_tree").
                           Caption("Object Tree").
                           MinSize(wx.Size(200,100)).
                           Left().
@@ -225,36 +222,78 @@ class MainFrame(wx.Frame):
 
         # the terrain editor ogre window
         self.terrainOgreWin = RoRTerrainOgreWindow(self, wx.ID_ANY, rordir=self.rordir)
-        self._mgr.AddPane(self.terrainOgreWin, wx.aui.AuiPaneInfo().Name("ogre_terrain_content").CenterPane())
+        self._mgr.AddPane(self.terrainOgreWin, wx.aui.AuiPaneInfo().Name("ogre_terrain_content").CenterPane().Hide())
 
-		# the odef editor ogre window (hidden):
+		# the odef editor ogre window
         self.odefEditorOgreWin = ODefEditorOgreWindow(self, wx.ID_ANY, rordir=self.rordir)
         self._mgr.AddPane(self.odefEditorOgreWin, wx.aui.AuiPaneInfo().Name("ogre_odef_editor_content").CenterPane().Hide())
 
+        # the truck editor window
+        self.truckEditorOgreWin = RoRTruckOgreWindow(self, wx.ID_ANY)
+        self._mgr.AddPane(self.truckEditorOgreWin, wx.aui.AuiPaneInfo().Name("ogre_truck_editor_content").CenterPane().Hide())
+
+        # the truck editor UV window
+        self.truckEditorUVOgreWin = RoRTruckUVOgreWindow(self, wx.ID_ANY)
+        self._mgr.AddPane(self.truckEditorUVOgreWin, wx.aui.AuiPaneInfo().Name("ogre_truck_editor_uv_content").Float().Hide())
+        
+        
 		# add the toolbars to the manager
-        self._mgr.AddPane(tb1, wx.aui.AuiPaneInfo().
-                          Name("tb1").
+        self._mgr.AddPane(self.terraintoolbar, wx.aui.AuiPaneInfo().
+                          Name("terrain_toolbar").
                           Caption("General Toolbar").
                           ToolbarPane().Top().
                           LeftDockable(False).
-                          RightDockable(False)
+                          RightDockable(False).
+                          Hide()
                           )
 
         # make some default perspectives
-        perspective_all = self._mgr.SavePerspective()
-        
-        # all - perspective
+        self._perspectives.append(self._mgr.SavePerspective())
+
+        # hide all first
+        self.terraintoolbar.Hide()
         all_panes = self._mgr.GetAllPanes()       
-        #for ii in xrange(len(all_panes)):
-        #    if not all_panes[ii].IsToolbar():
-        #        all_panes[ii].Hide()                
-        self._mgr.GetPane("ogre_terrain_content").Show()
-        perspective_default = self._mgr.SavePerspective()
+        for ii in xrange(len(all_panes)):
+            if not all_panes[ii].IsToolbar():
+                all_panes[ii].Hide()                
 
-        self._perspectives.append(perspective_default)
-        self._perspectives.append(perspective_all)
+        # terrain perspective 
+        self._mgr.GetPane("ogre_truck_editor_uv_content").Show(False)        
+        self._mgr.GetPane("terrain_toolbar").Show(True)
+        self._mgr.GetPane("ogre_truck_editor_content").Show(False)
+        self._mgr.GetPane("ogre_odef_editor_content").Show(False)
+        self._mgr.GetPane("odef_editor_view_settings").Show(False)
+        self._mgr.GetPane("ogre_terrain_content").Show(True)
+        self._mgr.GetPane("object_preview").Show(True).Left()
+        self._mgr.GetPane("object_tree").Show(True)
+        self.objectPreviewWindow
+        self._perspectives.append(self._mgr.SavePerspective())
 
+        # odef editor perspective
+        self._mgr.GetPane("ogre_truck_editor_uv_content").Show(False)        
+        self._mgr.GetPane("terrain_toolbar").Show(False)
+        self._mgr.GetPane("ogre_truck_editor_content").Show(False)
+        self._mgr.GetPane("object_preview").Show(False)
+        self._mgr.GetPane("ogre_terrain_content").Show(False)
+        self._mgr.GetPane("ogre_odef_editor_content").Show(True)
+        self._mgr.GetPane("odef_editor_view_settings").Show(True)
+        self._mgr.GetPane("object_tree").Show(True)
+        self._perspectives.append(self._mgr.SavePerspective())
 
+        # truck editor perspective
+        self._mgr.GetPane("ogre_truck_editor_uv_content").Show(True)
+        self._mgr.GetPane("terrain_toolbar").Show(False)
+        self._mgr.GetPane("ogre_truck_editor_content").Show(True)
+        self._mgr.GetPane("object_preview").Show(False)
+        self._mgr.GetPane("ogre_terrain_content").Show(False)
+        self._mgr.GetPane("ogre_odef_editor_content").Show(False)
+        self._mgr.GetPane("odef_editor_view_settings").Show(False)
+        self._mgr.GetPane("object_tree").Show(False)
+        self._perspectives.append(self._mgr.SavePerspective())
+        
+        # load startup perspective
+        self._mgr.LoadPerspective(self._perspectives[0])
+        
         # "commit" all changes made to FrameManager   
         self._mgr.Update()
 
@@ -267,9 +306,6 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnSaveTerrainAs, id=ID_SaveTerrainAs)
         self.Bind(wx.EVT_MENU, self.OnViewHelp, id=ID_ViewHelp)
         
-        self.Bind(wx.EVT_MENU, self.OnChangeEditorModePerMenu, id=ID_TerrainContent)
-        self.Bind(wx.EVT_MENU, self.OnChangeEditorModePerMenu, id=ID_ODefEditorContent)
-
         self.Bind(wx.EVT_MENU, self.OnCreateOgre, id=ID_CreateOgre)
         
         self.Bind(wx.EVT_MENU, self.OnCreatePerspective, id=ID_CreatePerspective)
@@ -283,21 +319,9 @@ class MainFrame(wx.Frame):
     
         self.Bind(wx.EVT_MENU_RANGE, self.OnRestorePerspective, id=ID_FirstPerspective,
                   id2=ID_FirstPerspective+1000)
-    	
-    def OnChangeEditorModePerMenu(self, event):
-        self.changeEditorMode(event.GetId())
         
     def changeEditorMode(self, id):
-        if id == ID_TerrainContent:
-            self._mgr.GetPane("ogre_odef_editor_content").Show(False)
-            self._mgr.GetPane("odef_editor_view_settings").Show(False)
-            self._mgr.GetPane("ogre_terrain_content").Show(True)
-            self._mgr.GetPane("object_preview").Show(True)
-        elif id == ID_ODefEditorContent:
-            self._mgr.GetPane("object_preview").Show(False)
-            self._mgr.GetPane("ogre_terrain_content").Show(False)
-            self._mgr.GetPane("ogre_odef_editor_content").Show(True)
-            self._mgr.GetPane("odef_editor_view_settings").Show(True)
+        self._mgr.LoadPerspective(self._perspectives[id])
         self._mgr.Update()
 		
     def OnViewHelp(self, event=None):
@@ -310,9 +334,9 @@ class MainFrame(wx.Frame):
         self._mgr.Update()
 
     
-    def addStuff(self, filename):
+    def addObjectToTerrain(self, filename):
         try:
-            self.changeEditorMode(ID_TerrainContent)
+            self.changeEditorMode(1)
             onlyfilename, extension = os.path.splitext(os.path.basename(filename))
             if extension.lower() in ['.truck', '.load']:
                 if not self.terrainOgreWin.addTruckToTerrain(truckFilename=filename):
@@ -336,12 +360,21 @@ class MainFrame(wx.Frame):
     def editODefFile(self, filename):
         #try:            
         self.odefEditorOgreWin.loadFile(filename)
-        self.changeEditorMode(ID_ODefEditorContent)
+        self.changeEditorMode(2)
         self.oddefEditorViewSettings.resetControls()
         #except Exception, err:
         #    print err
         #    pass
-            
+
+    def editTruck(self, filename):
+        #try:            
+        tree = self.truckEditorOgreWin.LoadTruck(filename)
+        self.changeEditorMode(3)
+        self.truckEditorUVOgreWin.setTree(tree)
+        #except Exception, err:
+        #    print err
+        #    pass        
+
     def updateObjPosRot(self, event=None):
         self.statusbar.SetStatusText(self.terrainOgreWin.currentStatusMsg, 1)
         if self.terrainOgreWin.terrain is None:
@@ -371,6 +404,19 @@ class MainFrame(wx.Frame):
         getOgreManager().RenderAll()
         pass
 
+    def openTerrain(self, filename):
+        self.changeEditorMode(1)
+        self.terrainOgreWin.LoadTerrain(filename)
+        self.terraintoolbar.EnableTool(ID_AddObject, True)
+        self.terraintoolbar.EnableTool(ID_DeleteSelection, True)
+        self.terraintoolbar.EnableTool(ID_CopySelection, True)
+        self.terraintoolbar.EnableTool(ID_PasteSelection, True)
+        self.terraintoolbar.EnableTool(ID_UndoAction, True)
+        self.terraintoolbar.EnableTool(ID_RedoAction, True)
+        self.terraintoolbar.EnableTool(ID_FindObject, True)
+        self.terraintoolbar.EnableTool(ID_SaveTerrain, True)
+        self.terraintoolbar.EnableTool(ID_SaveTerrainAs, True)        
+
     def OnOpenTerrain(self, event=None):
         default = ""
         if self.rordir:
@@ -378,18 +424,7 @@ class MainFrame(wx.Frame):
         dialog = wx.FileDialog(self, "Open Terrain", default, "", "Terrain Files (*.terrn)|*.terrn", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         res = dialog.ShowModal()
         if res == wx.ID_OK:
-            filename = dialog.GetPath()
-            self.terrainOgreWin.LoadTerrain(filename)
-            self.tb1.EnableTool(ID_AddObject, True)
-            self.tb1.EnableTool(ID_DeleteSelection, True)
-            self.tb1.EnableTool(ID_CopySelection, True)
-            self.tb1.EnableTool(ID_PasteSelection, True)
-            self.tb1.EnableTool(ID_UndoAction, True)
-            self.tb1.EnableTool(ID_RedoAction, True)
-            self.tb1.EnableTool(ID_FindObject, True)
-            self.tb1.EnableTool(ID_SaveTerrain, True)
-            self.tb1.EnableTool(ID_SaveTerrainAs, True)
-
+            self.openTerrain(dialog.GetPath())
 
     def OnSaveTerrain(self, event=None):
         if not self.terrainOgreWin.SaveTerrain():

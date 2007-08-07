@@ -498,7 +498,7 @@ class RoRTruckOgreWindow(wxOgreWindow):
         self.initScene()
         self.CreateTruck(p.tree)
         self.createTestRope()
-
+        return p.tree
 
 
     def reLoadTruck(self):

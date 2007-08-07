@@ -7,6 +7,7 @@ import subprocess
 
 from ror.logger import log
 from ror.settingsManager import getSettingsManager
+import roreditor.MainFrame
 
 import wx, os, os.path
 
@@ -39,7 +40,7 @@ class SettingsDialog(wx.Frame):
         
         self.image = ImagePanel(self.panel, wx.ID_ANY, SPLASHIMAGE)
                              
-        self.lblRoRDir = wx.StaticText(self.panel, wx.ID_ANY, "Please select Rigs of Rods Directory!", size = (20, 20), style = wx.ALIGN_CENTRE | wx.ST_NO_AUTORESIZE)
+        self.lblRoRDir = wx.StaticText(self.panel, wx.ID_ANY, "Please select Rigs of Rods Directory!", size = (20, 40), style = wx.ALIGN_CENTRE | wx.ST_NO_AUTORESIZE)
         self.btnSelectRoRDir = wx.Button(self.panel, wx.ID_ANY, "Select RoR Directory")
         self.Bind(wx.EVT_BUTTON, self.OnSelectRoRDir, self.btnSelectRoRDir)
 
@@ -49,12 +50,9 @@ class SettingsDialog(wx.Frame):
         self.cbbRenderEngine = wx.ComboBox(self.panel, wx.ID_ANY, RENDERSYSTEMS[0], style=wx.CB_READONLY, choices=RENDERSYSTEMS)
         self.Bind(wx.EVT_COMBOBOX, self.OnSelectRenderer, self.cbbRenderEngine)
         
-        self.btnStartTerrainEditor = wx.Button(self.panel, wx.ID_ANY, "Start Terrain Editor")
+        self.btnStartTerrainEditor = wx.Button(self.panel, wx.ID_ANY, "Start Editor")
         self.Bind(wx.EVT_BUTTON, self.OnTerrainEditor, self.btnStartTerrainEditor)
         
-        self.btnStartTruckEditor = wx.Button(self.panel, wx.ID_ANY, "Start Truck Editor")
-        self.Bind(wx.EVT_BUTTON, self.OnTruckEditor, self.btnStartTruckEditor)
-
         self.btnBugReport = wx.Button(self.panel, wx.ID_ANY, "Report a Bug")
         self.Bind(wx.EVT_BUTTON, self.OnBugReport, self.btnBugReport)
 
@@ -90,13 +88,13 @@ class SettingsDialog(wx.Frame):
     def displayRoRDir(self):
         if self.rordir == "":
             self.btnStartRoR.Enable(False)
-            self.btnStartTruckEditor.Enable(False)
+            #self.btnStartTruckEditor.Enable(False)
             self.btnStartTerrainEditor.Enable(False)
             self.btnBugReport.Enable(False)
             self.lblRoRDir.SetLabel("Please select Rigs of Rods Directory!")
         else:
             self.btnStartRoR.Enable(True)
-            self.btnStartTruckEditor.Enable(True)
+            #self.btnStartTruckEditor.Enable(True)
             self.btnStartTerrainEditor.Enable(True)
             self.btnBugReport.Enable(True)
             self.lblRoRDir.SetLabel("Selected Rigs of Rods Directory: " + self.rordir)
@@ -168,15 +166,15 @@ class SettingsDialog(wx.Frame):
         except Exception, e:
             log().exception(str(e))
 
-    def OnTruckEditor(self, event=None):
-        try:
-            import rortruckeditor.MainFrame
-            self.Close()
-            log().info("starting Truckeditor")
-            app = rortruckeditor.MainFrame.startApp()
-            del app
-        except Exception, e:
-            log().exception(str(e))
+    # def OnTruckEditor(self, event=None):
+        # try:
+            # import rortruckeditor.MainFrame
+            # self.Close()
+            # log().info("starting Truckeditor")
+            # app = rortruckeditor.MainFrame.startApp()
+            # del app
+        # except Exception, e:
+            # log().exception(str(e))
     
     def OnBugReport(self, event=None):
         try:
@@ -195,10 +193,9 @@ class SettingsDialog(wx.Frame):
 
     def OnTerrainEditor(self, event=None):
         try:
-            import rorterraineditor.MainFrame
             log().info("starting Terraineditor")
             self.Close()
-            app = rorterraineditor.MainFrame.startApp()
+            app = roreditor.MainFrame.startApp()
             del app
         except Exception, e:
             log().exception(str(e))
@@ -261,7 +258,7 @@ class SettingsDialog(wx.Frame):
         sizer_b.Add(self.btnStartRoR, 0, wx.EXPAND, 0) 
 
         sizer_c = wx.BoxSizer(wx.VERTICAL)
-        sizer_c.Add(self.btnStartTruckEditor, 1, wx.EXPAND, 0)
+        #sizer_c.Add(self.btnStartTruckEditor, 1, wx.EXPAND, 0)
         sizer_c.Add(self.btnStartTerrainEditor, 1, wx.EXPAND, 0)
         sizer_b.Add(sizer_c, 1, wx.EXPAND, 0)
         

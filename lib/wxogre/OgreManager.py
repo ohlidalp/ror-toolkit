@@ -6,6 +6,7 @@ import ogre.renderer.OGRE as ogre
 from ror.logger import log
 from ror.ogrelogger import initOgreLogging
 from ror.settingsManager import getSettingsManager
+from ror.rorcommon import *
 
 # singleton implementation of OgreManager
 _ogremanager = None
@@ -118,7 +119,7 @@ class OgreManager():
                 continue
         
     def createSceneManager(self, type):
-        return self.ogreRoot.createSceneManager(type, "SceneManager" + str(len(self.renderWindows)))
+        return self.ogreRoot.createSceneManager(type, "SceneManager" + str(randomID()))
 
     def destroySceneManager(self, sm):
         return self.ogreRoot.destroySceneManager(sm)

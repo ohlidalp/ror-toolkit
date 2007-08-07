@@ -44,6 +44,7 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
         self.camalpha = 0
         self.radius = 40
         self.dragging = False
+        self.mode = None
         wxOgreWindow.__init__(self, parent, ID, size = size, **kwargs)
         droptarget = TreeDropTarget(self)
         self.SetDropTarget(droptarget)
@@ -61,9 +62,16 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
         ogre.ResourceGroupManager.getSingleton().addResourceLocation("media/materials", "FileSystem", "General", False)
         ogre.ResourceGroupManager.getSingleton().addResourceLocation("media/models", "FileSystem", "General", False)
         ogre.ResourceGroupManager.getSingleton().initialiseAllResourceGroups() 
+        self.createSceneManager()
 
+    def createSceneManager(self, type="normal"):
         #get the scenemanager
-        self.sceneManager = getOgreManager().createSceneManager(ogre.ST_GENERIC)
+        self.mode = type
+        uuid = randomID()
+        if type == "normal":
+            self.sceneManager = getOgreManager().createSceneManager(ogre.ST_GENERIC)
+        elif type == "terrain":
+            self.sceneManager = getOgreManager().createSceneManager(ogre.ST_EXTERIOR_CLOSE)
 
         # create a camera
         self.camera = self.sceneManager.createCamera(str(randomID())+'Camera') 
@@ -77,30 +85,33 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
         self.viewport.backgroundColour = ogre.ColourValue(0, 0, 0) 
 
         # bind mouse and keyboard
-        d=10.0 #displacement for key strokes 
-        self.ControlKeyDict={wx.WXK_LEFT:ogre.Vector3(-d,0.0,0.0), 
-                             wx.WXK_RIGHT:ogre.Vector3(d,0.0,0.0), 
-                             wx.WXK_UP:ogre.Vector3(0.0,0.0,-d), 
-                             wx.WXK_DOWN:ogre.Vector3(0.0,0.0,d), 
-                             wx.WXK_PAGEUP:ogre.Vector3(0.0,d,0.0), 
-                             wx.WXK_PAGEDOWN:ogre.Vector3(0.0,-d,0.0)} 
         self.Bind(wx.EVT_MOUSE_EVENTS, self.onMouseEvent)
         
         #create objects
         self.populateScene()
-    
+        
     def loadFile(self, filename):
         self.filename = filename
         filenameonly, extension = os.path.splitext(filename)
+        uuid = randomID()
         if extension.lower() in [".truck", ".load"]:
             self.free()
+            self.createSceneManager()
             uuid = randomID()
             self.objnode, self.objentity, manualobject = createTruckMesh(self.sceneManager, filename, uuid)
             #print "aaa", self.objnode.getPosition()
         elif extension.lower() in [".odef"]:
             self.free()
-            uuid = randomID()
+            self.createSceneManager()
             self.loadodef(filename, uuid)
+        elif extension.lower() in [".terrn"]:
+            self.free()
+            self.createSceneManager("terrain")
+            terrain = RoRTerrain(filename)
+            cfgfile = os.path.join(os.path.dirname(filename), terrain.TerrainConfig)
+            self.objnode = self.sceneManager.getRootSceneNode().createChildSceneNode(uuid+"objnode")
+            self.objnode.setPosition(1500, 0, 1500)
+            self.sceneManager.setWorldGeometry(cfgfile)
         
     def loadodef(self, filename, uuid):
         try:
@@ -134,6 +145,8 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
             self.sceneManager.destroyEntity(self.objentity)    
         except:
             pass
+        self.renderWindow.removeAllViewports()
+        getOgreManager().destroySceneManager(self.sceneManager)
     
     def populateScene(self):
         self.sceneManager.AmbientLight = ogre.ColourValue(0.7, 0.7, 0.7 )
@@ -144,7 +157,7 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
         #self.MainLight.setPosition (ogre.Vector3(20, 80, 130))
 
         # add some fog 
-        self.sceneManager.setFog(ogre.FOG_EXP, ogre.ColourValue.White, 0.0002) 
+        self.sceneManager.setFog(ogre.FOG_EXP, ogre.ColourValue.White, 0.00002) 
 
         # create a floor Mesh
         plane = ogre.Plane() 
@@ -163,19 +176,26 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
         self.sceneManager.getRootSceneNode().createChildSceneNode().attachObject(entity) 
 
     def updateCamera(self):
-        if not self.objnode is None:
-            self.radius = self.objentity.getBoundingRadius() * 2
-            if self.objentity is None:
-                height = 20
-            else:
-                height = self.objentity.getBoundingBox().getMaximum().z
-            #pos = self.objnode.getPosition() + ogre.Vector3(0, height*0.4, 0)
-            # always look to the center!
-            pos = self.objnode.getPosition() + ogre.Vector3(0, height*0.4, 0) + (self.objentity.getBoundingBox().getMinimum() + self.objentity.getBoundingBox().getMaximum() ) / 2
+        if not self.mode is None:
+            if self.mode == "normal":
+                self.radius = self.objentity.getBoundingRadius() * 2
+                if self.objentity is None:
+                    height = 20
+                else:
+                    height = self.objentity.getBoundingBox().getMaximum().z
+                rotateheight = ogre.Vector3(0, height * 0.2, 0)
+                pos = self.objnode.getPosition() + rotateheight + (self.objentity.getBoundingBox().getMinimum() + self.objentity.getBoundingBox().getMaximum() ) / 2
+                lookheight =  ogre.Vector3(0, height / 2, 0)
+            elif self.mode == "terrain":
+                self.radius = 3000
+                rotateheight = ogre.Vector3(0, 1600, 0)
+                pos = self.objnode.getPosition() + rotateheight
+                lookheight = -rotateheight
+
             dx = math.cos(self.camalpha) * self.radius
             dy = math.sin(self.camalpha) * self.radius
             self.camera.setPosition(pos - ogre.Vector3(dx, -5, dy))
-            self.camera.lookAt(pos + ogre.Vector3(0, height / 2, 0))
+            self.camera.lookAt(pos + lookheight)
             if self.dragging == False:
                 self.camalpha += math.pi / 720
             if self.camalpha >= 360:
