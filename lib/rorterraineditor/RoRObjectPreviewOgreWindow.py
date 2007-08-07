@@ -69,7 +69,7 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
         self.camera = self.sceneManager.createCamera(str(randomID())+'Camera') 
         self.camera.lookAt(ogre.Vector3(0, 0, 0)) 
         self.camera.setPosition(ogre.Vector3(0, 0, 100))
-        self.camera.nearClipDistance = 0.1
+        self.camera.nearClipDistance = 1
         self.camera.setAutoAspectRatio(True)
 
         # create the Viewport"
@@ -96,7 +96,7 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
             self.free()
             uuid = randomID()
             self.objnode, self.objentity, manualobject = createTruckMesh(self.sceneManager, filename, uuid)
-            print "aaa", self.objnode.getPosition()
+            #print "aaa", self.objnode.getPosition()
         elif extension.lower() in [".odef"]:
             self.free()
             uuid = randomID()
@@ -104,9 +104,9 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
         
     def loadodef(self, filename, uuid):
         try:
-            (meshname, sx, sy, sz) = loadOdef(filename)
+            meshname, sx, sy, sz, ismovable, boxes = loadOdef(filename)
         except Exception, err:
-            log().error("error while processing odef file %s" % odefFilename)
+            log().error("error while processing odef file %s" % filename)
             log().error(str(err))
             return
         # create mesh
@@ -118,6 +118,7 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
         #self.objnode.setPosition(0,0,0) 
         if not sx is None:
             self.objnode.setScale(sx, sy, sz)
+
     
     def free(self):
         try:
@@ -164,7 +165,10 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
     def updateCamera(self):
         if not self.objnode is None:
             self.radius = self.objentity.getBoundingRadius() * 2
-            height = self.objentity.getBoundingBox().getMaximum().z
+            if self.objentity is None:
+                height = 20
+            else:
+                height = self.objentity.getBoundingBox().getMaximum().z
             #pos = self.objnode.getPosition() + ogre.Vector3(0, height*0.4, 0)
             # always look to the center!
             pos = self.objnode.getPosition() + ogre.Vector3(0, height*0.4, 0) + (self.objentity.getBoundingBox().getMinimum() + self.objentity.getBoundingBox().getMaximum() ) / 2
