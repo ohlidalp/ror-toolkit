@@ -197,7 +197,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         self.camera = self.sceneManager.createCamera(str(cameraUUID)+"camera")
         self.camera.lookAt(ogre.Vector3(0, 0, 0)) 
         self.camera.setPosition(ogre.Vector3(0, 0, 100))
-        self.camera.nearClipDistance = 0.1
+        
+        # dont set this too low, or you will get z-fights!!
+        self.camera.nearClipDistance = 2
         self.camera.setAutoAspectRatio(True) 
 
         # create the Viewport"
@@ -491,7 +493,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         
         meshname = None
         try:
-            (meshname, sx, sy, sz) = loadOdef(odefFilename)
+            meshname, sx, sy, sz, ismovable, boxes = loadOdef(odefFilename)
         except Exception, err:
             data.error=True
             log().error("error while processing odef file %s" % odefFilename)

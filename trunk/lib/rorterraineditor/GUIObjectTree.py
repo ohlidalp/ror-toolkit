@@ -26,7 +26,7 @@ class RoRObjectTreeCtrl(wx.Panel):
         vert = wx.BoxSizer(wx.VERTICAL)
 
 
-        tree = wx.TreeCtrl(self, -1, wx.Point(0, 0), wx.DefaultSize, wx.NO_BORDER)
+        tree = wx.TreeCtrl(self, -1, wx.Point(0, 0), wx.DefaultSize, wx.NO_BORDER | wx.TR_HIDE_ROOT)
         
         root = tree.AddRoot("Objects")
         items = []
@@ -60,23 +60,47 @@ class RoRObjectTreeCtrl(wx.Panel):
             data.SetData(object)
             tree.AppendItem(items[-1], objectname, 1, data=data)
 
-            
-        tree.Expand(root)
+        # root is hidden, no expand!
+        #tree.Expand(root)
         vert.Add(tree, 1, wx.EXPAND, 5)
         self.SetSizer(vert)
         self.GetSizer().SetSizeHints(self)
                 
         self.tree = tree
+        self.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDClick, self.tree)
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.onTreeSelectionChange, self.tree)
-        self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.addStuff, self.tree)
+        self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnRightClick, self.tree)
         
         #self.Bind(wx.EVT_TREE_BEGIN_DRAG, self.BeginDrag, self.tree)
+    def OnLeftDClick(self, event):
+        self.selectedfn = self.tree.GetItemData(event.GetItem()).GetData()
+        self.addStuff()
         
-    def addStuff(self, event):
-        fn = self.tree.GetItemData(event.GetItem()).GetData()
-        if fn is None:
+    def OnRightClick(self, event):
+        self.selectedfn = self.tree.GetItemData(event.GetItem()).GetData()
+        if self.selectedfn is None:
+            event.Skip()
             return
-        self.parent.addStuff(fn)
+        
+        menu = wx.Menu()
+        item_add = menu.Append(wx.ID_ANY, "add to Terrain")
+        self.Bind(wx.EVT_MENU, self.addStuff, item_add)
+        if self.selectedfn[-4:].lower() == "odef":
+            #create odef menu entry
+            item_edit_odef = menu.Append(wx.ID_ANY, "Edit in ODef Editor")
+            self.Bind(wx.EVT_MENU, self.editOdef, item_edit_odef)
+        self.PopupMenu(menu)
+        menu.Destroy()
+        
+    def editOdef(self, event=None):
+        if self.selectedfn is None:
+            return
+        self.parent.editODefFile(self.selectedfn)
+        
+    def addStuff(self, event=None):
+        if self.selectedfn is None:
+            return
+        self.parent.addStuff(self.selectedfn)
     #def BeginDrag(self, event):
     #        '''
     #        EVT_TREE_BEGIN_DRAG handler.
@@ -100,6 +124,7 @@ class RoRObjectTreeCtrl(wx.Panel):
             onlyfilename, extension = os.path.splitext(filename)
             if extension.lower() == ".truck":
                 files.append(os.path.join(TRUCKDIR, filename))
+        files.sort()
         return files
 
     def getInstalledLoads(self):
@@ -108,6 +133,7 @@ class RoRObjectTreeCtrl(wx.Panel):
             onlyfilename, extension = os.path.splitext(filename)
             if extension.lower() == ".load":
                 files.append(os.path.join(TRUCKDIR, filename))
+        files.sort()
         return files
 
     def getInstalledObjects(self):
@@ -116,4 +142,5 @@ class RoRObjectTreeCtrl(wx.Panel):
             onlyfilename, extension = os.path.splitext(filename)
             if extension.lower() == ".odef":
                 files.append(os.path.join(OBJECTDIR, filename))
+        files.sort()
         return files

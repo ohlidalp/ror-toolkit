@@ -11,10 +11,12 @@ from RoRTerrainOgreWindow import *
 from RoRObjectPreviewOgreWindow import *
 from RoRTerrainSelectedObjectOgreWindow import *
 from RoRTerrainSelectedObjectTopOgreWindow import *
+from RoROdefEditorOgreWindow import *
 
 # GUI Tools:
 from GUIObjectTree import *
 from MainFrame_Tools import *
+from MainFrame_Tools_ODefEditor import *
     
 import wx
 import wx.grid
@@ -34,6 +36,9 @@ ID_UndoAction = wx.NewId()
 ID_RedoAction = wx.NewId()
 ID_FindObject = wx.NewId()
 ID_Quit = wx.NewId()
+
+ID_TerrainContent = wx.NewId()
+ID_ODefEditorContent = wx.NewId()
 
 ID_ViewHelp = wx.NewId()
 
@@ -78,7 +83,10 @@ class MainFrame(wx.Frame):
         file_menu.Append(wx.ID_EXIT, "Exit")
 
         view_menu = wx.Menu()
-        view_menu.Append(ID_CreateOgre, "Create OgreWindow")
+        view_menu.Append(ID_CreateOgre, "Create new 3D View")
+        view_menu.AppendSeparator()
+        view_menu.Append(ID_TerrainContent, "Terrain Editor Mode")
+        view_menu.Append(ID_ODefEditorContent, "ODef Editor Mode")
         
         self.managerInit()
         options_menu = wx.Menu()
@@ -155,7 +163,7 @@ class MainFrame(wx.Frame):
         self.objectPreviewWindow = ObjectPreviewOgreWindow(self, wx.ID_ANY, rordir=self.rordir)
         
         self._mgr.AddPane(self.objectPreviewWindow, wx.aui.AuiPaneInfo().
-                          Name("ogretest1").
+                          Name("object_preview").
                           Caption("Object Preview").
                           Left().
                           MinSize(wx.Size(200,200)).
@@ -189,7 +197,20 @@ class MainFrame(wx.Frame):
                           CloseButton(True).
                           MaximizeButton(True))
                           
-        #  create the center pane
+                          
+        # odef editor panels
+        self.oddefEditorViewSettings = OdefViewPanel(self, self)
+        self._mgr.AddPane(self.oddefEditorViewSettings, wx.aui.AuiPaneInfo().
+                          Name("odef_editor_view_settings").
+                          Caption("ODef Editor View Settings").
+                          MinSize(wx.Size(200,100)).
+                          Left().
+                          CloseButton(True).
+                          MaximizeButton(False).
+                          Hide())
+                          
+                          
+        #  create the center pane(s)
         #Timer creation  (for rendering)
         self.ogreTimer = wx.Timer() 
         self.ogreTimer.SetOwner(self)
@@ -202,14 +223,15 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_TIMER, self.OnGUITimer, self.guitimer)
         self.guitimer.Start(200)
 
-        
-        
+        # the terrain editor ogre window
         self.terrainOgreWin = RoRTerrainOgreWindow(self, wx.ID_ANY, rordir=self.rordir)
-        self._mgr.AddPane(self.terrainOgreWin, wx.aui.AuiPaneInfo().Name("ogre_content").
-                          CenterPane())
-                                
-        # add the toolbars to the manager
-                        
+        self._mgr.AddPane(self.terrainOgreWin, wx.aui.AuiPaneInfo().Name("ogre_terrain_content").CenterPane())
+
+		# the odef editor ogre window (hidden):
+        self.odefEditorOgreWin = ODefEditorOgreWindow(self, wx.ID_ANY, rordir=self.rordir)
+        self._mgr.AddPane(self.odefEditorOgreWin, wx.aui.AuiPaneInfo().Name("ogre_odef_editor_content").CenterPane().Hide())
+
+		# add the toolbars to the manager
         self._mgr.AddPane(tb1, wx.aui.AuiPaneInfo().
                           Name("tb1").
                           Caption("General Toolbar").
@@ -226,7 +248,7 @@ class MainFrame(wx.Frame):
         #for ii in xrange(len(all_panes)):
         #    if not all_panes[ii].IsToolbar():
         #        all_panes[ii].Hide()                
-        self._mgr.GetPane("ogre_content").Show()
+        self._mgr.GetPane("ogre_terrain_content").Show()
         perspective_default = self._mgr.SavePerspective()
 
         self._perspectives.append(perspective_default)
@@ -245,6 +267,9 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnSaveTerrainAs, id=ID_SaveTerrainAs)
         self.Bind(wx.EVT_MENU, self.OnViewHelp, id=ID_ViewHelp)
         
+        self.Bind(wx.EVT_MENU, self.OnChangeEditorModePerMenu, id=ID_TerrainContent)
+        self.Bind(wx.EVT_MENU, self.OnChangeEditorModePerMenu, id=ID_ODefEditorContent)
+
         self.Bind(wx.EVT_MENU, self.OnCreateOgre, id=ID_CreateOgre)
         
         self.Bind(wx.EVT_MENU, self.OnCreatePerspective, id=ID_CreatePerspective)
@@ -258,7 +283,23 @@ class MainFrame(wx.Frame):
     
         self.Bind(wx.EVT_MENU_RANGE, self.OnRestorePerspective, id=ID_FirstPerspective,
                   id2=ID_FirstPerspective+1000)
-    
+    	
+    def OnChangeEditorModePerMenu(self, event):
+        self.changeEditorMode(event.GetId())
+        
+    def changeEditorMode(self, id):
+        if id == ID_TerrainContent:
+            self._mgr.GetPane("ogre_odef_editor_content").Show(False)
+            self._mgr.GetPane("odef_editor_view_settings").Show(False)
+            self._mgr.GetPane("ogre_terrain_content").Show(True)
+            self._mgr.GetPane("object_preview").Show(True)
+        elif id == ID_ODefEditorContent:
+            self._mgr.GetPane("object_preview").Show(False)
+            self._mgr.GetPane("ogre_terrain_content").Show(False)
+            self._mgr.GetPane("ogre_odef_editor_content").Show(True)
+            self._mgr.GetPane("odef_editor_view_settings").Show(True)
+        self._mgr.Update()
+		
     def OnViewHelp(self, event=None):
         # show the settings pane, and float it
         floating_pane = self._mgr.GetPane("help").Float().Show()
@@ -271,6 +312,7 @@ class MainFrame(wx.Frame):
     
     def addStuff(self, filename):
         try:
+            self.changeEditorMode(ID_TerrainContent)
             onlyfilename, extension = os.path.splitext(os.path.basename(filename))
             if extension.lower() in ['.truck', '.load']:
                 if not self.terrainOgreWin.addTruckToTerrain(truckFilename=filename):
@@ -286,11 +328,20 @@ class MainFrame(wx.Frame):
             pass
     
     def previewObject(self, filename):
-        try:
-            self.objectPreviewWindow.loadFile(filename)
-        except:
-            pass
-    
+        #try:
+        self.objectPreviewWindow.loadFile(filename)
+        #except:
+        #    pass
+
+    def editODefFile(self, filename):
+        #try:            
+        self.odefEditorOgreWin.loadFile(filename)
+        self.changeEditorMode(ID_ODefEditorContent)
+        self.oddefEditorViewSettings.resetControls()
+        #except Exception, err:
+        #    print err
+        #    pass
+            
     def updateObjPosRot(self, event=None):
         self.statusbar.SetStatusText(self.terrainOgreWin.currentStatusMsg, 1)
         if self.terrainOgreWin.terrain is None:
