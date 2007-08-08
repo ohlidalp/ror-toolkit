@@ -121,14 +121,17 @@ class ODefEditorOgreWindow(wxOgreWindow):
         self.objnode.attachObject(self.objentity)        
         self.objnode.rotate(ogre.Vector3.UNIT_X, ogre.Degree(-90),relativeTo=ogre.Node.TransformSpace.TS_WORLD)
         
-        self.objOriginalMat = ogre.MaterialManager.getSingleton().getByName(self.objentity.getSubEntity(0).getMaterialName())
-        if self.objmat is None:
-            self.objmat = ogre.MaterialManager.getSingleton().getByName(NEWMATNAME)
-        self.objOriginalMat.copyDetailsTo(self.objmat)
-        # self.objmat = ogre.MaterialManager.getSingleton().getByName(NEWMATNAME)
-        self.objmat.setSceneBlending(ogre.SceneBlendFactor.SBF_SOURCE_ALPHA, ogre.SceneBlendFactor.SBF_DEST_ALPHA )
-        self.objentity.setMaterialName(NEWMATNAME)
-        self.setMainMeshTrans(60)
+        try:
+            self.objOriginalMat = ogre.MaterialManager.getSingleton().getByName(self.objentity.getSubEntity(0).getMaterialName())
+            if self.objmat is None:
+                self.objmat = ogre.MaterialManager.getSingleton().getByName(NEWMATNAME)
+            self.objOriginalMat.copyDetailsTo(self.objmat)
+            # self.objmat = ogre.MaterialManager.getSingleton().getByName(NEWMATNAME)
+            self.objmat.setSceneBlending(ogre.SceneBlendFactor.SBF_SOURCE_ALPHA, ogre.SceneBlendFactor.SBF_DEST_ALPHA )
+            self.objentity.setMaterialName(NEWMATNAME)
+            self.setMainMeshTrans(60)
+        except:
+            pass
        
         self.objnode.setPosition(0,0,0) 
         if not sx is None:
