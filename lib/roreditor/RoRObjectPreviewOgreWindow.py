@@ -45,6 +45,7 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
         self.radius = 40
         self.dragging = False
         self.mode = None
+        self.logovisible = True
         wxOgreWindow.__init__(self, parent, ID, size = size, **kwargs)
         droptarget = TreeDropTarget(self)
         self.SetDropTarget(droptarget)
@@ -64,11 +65,11 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
         ogre.ResourceGroupManager.getSingleton().initialiseAllResourceGroups() 
         self.createSceneManager()
 
-    def createSceneManager(self, type="normal"):
+    def createSceneManager(self, type="object"):
         #get the scenemanager
         self.mode = type
         uuid = randomID()
-        if type == "normal":
+        if type == "object":
             self.sceneManager = getOgreManager().createSceneManager(ogre.ST_GENERIC)
         elif type == "terrain":
             self.sceneManager = getOgreManager().createSceneManager(ogre.ST_EXTERIOR_CLOSE)
@@ -94,17 +95,24 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
         self.filename = filename
         filenameonly, extension = os.path.splitext(filename)
         uuid = randomID()
+        
+        #hide logo
+        self.logovisible = False
+        
         if extension.lower() in [".truck", ".load"]:
+            self.mode="object"
             self.free()
             self.createSceneManager()
             uuid = randomID()
             self.objnode, self.objentity, manualobject = createTruckMesh(self.sceneManager, filename, uuid)
             #print "aaa", self.objnode.getPosition()
         elif extension.lower() in [".odef"]:
+            self.mode="object"
             self.free()
             self.createSceneManager()
             self.loadodef(filename, uuid)
         elif extension.lower() in [".terrn"]:
+            self.mode="terrain"
             self.free()
             self.createSceneManager("terrain")
             terrain = RoRTerrain(filename)
@@ -134,6 +142,16 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
     def free(self):
         try:
             self.sceneManager.destroyAllManualObjects()
+        except:
+            pass
+        
+        try:
+            self.logotextnode.detachAllObjects()
+            self.logowheelnode.detachAllObjects()
+            self.sceneManager.destroySceneNode(self.logotextnode.getName())
+            self.sceneManager.destroySceneNode(self.logowheelnode.getName())
+            self.sceneManager.destroyEntity(self.logotextentity)    
+            self.sceneManager.destroyEntity(self.logowheelentity)    
         except:
             pass
         try:
@@ -174,23 +192,52 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
         entity = self.sceneManager.createEntity(uuid+'floor', uuid + 'FloorPlane') 
         entity.setMaterialName('mysimple/terraineditor/previewwindowfloor') 
         self.sceneManager.getRootSceneNode().createChildSceneNode().attachObject(entity) 
+        
+        if self.logovisible:
+            uuid = str(randomID())
+            self.logowheelnode = self.sceneManager.getRootSceneNode().createChildSceneNode(uuid+"logonode")
+            self.logowheelentity = self.sceneManager.createEntity(uuid+'logoentity', "logowheel.mesh") 
+            self.logowheelentity.setMaterialName('mysimple/terrainselect')             
+            self.logowheelnode.attachObject(self.logowheelentity)
+            self.logowheelnode.rotate(ogre.Vector3.UNIT_X, ogre.Degree(-90),relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+            self.logowheelnode.setScale(0.025, 0.025, 0.025)
+
+            uuid = str(randomID())
+            self.logotextnode = self.sceneManager.getRootSceneNode().createChildSceneNode(uuid+"logonode")
+            self.logotextentity = self.sceneManager.createEntity(uuid+'logoentity', "logotext.mesh") 
+            self.logotextentity.setMaterialName('mysimple/transblue')             
+            self.logotextnode.attachObject(self.logotextentity)
+            self.logotextnode.rotate(ogre.Vector3.UNIT_X, ogre.Degree(-90),relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+            self.logotextnode.setScale(0.025, 0.025, 0.025)
+        
+        else:
+            pass
+            #self.logotextnode.setVisible(False)
+            #self.logowheelnode.setVisible(False)
+
 
     def updateCamera(self):
         if not self.mode is None:
-            if self.mode == "normal":
-                self.radius = self.objentity.getBoundingRadius() * 2
-                if self.objentity is None:
-                    height = 20
-                else:
-                    height = self.objentity.getBoundingBox().getMaximum().z
-                rotateheight = ogre.Vector3(0, height * 0.2, 0)
-                pos = self.objnode.getPosition() + rotateheight + (self.objentity.getBoundingBox().getMinimum() + self.objentity.getBoundingBox().getMaximum() ) / 2
-                lookheight =  ogre.Vector3(0, height / 2, 0)
-            elif self.mode == "terrain":
-                self.radius = 3000
-                rotateheight = ogre.Vector3(0, 1600, 0)
-                pos = self.objnode.getPosition() + rotateheight
-                lookheight = -rotateheight
+            if self.logovisible:
+                self.radius = 100
+                pos = self.logotextnode.getPosition()
+                lookheight = ogre.Vector3(0,0,0)
+                self.logowheelnode.rotate(ogre.Vector3.UNIT_X, ogre.Degree(1),relativeTo=ogre.Node.TransformSpace.TS_LOCAL)
+            else:
+                if self.mode == "object":
+                    self.radius = self.objentity.getBoundingRadius() * 2
+                    if self.objentity is None:
+                        height = 20
+                    else:
+                        height = self.objentity.getBoundingBox().getMaximum().z
+                    rotateheight = ogre.Vector3(0, height * 0.2, 0)
+                    pos = self.objnode.getPosition() + rotateheight + (self.objentity.getBoundingBox().getMinimum() + self.objentity.getBoundingBox().getMaximum() ) / 2
+                    lookheight =  ogre.Vector3(0, height / 2, 0)
+                elif self.mode == "terrain":
+                    self.radius = 3000
+                    rotateheight = ogre.Vector3(0, 1600, 0)
+                    pos = self.objnode.getPosition() + rotateheight
+                    lookheight = -rotateheight
 
             dx = math.cos(self.camalpha) * self.radius
             dy = math.sin(self.camalpha) * self.radius
@@ -203,6 +250,8 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
 
 
     def OnFrameStarted(self):
+        if self.logovisible:
+            self.logowheelnode.rotate(ogre.Vector3.UNIT_X, ogre.Degree(1),relativeTo=ogre.Node.TransformSpace.TS_LOCAL)        
         self.updateCamera()
         wxOgreWindow.OnFrameStarted(self)
     

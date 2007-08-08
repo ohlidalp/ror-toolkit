@@ -12,7 +12,7 @@ import cStringIO
 # -- wx.SizeReportCtrl --
 # (a utility control that always reports it's client size)
 
-HELPFILENAME = os.path.join(os.path.dirname(os.path.abspath(__file__)), "terrainhelp.html")
+HELPFILENAME = os.path.join(os.path.dirname(os.path.abspath(__file__)), "help.html")
 
 class HelpPanel(wx.Panel):
     def __init__(self, parent, frame):
