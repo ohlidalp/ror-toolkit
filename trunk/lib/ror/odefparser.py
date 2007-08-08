@@ -68,10 +68,10 @@ def loadOdef(odefFilename):
                 actualbox.eventname=line[6:]
             elif line == "endbox":
                 boxes.append(actualbox)
-        print  meshname, float(scalearr[0]), float(scalearr[1]), float(scalearr[2]), ismovable
-        print "boxes:"
-        for b in boxes:
-            print b
+        #print  meshname, float(scalearr[0]), float(scalearr[1]), float(scalearr[2]), ismovable
+        #print "boxes:"
+        #for b in boxes:
+        #    print b
         return meshname, float(scalearr[0]), float(scalearr[1]), float(scalearr[2]), ismovable, boxes
     except Exception, err:
         log().error(str(err))

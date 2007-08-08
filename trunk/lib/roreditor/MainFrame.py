@@ -78,8 +78,8 @@ class MainFrame(wx.Frame):
         mb = wx.MenuBar()
 
         file_menu = wx.Menu()
-        file_menu.Append(ID_OpenTerrain, "Open Terrain")
-        #file_menu.Append(wx.ID_EXIT, "Exit")
+        #file_menu.Append(ID_OpenTerrain, "Open Terrain")
+        file_menu.Append(wx.ID_EXIT, "Exit")
 
         #view_menu = wx.Menu()
         #view_menu.Append(ID_CreateOgre, "Create new 3D View")
@@ -448,14 +448,17 @@ class MainFrame(wx.Frame):
         self.OnExit(event)
         
     def OnExit(self, event):
-        all_panes = self._mgr.GetAllPanes()
-        for ii in xrange(len(all_panes)):
-            if not all_panes[ii].IsToolbar():
-                all_panes[ii].Hide()              
-        self._mgr.UnInit()
-        del self._mgr
-        self.Destroy()
-        self.Close()
+        try:
+            all_panes = self._mgr.GetAllPanes()
+            for ii in xrange(len(all_panes)):
+                if not all_panes[ii].IsToolbar():
+                    all_panes[ii].Hide()              
+            self._mgr.UnInit()
+            del self._mgr
+            self.Destroy()
+            self.Close()
+        except:
+            pass
 
     def OnAbout(self, event):
         ShowOnAbout()

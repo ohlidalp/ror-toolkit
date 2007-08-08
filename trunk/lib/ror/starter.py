@@ -197,6 +197,7 @@ class SettingsDialog(wx.Frame):
             self.Close()
             app = roreditor.MainFrame.startApp()
             del app
+            #self.Show()
         except Exception, e:
             log().exception(str(e))
 
