@@ -269,7 +269,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         
     def reattachArrows(self, entity):
         self.TranslateNode.setPosition(entity.getParentNode().getPosition())
-        self.TranslateNode.setOrientation(entity.getParentNode().getOrientation())
+        #self.TranslateNode.setOrientation(entity.getParentNode().getOrientation())
         
         self.RotateNode.setOrientation(entity.getParentNode().getOrientation())
         self.RotateNode.setPosition(entity.getParentNode().getPosition())
@@ -810,9 +810,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
         if self.SelectedArrow.getName() == 'movearrowsX':
             self.translateSelected(ogre.Vector3(forcex, 0, 0), LockSteps)
         elif self.SelectedArrow.getName() == 'movearrowsY':
-            self.translateSelected(ogre.Vector3(0, forcex, 0), LockSteps)
-        elif self.SelectedArrow.getName() == 'movearrowsZ':
             self.translateSelected(ogre.Vector3(0, 0, forcex), LockSteps)
+        elif self.SelectedArrow.getName() == 'movearrowsZ':
+            self.translateSelected(ogre.Vector3(0, forcex, 0), LockSteps)
         elif self.SelectedArrow.getName() == 'rotatearrowsX':
             self.rotateSelected(ogre.Vector3.UNIT_Y, forceDegree, LockSteps)
         elif self.SelectedArrow.getName() == 'rotatearrowsY':
