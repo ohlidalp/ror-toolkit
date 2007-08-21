@@ -56,12 +56,16 @@ class SettingsDialog(wx.Frame):
 
 		self.btnBugReport = wx.Button(self.panel, wx.ID_ANY, "Report a Bug")
 		self.Bind(wx.EVT_BUTTON, self.OnBugReport, self.btnBugReport)
+		if sys.platform != 'win32':
+			self.btnBugReport.Enable(False)
 
 		self.btnUpdate = wx.Button(self.panel, wx.ID_ANY, "Update")
 		self.Bind(wx.EVT_BUTTON, self.OnUpdate, self.btnUpdate)
 
 		self.btnDepGraph = wx.Button(self.panel, wx.ID_ANY, "Dependency Graph")
 		self.Bind(wx.EVT_BUTTON, self.OnDepGraph, self.btnDepGraph)
+		if sys.platform != 'win32':
+			self.btnDepGraph.Enable(False)
 
 		self.btnModUninstaller = wx.Button(self.panel, wx.ID_ANY, "Mod Uninstaller")
 		self.Bind(wx.EVT_BUTTON, self.OnModUninstaller, self.btnModUninstaller)
@@ -159,8 +163,14 @@ class SettingsDialog(wx.Frame):
 
 
 	def OnStartRoR(self, event=None):
+		rorexecutable = ''
+		if sys.platform in ['linux', 'linux2']:
+			rorexecutable = "RoR"
+		elif sys.platform in ['win32']:
+			rorexecutable = "RoR.exe"
+		
 		try:
-			path = os.path.join(self.rordir, "RoR.exe")
+			path = os.path.join(self.rordir, rorexecutable)
 			log().info("starting RoR: %s" % path)
 			p = Popen(path, shell = False, cwd = self.rordir)
 			#sts = os.waitpid(p.pid, 0)
@@ -180,11 +190,11 @@ class SettingsDialog(wx.Frame):
 	def OnBugReport(self, event=None):
 		try:
 			if self.checkForUpdate():
-			dlg = wx.MessageDialog(self, "Update Available!\nPlease update prior submitting a BugReport!", "Info", wx.OK | wx.ICON_INFORMATION)
-			dlg.ShowModal()
-			dlg.Destroy()
-			self.btnBugReport.Enable(False)
-			return
+				dlg = wx.MessageDialog(self, "Update Available!\nPlease update prior submitting a BugReport!", "Info", wx.OK | wx.ICON_INFORMATION)
+				dlg.ShowModal()
+				dlg.Destroy()
+				self.btnBugReport.Enable(False)
+				return
 
 			log().info("starting bugreporter")
 			import ror.bugreport
@@ -210,8 +220,7 @@ class SettingsDialog(wx.Frame):
 			# dlg.Destroy()
 			# return False
 
-		exists = os.path.isfile(os.path.join(fn,"RoR.exe"))
-		if not exists:
+		if not checkRoRDirectory():
 			dlg = wx.MessageDialog(self, "RoR.exe not found in the selected directory!\nPlease select a new directory!", "Error", wx.OK | wx.ICON_INFORMATION)
 			dlg.ShowModal()
 			dlg.Destroy()

@@ -44,7 +44,7 @@ class wxOgreWindow(wx.PyWindow):
         if not self.sceneManager is None:
             getOgreManager().destroySceneManager(self.sceneManager)
 
-    def _OnSize(self, event):         
+    def _OnSize(self, event):
         """
         Is called when the ogre Window is getting resized
         @param event: the sizing event
