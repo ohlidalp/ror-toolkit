@@ -9,8 +9,9 @@ def log():
     if _rorlogger is None:
         _rorlogger = RoRLogger()
     return _rorlogger.getLog()
-            
-class RoRLogger():
+
+
+class RoRLogger:
     logconfigfilename = os.path.join(os.path.dirname(os.path.abspath(__file__)), LOGCONFIGFILE)
 
     def __init__(self):

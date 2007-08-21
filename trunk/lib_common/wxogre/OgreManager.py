@@ -26,7 +26,7 @@ class MyLog(ogre.LogListener):
 		return True
 
 
-class OgreManager():
+class OgreManager:
 	renderWindows = {}
 
 	def restart(self):
