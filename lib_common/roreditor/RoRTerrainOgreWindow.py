@@ -982,6 +982,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		elif event.m_keyCode == 66: # B
 			lines = []
 			factor = 1
+			lines.append("begin_procedural_roads\n")
 			for i in range(0, self.spline.getNumPoints() * factor):
 				point = self.spline.interpolate(i/float(self.spline.getNumPoints() * factor))
 				nextpoint = self.spline.interpolate((i+1)/float(self.spline.getNumPoints() * factor))
@@ -989,9 +990,11 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 				rotx = rot.getPitch().valueDegrees()
 				roty = rot.getRoll().valueDegrees()
 				rotz = rot.getYaw().valueDegrees()
-				pos = point+ogre.Vector3(0,1,0)
-				line = "%f, %f, %f, %f, %f, %f, road\n" % (pos.x, pos.y, pos.z, rotx, roty, rotz)
+				pos = point + ogre.Vector3(0,1,0)
+				#format: position x,y,z rotation rx,ry,rz, width, border width, border height, type 
+				line = "%f, %f, %f, %f, %f, %f, 1, 0.2, 0.2, auto\n" % (pos.x, pos.y, pos.z, rotx, roty, rotz)
 				lines.append(line)
+			lines.append("end_procedural_roads\n")
 			f = open("roads.out", 'w')
 			f.writelines(lines)
 			f.close()
