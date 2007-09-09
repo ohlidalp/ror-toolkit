@@ -34,6 +34,12 @@ def usage():
 	print "uninstall <modname> --verbose --dryrun"
 	print " uninstalls a mod"
 	print ""
+	print "uniqueid new"
+	print " get a new id from the repository"
+	print ""
+	print "createmod <truck filename>"
+	print " creates a new mod using the new ID format"
+	print ""
 	print "notes: the --verbose option is optional to increase the output for debugging"
 	print "       the --dryrun option is optional and prints out what would be done"
 	sys.exit(0)
@@ -49,7 +55,7 @@ def main():
 		usage()
 
 	mode = sys.argv[1]
-	if not mode in ['list', 'listall', 'install', 'installall', 'listinstalled','uninstall', 'installrepo']:
+	if not mode in ['list', 'listall', 'install', 'installall', 'listinstalled','uninstall', 'installrepo', 'uniqueid', 'createmod']:
 		usage()
 	if len(sys.argv) < 4 and mode in ['install']:
 		usage()
@@ -65,6 +71,10 @@ def main():
 		targetfile = sys.argv[2]
 	elif mode == 'uninstall':
 		targetfile = sys.argv[2]
+	elif mode == 'createmod':
+		targetfile = sys.argv[2]
+	elif mode == 'uniqueid':
+		targetfile = ''
 
 	# get optional flags
 	verbose = False

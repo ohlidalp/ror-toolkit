@@ -27,7 +27,7 @@ def getDependencies(filename):
 
     # ignore standart configuration files
     file = os.path.basename(filename).lower()
-    if file in ['editor.cfg', 'resources.cfg', 'ror.cfg', 'wavefield.cfg', 'plugins.cfg', 'ogre.cfg', 'categories.cfg']:
+    if file in ['editor.cfg', 'resources.cfg', 'ror.cfg', 'wavefield.cfg', 'plugins.cfg', 'ogre.cfg', 'categories.cfg', 'plugins_windows.cfg', 'plugins_linux.cfg', 'plugins_windows_debug.cfg']:
         return {OPTIONAL:{},REQUIRES:{},PROVIDES:{}}
     
     dep = []
