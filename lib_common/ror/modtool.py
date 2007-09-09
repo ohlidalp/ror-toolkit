@@ -192,7 +192,11 @@ class ModTool:
 				uniqueid=self.getUniqueID()
 				log().info("### generating %d file(s):" % len(newtargets))
 				purefile, extension = os.path.splitext(targetfile)
-				packdirname = os.path.join(rorpath, "packs", uniqueid+"-"+purefile)
+				packsdir = os.path.join(rorpath, "packs")
+				if not os.path.isdir(packsdir):
+					os.mkdir(packsdir)
+				packdirname = os.path.join(packsdir, uniqueid+"-"+purefile)
+				
 				os.mkdir(packdirname)
 				for target in newtargets:
 					target = target['filename']
@@ -204,6 +208,7 @@ class ModTool:
 					log().info(dstname)
 					shutil.copyfile(filenamefound, dstname)
 				log().info("### pack successfully created in path: %s" % packdirname)
+				# FIXME: change content of the files also!
 			
 				
 		
