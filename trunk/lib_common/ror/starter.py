@@ -220,6 +220,7 @@ class SettingsDialog(wx.Frame):
 			# dlg.Destroy()
 			# return False
 
+        #TODO check for actual binary name since RoR.exe is windows only
 		if not checkRoRDirectory():
 			dlg = wx.MessageDialog(self, "RoR.exe not found in the selected directory!\nPlease select a new directory!", "Error", wx.OK | wx.ICON_INFORMATION)
 			dlg.ShowModal()

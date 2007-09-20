@@ -52,6 +52,7 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
         
 
     def SceneInitialisation(self):
+    	#TODO This section is not platform independent, needs to be fixed.
         addresources = [self.rordir+"\\data\\terrains",self.rordir+"\\data\\trucks",self.rordir+"\\data\\objects"]
         # only init things in the main window, not in shared ones!
         # setup resources 
@@ -142,8 +143,8 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
     def free(self):
         try:
             self.sceneManager.destroyAllManualObjects()
-        except:
-            pass
+        except Exception, e:
+            log().exception(str(e))
         
         try:
             self.logotextnode.detachAllObjects()
@@ -152,17 +153,21 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
             self.sceneManager.destroySceneNode(self.logowheelnode.getName())
             self.sceneManager.destroyEntity(self.logotextentity)    
             self.sceneManager.destroyEntity(self.logowheelentity)    
-        except:
-            pass
+        except Exception, e:
+            log().exception(str(e))
         try:
+        	#BUG: next line fails and goes to except
             self.objnode.detachAllObjects()
             self.sceneManager.destroySceneNode(self.objnode.getName())
-        except:
-            pass
-        try:
-            self.sceneManager.destroyEntity(self.objentity)    
-        except:
-            pass
+        except Exception, e:
+            log().exception(str(e))
+
+        #try:
+        	#BUG Entering this function alone seams to kill the application.
+            #self.sceneManager.destroyEntity(self.objentity)    
+        #except Exception, e:
+            #log().exception(str(e))
+            
         self.renderWindow.removeAllViewports()
         getOgreManager().destroySceneManager(self.sceneManager)
     
