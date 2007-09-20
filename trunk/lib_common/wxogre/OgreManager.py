@@ -92,12 +92,14 @@ class OgreManager:
 
 	def createRenderWindow(self, wxOgrewin, name, width, height, fullscreen, handle):
 		renderParameters = ogre.NameValuePairList()
-		renderParameters['externalWindowHandle'] = str(handle)
 		#TODO: For some reason passing renderParameters causes the renderer not to start, passing Null is a work around
 		
 		# use len to make the names unique!
-		renderWindow = self.ogreRoot.createRenderWindow(name + str(len(self.renderWindows)), width, height, fullscreen, None)
-		#renderWindow = self.ogreRoot.createRenderWindow(name + str(len(self.renderWindows)), width, height, fullscreen, renderParameters)
+		if getPlatform() == 'windows':
+			renderParameters['externalWindowHandle'] = str(handle)
+		elif getPlatform() == 'linux':
+			renderParameters['externalWindowHandle'] = 0
+		renderWindow = self.ogreRoot.createRenderWindow(name + str(len(self.renderWindows)), width, height, fullscreen, renderParameters)
 		#renderWindow.active = True
 		self.renderWindows[wxOgrewin] = renderWindow
 		return renderWindow
