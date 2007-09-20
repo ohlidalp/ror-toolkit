@@ -1,6 +1,10 @@
 #Thomas Fischer 28/06/2007, thomas@thomasfischer.biz
 import sys, os, os.path
-import pysvn
+try:
+    import pysvn
+except ImportError:
+    print "pysvn not installed, make sure this is installed."
+    print "If you are running ubuntu install the python-svn package"
 
 from ror.logger import log
 from ror.settingsManager import getSettingsManager
