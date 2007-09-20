@@ -213,15 +213,8 @@ class SettingsDialog(wx.Frame):
 			log().exception(str(e))
 
 	def checkRoRDir(self, fn):
-		# withoutspaces = (fn.find(" ") == -1)
-		# if not withoutspaces:
-			# dlg = wx.MessageDialog(self, "Your RoR installation directory contains spaces. Rename/move it to a directory with no spaces.\nFor example c:\\ror", "Error", wx.OK | wx.ICON_INFORMATION)
-			# dlg.ShowModal()
-			# dlg.Destroy()
-			# return False
-
-        #this function is already cross platform
-		if not checkRoRDirectory():
+		# what a damn bug by myself :-\
+		if not checkRoRDirectory(fn):
 			dlg = wx.MessageDialog(self, "RoR binary executable not found in the selected directory!\nPlease select a new directory!", "Error", wx.OK | wx.ICON_INFORMATION)
 			dlg.ShowModal()
 			dlg.Destroy()

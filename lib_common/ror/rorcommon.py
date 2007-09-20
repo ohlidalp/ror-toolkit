@@ -1,6 +1,7 @@
 import sys, os, os.path
 import wx
 from random import Random
+from logger import log
 
 def ShowOnAbout(event = None):
 	rev = ""
@@ -47,15 +48,24 @@ def randomID(num_bits=64):
 
 	return rnd_id
 
-
-def checkRoRDirectory():
-	rorexecutable = ''
+def getPlatform():
 	if sys.platform in ['linux', 'linux2']:
-		rorexecutable = "RoR.bin"
+		return 'linux'
 	elif sys.platform in ['win32']:
+		return 'windows'
+	return 'unkown'
+
+def checkRoRDirectory(fpath=None):
+	rorexecutable = ''
+	if getPlatform() == 'linux':
+		rorexecutable = "RoR.bin"
+	elif getPlatform() == 'windows':
 		rorexecutable = "RoR.exe"
 
-	import settingsManager
-	path = settingsManager.getSettingsManager().getSetting("RigsOfRods", "BasePath")
-	return os.path.isfile(os.path.join(path, rorexecutable))
+	if fpath is None:
+		import settingsManager
+		fpath = settingsManager.getSettingsManager().getSetting("RigsOfRods", "BasePath")
+	fpath = os.path.join(fpath, rorexecutable)
+	#log().info(fpath)
+	return os.path.isfile(fpath)
 
