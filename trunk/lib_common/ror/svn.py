@@ -17,7 +17,7 @@ def getRootPath():
     path = os.path.dirname(os.path.abspath(__file__))
     if os.path.isdir(os.path.join(path, "media")):
         return path
-    path = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),"..\\.."))
+    path = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),"..",".."))
     if os.path.isdir(os.path.join(path, "media")):
         return path
     # todo: throw exception!
