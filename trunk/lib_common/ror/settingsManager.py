@@ -1,3 +1,5 @@
+
+#TODO initialize the Settings, make sure there is a file present, if not create it.
 import os, os.path, sys, ConfigParser
 import logger
 
@@ -28,9 +30,11 @@ class RoRSettings:
 			logger.log().exception(str(e))
 
 	def getSetting(self, group, key):
+		logger.log().info("Retreiving Settings: %s - %s." %(group, key) )
 		try:
 			return self.myConfig.get(group, key)
 		except Exception, e:
+			logger.log().error("Missing log file: %s" %(self.configfilename))
 			logger.log().exception(str(e))
 			return ""
 
