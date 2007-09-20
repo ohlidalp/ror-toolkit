@@ -23,7 +23,7 @@ class HelpPanel(wx.Panel):
         vert = wx.BoxSizer(wx.VERTICAL)
         self.htmlctrl = wx.html.HtmlWindow(self, wx.ID_ANY, wx.DefaultPosition, wx.Size(800, 600))
         if "gtk2" in wx.PlatformInfo:
-            ctrl.SetStandardFonts()
+            self.htmlctrl.SetStandardFonts()
         readme = self.loadReadme()
         if readme is None:
             self.Hide()

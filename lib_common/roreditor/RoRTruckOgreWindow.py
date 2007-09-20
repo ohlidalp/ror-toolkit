@@ -84,6 +84,8 @@ class RoRTruckOgreWindow(wxOgreWindow):
 		pass
 
 	def SceneInitialisation(self):
+		
+    	#TODO This section is not platform independent, needs to be fixed.
 		addresources = [self.rordir+"\\data\\trucks",self.rordir+"\\data\\objects"]
 		# only init things in the main window, not in shared ones!
 		# setup resources

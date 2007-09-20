@@ -176,6 +176,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 	def SceneInitialisation(self):
 		hasparent = (not self.sceneManager is None)
 		if not hasparent:
+            #TODO This section is not platform independent, needs to be fixed.
 			addresources = [self.rordir+"\\data\\terrains",self.rordir+"\\data\\trucks",self.rordir+"\\data\\objects"]
 			# only init things in the main window, not in shared ones!
 			# setup resources 
