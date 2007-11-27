@@ -232,7 +232,7 @@ Section "!RoR Toolkit" SEC04
   SectionIn 1 2 RO
   SetOutPath "$INSTDIR"
   SetOverwrite try
-  File /r /x *.pyc /x *.pyo /x doc /x devtools /x 3rdparty /x downloaded /x graphs ..\..\*
+  File /r /x *.pyc /x *.pyo /x doc /x devtools /x 3rdparty /x downloaded /x graphs /x linux /x lib_linux /x tools /x .svn ..\..\*
 SectionEnd
 
 
