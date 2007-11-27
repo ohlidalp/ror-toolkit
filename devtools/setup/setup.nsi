@@ -2,7 +2,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "RoRToolkit"
-!define PRODUCT_VERSION "0.1.142"
+!define PRODUCT_VERSION "0.1.187"
 !define PRODUCT_PUBLISHER "Thomas Fischer"
 !define PRODUCT_WEB_SITE "http://wiki.rigsofrods.com/index.php?title=RoRToolkit"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
