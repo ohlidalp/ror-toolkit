@@ -153,80 +153,80 @@ Function CheckForPython
         Abort
 FunctionEnd
 
-Function InstallDirectX
-        InitPluginsDir
-        File /oname=$PLUGINSDIR\dxwebsetup.exe "..\..\tools\3rdparty\dxwebsetup.exe"
-        Banner::show /NOUNLOAD "Installing lastest DirectX ..."
-        ExecWait '"$PLUGINSDIR\dxwebsetup.exe /Q"'
-        Delete $PLUGINSDIR\dxwebsetup.exe
-        Banner::destroy
-FunctionEnd
+#Function InstallDirectX
+#        InitPluginsDir
+#        File /oname=$PLUGINSDIR\dxwebsetup.exe "..\..\tools\3rdparty\dxwebsetup.exe"
+#        Banner::show /NOUNLOAD "Installing lastest DirectX ..."
+#        ExecWait '"$PLUGINSDIR\dxwebsetup.exe /Q"'
+#        Delete $PLUGINSDIR\dxwebsetup.exe
+#        Banner::destroy
+#FunctionEnd
 
 
-Function InstallPyWin32
-        InitPluginsDir
-        File /oname=$PLUGINSDIR\pywin32-setup.exe "..\..\tools\3rdparty\pywin32-setup.exe"
-        Banner::show /NOUNLOAD "Installing Python for Windows ..."
-        ExecWait '"$PLUGINSDIR\pywin32-setup.exe"'
-        Delete $PLUGINSDIR\pywin32-setup.exe
-        Banner::destroy
-FunctionEnd
+#Function InstallPyWin32
+#        InitPluginsDir
+#        File /oname=$PLUGINSDIR\pywin32-setup.exe "..\..\tools\3rdparty\pywin32-setup.exe"
+#        Banner::show /NOUNLOAD "Installing Python for Windows ..."
+#        ExecWait '"$PLUGINSDIR\pywin32-setup.exe"'
+#        Delete $PLUGINSDIR\pywin32-setup.exe
+#        Banner::destroy
+#FunctionEnd
 
-Function InstallPyParsing
-        InitPluginsDir
-        File /oname=$PLUGINSDIR\pyparsing-1.4.6.win32.exe "..\..\tools\3rdparty\pyparsing-1.4.6.win32.exe"
-        Banner::show /NOUNLOAD "Installing PyParsing Python Module ..."
-        ExecWait '"$PLUGINSDIR\pyparsing-1.4.6.win32.exe"'
-        Delete $PLUGINSDIR\pyparsing-1.4.6.win32.exe
-        Banner::destroy
-FunctionEnd
+#Function InstallPyParsing
+#        InitPluginsDir
+#        File /oname=$PLUGINSDIR\pyparsing-1.4.6.win32.exe "..\..\tools\3rdparty\pyparsing-1.4.6.win32.exe"
+#        Banner::show /NOUNLOAD "Installing PyParsing Python Module ..."
+#        ExecWait '"$PLUGINSDIR\pyparsing-1.4.6.win32.exe"'
+#        Delete $PLUGINSDIR\pyparsing-1.4.6.win32.exe
+#        Banner::destroy
+#FunctionEnd
 
-Function InstallGraphViz
-        InitPluginsDir
-        File /oname=$PLUGINSDIR\graphviz-2.12.exe "..\..\tools\3rdparty\graphviz-2.12.exe"
-        Banner::show /NOUNLOAD "Installing Graphviz for Windows ..."
-        ExecWait '"$PLUGINSDIR\graphviz-2.12.exe"'
-        Delete $PLUGINSDIR\graphviz-2.12.exe
-        Banner::destroy
-FunctionEnd
+#Function InstallGraphViz
+#        InitPluginsDir
+#        File /oname=$PLUGINSDIR\graphviz-2.12.exe "..\..\tools\3rdparty\graphviz-2.12.exe"
+#        Banner::show /NOUNLOAD "Installing Graphviz for Windows ..."
+#        ExecWait '"$PLUGINSDIR\graphviz-2.12.exe"'
+#        Delete $PLUGINSDIR\graphviz-2.12.exe
+#        Banner::destroy
+#FunctionEnd
 
-Function ChangeRoRRepoReg
-         Banner::show /NOUNLOAD "Updating RoR Repository Protocol Extensions ..."
-         WriteRegStr HKCR "RoRRepo" "" "URL:RoRRepo Protocol"
-         WriteRegStr HKCR "RoRRepo" "URL Protocol" ""
-         WriteRegStr HKCR "RoRRepo\shell" "" ""
-         WriteRegStr HKCR "RoRRepo\shell\open" "" ""
-         ReadEnvStr $0 SYSTEMDRIVE
-         WriteRegStr HKCR 'RoRRepo\shell\open\command' '' '"$0\python25\python.exe" "$INSTDIR\tools\modtool.py" "installrepo" "%1"'
-         Banner::destroy
-FunctionEnd
+#Function ChangeRoRRepoReg
+#         Banner::show /NOUNLOAD "Updating RoR Repository Protocol Extensions ..."
+#         WriteRegStr HKCR "RoRRepo" "" "URL:RoRRepo Protocol"
+#         WriteRegStr HKCR "RoRRepo" "URL Protocol" ""
+#         WriteRegStr HKCR "RoRRepo\shell" "" ""
+#         WriteRegStr HKCR "RoRRepo\shell\open" "" ""
+#         ReadEnvStr $0 SYSTEMDRIVE
+#         WriteRegStr HKCR 'RoRRepo\shell\open\command' '' '"$0\python25\python.exe" "$INSTDIR\tools\modtool.py" "installrepo" "%1"'
+#         Banner::destroy
+#FunctionEnd
 
-Function .onInit
-        InitPluginsDir
-        File /oname=$PLUGINSDIR\splash.bmp "splash.bmp"
-        advsplash::show 1000 1300 600 -1 $PLUGINSDIR\splash
-        Pop $0
-        Delete $PLUGINSDIR\splash.bmp
-        !insertmacro MUI_LANGDLL_DISPLAY
-FunctionEnd
+#Function .onInit
+#        InitPluginsDir
+#        File /oname=$PLUGINSDIR\splash.bmp "splash.bmp"
+#        advsplash::show 1000 1300 600 -1 $PLUGINSDIR\splash
+#        Pop $0
+#        Delete $PLUGINSDIR\splash.bmp
+#        !insertmacro MUI_LANGDLL_DISPLAY
+#FunctionEnd
 
 Section "-Install Python" SEC01
   SectionIn 1 2 RO
   Call CheckForPython
 SectionEnd
 
-Section "Required Tools" SEC02
-  SectionIn 1 2 RO
-  Call InstallDirectX
-SectionEnd
+#Section "Required Tools" SEC02
+#  SectionIn 1 2 RO
+#  Call InstallDirectX
+#SectionEnd
 
-Section /o "Optional Tools" SEC03
-  AddSize 20000
-  SectionIn 1
-  Call InstallPyWin32
-  Call InstallPyParsing
-  Call InstallGraphViz
-SectionEnd
+#Section /o "Optional Tools" SEC03
+#  AddSize 20000
+#  SectionIn 1
+#  Call InstallPyWin32
+#  Call InstallPyParsing
+#  Call InstallGraphViz
+#SectionEnd
 
 Section "!RoR Toolkit" SEC04
   SectionIn 1 2 RO
@@ -256,13 +256,11 @@ Section -AdditionalIcons
   CreateDirectory "$SMPROGRAMS\RoRToolkit"
   CreateShortCut "$SMPROGRAMS\RoRToolkit\Website.lnk" "$INSTDIR\${PRODUCT_NAME}.url"
   CreateShortCut "$SMPROGRAMS\RoRToolkit\Uninstall.lnk" "$INSTDIR\uninst.exe"
-  CreateShortCut '$SMPROGRAMS\RoRToolkit\RoR Terrain Editor.lnk' '$INSTDIR\terraineditor.py' '' '$INSTDIR\ror.ico'
-  CreateShortCut '$SMPROGRAMS\RoRToolkit\RoR Truck Editor.lnk' '$INSTDIR\truckeditor.py' '' '$INSTDIR\ror.ico'
   CreateShortCut '$SMPROGRAMS\RoRToolkit\RoR Toolkit.lnk' '$INSTDIR\rortoolkit.py' '' '$INSTDIR\ror.ico'
 SectionEnd
 
 Section -Post
-  Call ChangeRoRRepoReg
+  #Call ChangeRoRRepoReg
   WriteUninstaller "$INSTDIR\uninst.exe"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\uninst.exe"

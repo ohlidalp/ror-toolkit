@@ -96,7 +96,7 @@ class SettingsDialog(wx.Frame):
 			self.btnStartRoR.Enable(False)
 			#self.btnStartTruckEditor.Enable(False)
 			self.btnStartTerrainEditor.Enable(False)
-			self.btnBugReport.Enable(False)
+			#self.btnBugReport.Enable(False)
 			self.lblRoRDir.SetLabel("Please select Rigs of Rods Directory!")
 		else:
 			self.btnStartRoR.Enable(True)
@@ -194,7 +194,7 @@ class SettingsDialog(wx.Frame):
 				dlg = wx.MessageDialog(self, "Update Available!\nPlease update prior submitting a BugReport!", "Info", wx.OK | wx.ICON_INFORMATION)
 				dlg.ShowModal()
 				dlg.Destroy()
-				self.btnBugReport.Enable(False)
+				#self.btnBugReport.Enable(False)
 				return
 
 			log().info("starting bugreporter")
