@@ -148,8 +148,10 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
 			log().exception(str(e))
 
 		try:
-			self.logotextnode.detachAllObjects()
-			self.logowheelnode.detachAllObjects()
+			if self.logotextnode:
+				self.logotextnode.detachAllObjects()
+			if self.logowheelnode:
+				self.logowheelnode.detachAllObjects()
 			self.sceneManager.destroySceneNode(self.logotextnode.getName())
 			self.sceneManager.destroySceneNode(self.logowheelnode.getName())
 			self.sceneManager.destroyEntity(self.logotextentity)
@@ -158,7 +160,8 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
 			log().exception(str(e))
 		try:
 			#BUG: next line fails and goes to except
-			self.objnode.detachAllObjects()
+			if self.objnode:
+				self.objnode.detachAllObjects()
 			self.sceneManager.destroySceneNode(self.objnode.getName())
 		except Exception, e:
 			log().exception(str(e))
