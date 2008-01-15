@@ -15,7 +15,6 @@ from wxogre.OgreManager import *
 from wxogre.wxOgreWindow import *
 
 import ogre.renderer.OGRE as Ogre
-import ogre.physics.OgreNewt as OgreNewt
 import ogre.io.OIS as OIS
 
 TIMER = 25
@@ -25,11 +24,9 @@ class RoRTruckOgreWindow(wxOgreWindow):
 	def __init__(self, parent, ID, size = wx.Size(200,200), **kwargs):
 		self.parent = parent
 		self.rordir = getSettingsManager().getSetting("RigsOfRods", "BasePath")
-		self.World = OgreNewt.World()
 		self.sceneManager = None
-		self.uvFrame = None
+		#self.uvFrame = None
 		self.clearlist = {'entity':[]}
-		self.bodies = []
 		self.initScene()
 		wxOgreWindow.__init__(self, parent, ID, size = size, **kwargs)
 
@@ -45,18 +42,14 @@ class RoRTruckOgreWindow(wxOgreWindow):
 				for n in self.nodes:
 					n[0].detachAllObjects()
 					self.sceneManager.destroySceneNode(n[0].getName())
-		except:
-			pass
+		except Exception, e:
+			print "error clearing up nodes: "+str(e)+" / "+str(e.__doc__)
 		try:
 			for e in self.clearlist['entity']:
 				print e
 				self.sceneManager.destroyEntity(e)
-		except:
-			pass
-		try:
-			self.uvFrame.Close()
-		except:
-			pass
+		except "error clearing up entities: "+Exception, e:
+			print str(e)+" / "+str(e.__doc__)
 		self.nodes = {}
 		self.beams = {}
 		self.shocks = {}
@@ -69,16 +62,13 @@ class RoRTruckOgreWindow(wxOgreWindow):
 
 
 	def __del__ (self):
-		## delete the world when we're done.
-		del self.bodies
-		del self.World
+		pass
 
 
 	def OnFrameStarted(self):
 		if self.enablephysics:
 			self.World.update(TIMER)
 			self.updateBeams()
-		pass
 
 	def OnFrameEnded(self):
 		pass
@@ -128,8 +118,10 @@ class RoRTruckOgreWindow(wxOgreWindow):
 
 	def createNode(self, node):
 		try:
+			print "creating node "
 			id = int(node[0])
 			pos = ogre.Vector3(float(node[1]),float(node[2]),float(node[3]))
+			print "creating node " + str(pos.x) + ", " + str(pos.y) + ", " + str(pos.z)
 			if len(node) == 5:
 				option = node[4]
 			else:
@@ -139,8 +131,6 @@ class RoRTruckOgreWindow(wxOgreWindow):
 			size = 0.1
 			mass = 0.5 * size
 
-			inertia = OgreNewt.CalcBoxSolid( mass, size )
-
 			box1node = self.sceneManager.getRootSceneNode().createChildSceneNode()
 			box1 = self.sceneManager.createEntity("NodeEntity"+str(self.EntityCount), "ellipsoid.mesh" )
 			self.clearlist['entity'].append("NodeEntity"+str(self.EntityCount))
@@ -148,16 +138,6 @@ class RoRTruckOgreWindow(wxOgreWindow):
 			box1node.attachObject( box1 )
 			box1node.setScale(size)
 			box1.setNormaliseNormals(True)
-
-			col = OgreNewt.Ellipsoid( self.World, size )
-			bod = OgreNewt.Body(self.World, col)
-			self.bodies.append (bod)
-
-			del col
-
-			bod.attachToNode( box1node )
-			bod.setMassMatrix( mass, inertia )
-			bod.setStandardForceCallback()
 
 			if option == 'l':
 				matname = "TruckEditor/NodeLoad"
@@ -175,12 +155,12 @@ class RoRTruckOgreWindow(wxOgreWindow):
 				matname = "TruckEditor/NodeNormal"
 			box1.setMaterialName(matname)
 			box1.setCastShadows(False)
+			box1node.setPosition(pos)
 
-			bod.setPositionOrientation(pos, Ogre.Quaternion.IDENTITY )
+			print str(id)
 			self.nodes[id] = [box1node, option, node]
-			return bod
-		except:
-			pass
+		except Exception, e:
+			print "error creating nodes: "+str(e)+" / "+str(e.__doc__)
 
 	def showSubmeshs(self, value):
 		for k in self.submeshs.keys():
@@ -260,8 +240,11 @@ class RoRTruckOgreWindow(wxOgreWindow):
 
 	def createBeam(self, id0, id1, id2, options):
 		try:
+			print "creating beam " + str(id0) + " - " + str(id1)
 			pos1 = self.nodes[id1][0].getPosition()
 			pos2 = self.nodes[id2][0].getPosition()
+			print "pos1: " + str(pos1.x) + ", " + str(pos1.y) + ", " + str(pos1.z)
+			print "pos2: " + str(pos2.x) + ", " + str(pos2.y) + ", " + str(pos2.z)
 
 			idstr = str(id0) + str(id1) + str(id2)
 			line =  self.sceneManager.createManualObject("manual"+idstr)
@@ -280,10 +263,9 @@ class RoRTruckOgreWindow(wxOgreWindow):
 			linenode = self.sceneManager.getRootSceneNode().createChildSceneNode()
 			linenode.attachObject(line)
 			self.beams[id0] = [linenode, id1, id2, options, line]
-			print id0
-		except:
-			pass
-
+		except Exception, e:
+			print "error creating beam: "+str(e)+" / "+str(e.__doc__)
+	
 	def updateBeams(self):
 		for bk in self.beams.keys():
 			beam = self.beams[bk]
@@ -298,7 +280,7 @@ class RoRTruckOgreWindow(wxOgreWindow):
 				line.position(pos2)
 				line.end()
 			except Exception, e:
-				print str(e)
+				print "error updating beams: "+str(e)+" / "+str(e.__doc__)
 				continue
 
 
@@ -321,9 +303,9 @@ class RoRTruckOgreWindow(wxOgreWindow):
 			linenode = self.sceneManager.getRootSceneNode().createChildSceneNode()
 			linenode.attachObject(line)
 			self.shocks[id0] = [linenode, id1, id2, options, line]
-		except:
-			pass
-
+		except Exception, e:
+			print "error creating shock: "+str(e)+" / "+str(e.__doc__)
+			
 	def createSubMeshGroup(self, tree, smg, smgid):
 		#print smg
 		try:
@@ -374,15 +356,12 @@ class RoRTruckOgreWindow(wxOgreWindow):
 			smnode.attachObject(sm)
 
 			self.submeshs[smgid] = [smnode, smgid, smg, sm]
-		except:
-			pass
-
+		except Exception, e:
+			print "error creating submesh-group: "+str(e)+" / "+str(e.__doc__)
+			
 	def makeSimpleBox( self, size, pos,  orient ):
 		## base mass on the size of the object.
 		mass = size.x * size.y * size.z * 2.5
-
-		## calculate the inertia based on box formula and mass
-		inertia = OgreNewt.CalcBoxSolid( mass, size )
 
 		box1 = self.sceneManager.createEntity("Entity"+str(self.EntityCount), "cap_mid.mesh" )
 		self.clearlist['entity'].append("Entity"+str(self.EntityCount))
@@ -393,20 +372,8 @@ class RoRTruckOgreWindow(wxOgreWindow):
 		box1node.setScale( size )
 		box1.setNormaliseNormals(True)
 
-		col = OgreNewt.Box( self.World, size )
-		bod = OgreNewt.Body( self.World, col )
-		del col
-
-		bod.attachToNode( box1node )
-		bod.setMassMatrix( mass, inertia )
-		bod.setStandardForceCallback()
-
 		box1.setMaterialName( "mysimple/terrainselect" )
 		box1.setCastShadows(False)
-
-		bod.setPositionOrientation( pos, orient )
-
-		return bod
 
 
 	def populateScene(self):
@@ -426,43 +393,6 @@ class RoRTruckOgreWindow(wxOgreWindow):
 
 		self.createGroundPlane()
 
-		stat_col = OgreNewt.TreeCollisionSceneParser( self.World )
-		stat_col.parseScene( self.planenode, True )
-		bod = OgreNewt.Body( self.World, stat_col )
-		self.bodies.append(bod)
-		del stat_col
-
-	def createTestRope(self):
-		## make a simple rope.
-		size = Ogre.Vector3(5,0.5,0.5)
-		pos = Ogre.Vector3(0,20,0)
-		orient = Ogre.Quaternion.IDENTITY
-
-		## loop through, making bodies and connecting them.
-		parent = None
-		child = None
-
-		for x in range (5):
-			## make the next box.
-			child = self.makeSimpleBox(size, pos, orient)
-			self.bodies.append(child)
-
-			## make the joint right between the bodies...
-			if (parent):
-				joint = OgreNewt.BallAndSocket( self.World, child, parent, pos-Ogre.Vector3(size.x/2,0,0) )
-
-			else:
-				## no parent, this is the first joint, so just pass NULL as the parent, to stick it to the "world"
-				joint = OgreNewt.BallAndSocket( self.World, child, None, pos-Ogre.Vector3(size.x/2,0,0) )
-
-			## offset pos a little more.
-			pos += Ogre.Vector3(size.x,0,0)
-
-			## save the last body for the next loop!
-			parent = child
-
-			## NOW - we also have to kepe copies of the joints, otherwise they get deleted !!!
-			self.bodies.append (joint)
 
 	def createGroundPlane(self):
 		plane = ogre.Plane()
@@ -480,15 +410,6 @@ class RoRTruckOgreWindow(wxOgreWindow):
 		self.planenode = self.sceneManager.getRootSceneNode().createChildSceneNode()
 		self.planenode.attachObject(entity)
 
-		#col = OgreNewt.TreeCollision(self.World, self.planenode, True)
-		groundthickness = 50
-		boxsize = ogre.Vector3(planesize, groundthickness, planesize)
-		col = OgreNewt.Box(self.World, boxsize )
-		bod = OgreNewt.Body( self.World, col )
-		self.bodies.append(bod)
-		bod.setPositionOrientation( Ogre.Vector3(0.0, -groundthickness - plane.d, 0.0), Ogre.Quaternion.IDENTITY )
-		del col
-
 
 	def LoadTruck(self, fn):
 		if not os.path.isfile(fn):
@@ -503,7 +424,6 @@ class RoRTruckOgreWindow(wxOgreWindow):
 
 		self.initScene()
 		self.CreateTruck(p.tree)
-		self.createTestRope()
 		return p.tree
 
 
@@ -541,12 +461,8 @@ class RoRTruckOgreWindow(wxOgreWindow):
 				else:
 					option = None
 				#print beam
-				try:
-					self.createBeam(beamcounter, int(beam[0]),int(beam[1]), option)
-					beamcounter += 1
-				except:
-					pass
-
+				self.createBeam(beamcounter, int(beam[0]),int(beam[1]), option)
+				beamcounter += 1
 
 			if 'shocks' in tree.keys():
 				shockcounter = 0
@@ -559,10 +475,7 @@ class RoRTruckOgreWindow(wxOgreWindow):
 					else:
 						option = None
 					#print beam
-					try:
-						self.createShock(shockcounter, int(shock[0]),int(shock[1]), option)
-					except:
-						pass
+					self.createShock(shockcounter, int(shock[0]),int(shock[1]), option)
 					shockcounter += 1
 
 			smgcounter = 0
@@ -571,13 +484,13 @@ class RoRTruckOgreWindow(wxOgreWindow):
 				self.createSubMeshGroup(tree, smg,smgcounter)
 				smgcounter += 1
 
-			from UVFrame import *
-			self.uvFrame = UVFrame(self, wx.ID_ANY, "")
-			self.uvFrame.setTree(tree)
-			self.uvFrame.Show()
-		except:
-			pass
-
+			#from UVFrame import *
+			#self.uvFrame = UVFrame(self, wx.ID_ANY, "")
+			#self.uvFrame.setTree(tree)
+			#self.uvFrame.Show()
+		except Exception, e:
+			print "error creating truck: "+str(e)+" / "+str(e.__doc__)
+			
 	def onMouseEvent(self,event):
 		width, height, a, b, c = self.renderWindow.getMetrics()
 
