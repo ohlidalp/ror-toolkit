@@ -1,5 +1,6 @@
-import wx, os, os.path
+import wx, os, os.path, copy
 
+import ogre.renderer.OGRE as ogre
 from logger import log
 from settingsManager import getSettingsManager
 
@@ -12,6 +13,7 @@ class Object:
 	rotz = None
 	name = ""
 	filename = ""
+	line = 0
 	additionaloptions = []
 	comments = []
 	mayRotate = True
@@ -53,9 +55,18 @@ class RoRTerrain:
 		f.close()
 	
 	def loadFile(self,filename):
-		f=open(filename, 'r')
-		content = f.readlines()
-		f.close()
+		content = []
+		ds=ogre.ResourceGroupManager.getSingleton().openResource(filename, "General");
+		ec=0
+		while True:
+			line = copy.copy(ds.getLine())
+			#print line, ec
+			if line.strip() == "":
+				ec+=1
+			if ec > 50:
+				break
+			content.append(line)
+		#ds.close()
 		return content
 	
 	def __init__(self, filename):
@@ -158,6 +169,7 @@ class RoRTerrain:
 				truck.setPosition(x, y, z)
 				truck.setRotation(rx, ry, -rz)
 				truck.additionaloptions = objname[1:]
+				truck.line = i
 				#truck.mayRotate=False
 				self.trucks.append(truck)
 				continue
@@ -166,6 +178,7 @@ class RoRTerrain:
 				load.name = "load"
 				load.filename = objname[-1].strip()
 				load.comments = comm
+				load.line=i
 				comm = []
 				load.setPosition(x, y, z)
 				load.setRotation(rx, ry, -rz)
@@ -180,6 +193,7 @@ class RoRTerrain:
 			obj.name = objectname
 			obj.filename = objectname
 			obj.comments = comm
+			obj.line=i
 			comm = []
 			obj.setPosition(x, y, z)
 			obj.setRotation(rx, ry, rz)

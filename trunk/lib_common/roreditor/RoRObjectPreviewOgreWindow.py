@@ -1,5 +1,5 @@
 #Thomas Fischer 31/05/2007, thomas@thomasfischer.biz
-import wx, math
+import wx, math, glob
 import ogre.renderer.OGRE as ogre
 from wxogre.OgreManager import *
 from wxogre.wxOgreWindow import *
@@ -35,6 +35,9 @@ class TreeDropTarget(wx.PyDropTarget):
 		print "%s\n" % self.do.GetFilenames()
 		return d
 
+class SpinControlOverlayElementFactory(ogre.OverlayElementFactory):
+	pass
+		
 class ObjectPreviewOgreWindow(wxOgreWindow):
 	def __init__(self, parent, ID, size = wx.Size(200,200), rordir = "", **kwargs):
 		self.rordir = rordir
@@ -52,19 +55,7 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
 
 
 	def SceneInitialisation(self):
-		addresources = [os.path.join(self.rordir,'data', 'terrains'),
-						os.path.join(self.rordir,'data', 'trucks'),
-						os.path.join(self.rordir,'data', 'objects')]
-		# only init things in the main window, not in shared ones!
-		# setup resources
-		for r in addresources:
-			ogre.ResourceGroupManager.getSingleton().addResourceLocation(r, "FileSystem", "General", False)
-
-		ogre.ResourceGroupManager.getSingleton().addResourceLocation("media/packs/OgreCore.zip", "Zip", "Bootstrap", False)
-		ogre.ResourceGroupManager.getSingleton().addResourceLocation("media", "FileSystem", "General", False)
-		ogre.ResourceGroupManager.getSingleton().addResourceLocation("media/materials", "FileSystem", "General", False)
-		ogre.ResourceGroupManager.getSingleton().addResourceLocation("media/models", "FileSystem", "General", False)
-		ogre.ResourceGroupManager.getSingleton().initialiseAllResourceGroups()
+		initResources(self.rordir)
 		self.createSceneManager()
 
 	def createSceneManager(self, type="object"):

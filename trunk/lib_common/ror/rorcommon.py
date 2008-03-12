@@ -1,7 +1,8 @@
-import sys, os, os.path
+import sys, os, os.path, glob
 import wx
 from random import Random
 from logger import log
+import ogre.renderer.OGRE as ogre 
 
 def ShowOnAbout(event = None):
 	rev = ""
@@ -48,6 +49,52 @@ def randomID(num_bits=64):
 
 	return rnd_id
 
+def readResourceConfig(rordir):
+	f = open(os.path.join(rordir, 'resources.cfg'), 'r')
+	lines = f.readlines()
+	f.close()
+	normalResources = []
+	zipResources = []
+	isZip=False
+	for line in lines:
+		if line.strip() == '[Packs]' or line.strip() == '[InternalPacks]':
+			isZip=True
+		elif line[0] == '[':
+			isZip=False
+		#print line, isZip
+		
+		if line[:11] == 'FileSystem=':
+			dir=line[11:].strip()
+			dirname = dir.replace('/', '\\')
+			path = os.path.join(rordir, dirname)
+			if isZip:
+				zipResources.append(path)
+			else:
+				normalResources.append(path)
+	return (normalResources, zipResources)
+
+	
+def initResources(rordir):
+	(normalResources, zipResources) = readResourceConfig(rordir)
+	# only init things in the main window, not in shared ones!
+	# setup resources
+	for r in normalResources:
+		print 'adding normal resource: ' + r
+		ogre.ResourceGroupManager.getSingleton().addResourceLocation(r, "FileSystem", "General", False)
+
+	for r in zipResources:
+		files = glob.glob(os.path.join(r, "*.zip"))
+		for file in files:
+			print 'adding zip resource: ' + file
+			ogre.ResourceGroupManager.getSingleton().addResourceLocation(file, "Zip", "General", False)
+	
+	#ogre.ResourceGroupManager.getSingleton().addResourceLocation("media/packs/OgreCore.zip", "Zip", "Bootstrap", False)
+	ogre.ResourceGroupManager.getSingleton().addResourceLocation("media", "FileSystem", "General", False)
+	ogre.ResourceGroupManager.getSingleton().addResourceLocation("media/materials", "FileSystem", "General", False)
+	ogre.ResourceGroupManager.getSingleton().addResourceLocation("media/models", "FileSystem", "General", False)
+	
+	ogre.ResourceGroupManager.getSingleton().initialiseAllResourceGroups()
+	
 def getPlatform():
 	if sys.platform in ['linux', 'linux2']:
 		return 'linux'
