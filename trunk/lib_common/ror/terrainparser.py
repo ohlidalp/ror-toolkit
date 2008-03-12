@@ -3,6 +3,7 @@ import wx, os, os.path, copy
 import ogre.renderer.OGRE as ogre
 from logger import log
 from settingsManager import getSettingsManager
+from ror.rorcommon import *
 
 class Object:
 	x = None
@@ -54,24 +55,10 @@ class RoRTerrain:
 		f.writelines(lines)
 		f.close()
 	
-	def loadFile(self,filename):
-		content = []
-		ds=ogre.ResourceGroupManager.getSingleton().openResource(filename, "General");
-		ec=0
-		while True:
-			line = copy.copy(ds.getLine())
-			#print line, ec
-			if line.strip() == "":
-				ec+=1
-			if ec > 50:
-				break
-			content.append(line)
-		#ds.close()
-		return content
-	
+
 	def __init__(self, filename):
 		self.filename = filename
-		content = self.loadFile(filename)
+		content = loadResourceFile(filename)
 		self.trucks = []
 		self.loads = []
 		self.objects = []

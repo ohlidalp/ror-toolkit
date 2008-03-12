@@ -95,6 +95,21 @@ def initResources(rordir):
 	
 	ogre.ResourceGroupManager.getSingleton().initialiseAllResourceGroups()
 	
+def loadResourceFile(filename):
+	content = []
+	ds=ogre.ResourceGroupManager.getSingleton().openResource(filename, "General");
+	ec=0
+	while True:
+		line = copy.copy(ds.getLine())
+		#print line, ec
+		if line.strip() == "":
+			ec+=1
+		if ec > 50:
+			break
+		content.append(line)
+	#ds.close()
+	return content
+	
 def getPlatform():
 	if sys.platform in ['linux', 'linux2']:
 		return 'linux'

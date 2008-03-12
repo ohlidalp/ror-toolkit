@@ -2,6 +2,7 @@ import copy, os, os.path
 import ogre.renderer.OGRE as ogre
 from ror.logger import log
 from ror.settingsManager import getSettingsManager
+from ror.rorcommon import *
 
 def loadOdef_old(odefFilename):
     f=open(odefFilename, 'r')
@@ -36,25 +37,9 @@ class odefbox:
         s += " rotation: " + str(self.rotation)
         return s
 
-def loadOdefContent(filename):
-	content = []
-	ds=ogre.ResourceGroupManager.getSingleton().openResource(filename, "General");
-	ec=0
-	while True:
-		line = copy.copy(ds.getLine())
-		#print line, ec
-		if line.strip() == "":
-			ec+=1
-		if ec > 50:
-			break
-		content.append(line)
-	#ds.close()
-	return content
-
-		
 def loadOdef(odefFilename):
     try:
-        content = loadOdefContent(os.path.basename(odefFilename))
+        content = loadResourceFile(os.path.basename(odefFilename))
         ismovable = False
         meshname = content[0].strip()
         scalearr = [1,1,1]
