@@ -22,11 +22,11 @@ def main():
 		ror.starter.startApp()
 
 	# Import Psyco if available
-	try:
-		import psyco
-		psyco.full()
-	except ImportError:
-		pass
+	#try:
+	#	import psyco
+	#	psyco.full()
+	#except ImportError:
+	#	pass
 
 	import roreditor.MainFrame
 	roreditor.MainFrame.startApp()

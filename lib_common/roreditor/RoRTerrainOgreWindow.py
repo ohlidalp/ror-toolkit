@@ -176,20 +176,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 	def SceneInitialisation(self):
 		hasparent = (not self.sceneManager is None)
 		if not hasparent:
-			addresources = [os.path.join(self.rordir,'data', 'terrains'),
-							os.path.join(self.rordir,'data', 'trucks'),
-							os.path.join(self.rordir,'data', 'objects')]
-			# only init things in the main window, not in shared ones!
-			# setup resources 
-			for r in addresources:
-				ogre.ResourceGroupManager.getSingleton().addResourceLocation(r, "FileSystem", "General", False)
-
-			ogre.ResourceGroupManager.getSingleton().addResourceLocation("media/packs/OgreCore.zip", "Zip", "Bootstrap", False)
-			ogre.ResourceGroupManager.getSingleton().addResourceLocation("media", "FileSystem", "General", False)
-			ogre.ResourceGroupManager.getSingleton().addResourceLocation("media/materials", "FileSystem", "General", False)
-			ogre.ResourceGroupManager.getSingleton().addResourceLocation("media/models", "FileSystem", "General", False)
-			ogre.ResourceGroupManager.getSingleton().initialiseAllResourceGroups() 
-
+			initResources(self.rordir)
 			#get the scenemanager
 			self.sceneManager = getOgreManager().createSceneManager(ogre.ST_EXTERIOR_CLOSE)
 		else:

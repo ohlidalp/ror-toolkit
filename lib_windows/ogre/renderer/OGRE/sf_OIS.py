@@ -20,6 +20,7 @@ def getPluginPath():
     import os.path
     
     paths = [os.path.join(os.getcwd(), 'plugins.cfg'),
+             os.path.join(os.getcwd(), '../plugins.cfg'),
              '/etc/OGRE/plugins.cfg',
              os.path.join(os.path.dirname(os.path.abspath(__file__)),
                               'plugins.cfg')]
@@ -62,6 +63,20 @@ class Application(object):
         if self._isPsycoEnabled():
             self._activatePsyco()
         self.root.startRendering()
+        
+    def goOneFrame(self):
+      "Starts the rendering loop. Show how to use the renderOneFrame Method"
+      if not self._setUp():
+          return
+      if self._isPsycoEnabled():
+          self._activatePsyco()
+    
+      self.root.getRenderSystem()._initRenderTargets()
+      while True:
+          ogre.WindowEventUtilities().messagePump()
+          if not self.root.renderOneFrame():
+              break
+
 
 
     def _setUp(self):
@@ -224,11 +239,11 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
          #Create all devices (We only catch joystick exceptions here, as, most people have Key/Mouse)
          self.Keyboard = self.InputManager.createInputObjectKeyboard( OIS.OISKeyboard, self.bufferedKeys )
          self.Mouse = self.InputManager.createInputObjectMouse( OIS.OISMouse, self.bufferedMouse )
-         try :
-            self.Joy = self.InputManager.createInputObjectJoyStick( OIS.OISJoyStick, bufferedJoy )
+         try:
+            self.Joy = self.InputManager.createInputObjectJoyStick( OIS.OISJoyStick, self.bufferedJoy )
          except:
             self.Joy = False
-         
+#          
          #Set initial mouse clipping size
          self.windowResized(self.renderWindow)
          
@@ -291,7 +306,6 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
         
         if not self.MenuMode:   # if we are in Menu mode we don't move the camera..
             self._processUnbufferedMouseInput(frameEvent)
-        
         self._moveCamera()
         # Perform simulation step only if using OgreRefApp.  For simplicity create a function that simply does
         ###  "OgreRefApp.World.getSingleton().simulationStep(frameEvent.timeSinceLastFrame)"
@@ -445,4 +459,4 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
         #element.caption="hello"
         
         #element.setCaption("help")
-        element.setCaption(ogre.UTFString(text))
+        element.setCaption(text) # ogre.UTFString(text))
