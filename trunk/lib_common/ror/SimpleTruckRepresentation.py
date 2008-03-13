@@ -8,10 +8,10 @@ from wxogre.wxOgreWindow import *
 from ror.rorcommon import *
 
 def createTruckMesh(sceneManager, fn, uuid):
-    if not os.path.isfile(fn):
-        #print "truck file not found: " + fn
-        log().error("truck file not found: %s" % fn)
-        return
+    #if not os.path.isfile(fn):
+    #    #print "truck file not found: " + fn
+    #    log().error("truck file not found: %s" % fn)
+    #    return
     p = rorparser()
     p.parse(fn)
     if not 'nodes' in p.tree.keys() or not 'beams' in p.tree.keys():
