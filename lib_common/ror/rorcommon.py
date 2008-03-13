@@ -1,4 +1,4 @@
-import sys, os, os.path, glob
+import sys, os, os.path, glob, copy
 import wx
 from random import Random
 from logger import log

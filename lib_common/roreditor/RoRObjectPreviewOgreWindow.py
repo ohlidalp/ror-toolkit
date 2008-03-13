@@ -92,7 +92,7 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
 		#hide logo
 		self.logovisible = False
 
-		if extension.lower() in [".truck", ".load"]:
+		if extension.lower() in [".truck", ".load", '.boat', '.trailer', '.airplane', '.car']:
 			self.mode="object"
 			self.free()
 			self.createSceneManager()
@@ -104,6 +104,11 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
 			self.free()
 			self.createSceneManager()
 			self.loadodef(filename, uuid)
+		elif extension.lower() in [".mesh"]:
+			self.mode="object"
+			self.free()
+			self.createSceneManager()
+			self.loadmesh(filename, uuid)
 		elif extension.lower() in [".terrn"]:
 			self.mode="terrain"
 			self.free()
@@ -131,6 +136,13 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
 		if not sx is None:
 			self.objnode.setScale(sx, sy, sz)
 
+	def loadmesh(self, meshname, uuid):
+		# create mesh
+		self.objnode = self.sceneManager.getRootSceneNode().createChildSceneNode(uuid+"objnode")
+		self.objentity = self.sceneManager.createEntity(uuid+'objentity', meshname)
+		self.objnode.attachObject(self.objentity)
+		self.objnode.rotate(ogre.Vector3.UNIT_X, ogre.Degree(-90),relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+
 
 	def free(self):
 		try:
@@ -153,7 +165,7 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
 			#BUG: next line fails and goes to except
 			if self.objnode:
 				self.objnode.detachAllObjects()
-			self.sceneManager.destroySceneNode(self.objnode.getName())
+				self.sceneManager.destroySceneNode(self.objnode.getName())
 		except Exception, e:
 			log().exception(str(e))
 

@@ -33,25 +33,32 @@ class RoRObjectTreeCtrl(wx.Panel):
 		imglist.Add(wx.ArtProvider_GetBitmap(wx.ART_NORMAL_FILE, wx.ART_OTHER, wx.Size(16,16)))
 		tree.AssignImageList(imglist)
 
-		terrains = tree.AppendItem(root, "Terrains", 0)
-		terrains_editable = tree.AppendItem(terrains, "editable", 0)
-		terrains_noneditable = tree.AppendItem(terrains, "Non-Editable", 0)
+		self.tree = tree
+		self.treeroot = root
 		
-		terrainfiles = self.getInstalledTerrains("*.terrn")
-		for terrain in terrainfiles:
-			terrainname, extension = os.path.splitext(os.path.basename(terrain))
-			data = wx.TreeItemData()
-			data.SetData(terrain)
-			tree.AppendItem(items[-1], terrainname, 1, data=data)
+		self.addSection("Terrains", ['*.terrn'])
 		
+		beamobjs = self.tree.AppendItem(self.treeroot, "Beam Objects", 0)
+		self.addSection("Trucks", ['*.truck'], beamobjs)
+		self.addSection("Boats", ['*.boat'], beamobjs)
+		self.addSection("Airplanes", ['*.airplane'], beamobjs)
+		self.addSection("Loads", ['*.load'], beamobjs)
+		self.addSection("Trailers", ['*.trailer'], beamobjs)
 
+		self.addSection("Objects", ['*.odef'])
+
+		metaobjs = self.tree.AppendItem(self.treeroot, "Meta Files", 0)
+		self.addSection("Materials", ['*.material'], metaobjs)
+		self.addSection("Meshes", ['*.mesh'], metaobjs)
+		self.addSection("Configurations", ['*.cfg'], metaobjs)
+		
 		# root is hidden, no expand!
 		#tree.Expand(root)
 		vert.Add(tree, 1, wx.EXPAND, 5)
 		self.SetSizer(vert)
 		self.GetSizer().SetSizeHints(self)
 				
-		self.tree = tree
+		
 		
 		# this dows not work :(
 		#self.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDClick, self.tree)
@@ -59,34 +66,97 @@ class RoRObjectTreeCtrl(wx.Panel):
 		self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnRightClick, self.tree)
 		
 		#self.Bind(wx.EVT_TREE_BEGIN_DRAG, self.BeginDrag, self.tree)
+	
+	def addSection(self, sectionName, filepattern, parent=None):
+		if parent is None:
+			parent = self.treeroot
+		
+		files=[]
+		for pattern in filepattern:
+			newfiles = self.getInstalledFiles(pattern)
+			for newfile in newfiles:
+				files.append(newfile)
+		
+		files_editable=[]
+		files_uneditable=[]
+		for file in files:
+			type = 'FileSystem'
+			if file.archive:
+				type = file.archive.getType()
+			if type == 'FileSystem':
+				files_editable.append(file)
+			else:
+				files_uneditable.append(file)
+		
+		section = None
+		if len(files_editable) > 0 or len(files_uneditable) > 0:
+			section = self.tree.AppendItem(parent, "%s (%d)" % (sectionName, len(files_editable) + len(files_uneditable)), 0)
+		
+		if len(files_editable) > 0:
+			section_editable = self.tree.AppendItem(section, "Editable (%d)" % len(files_editable), 0)
+			for file in files_editable:
+				filenameonly, extension = os.path.splitext(os.path.basename(file.filename))
+				if len(filenameonly) > 40:
+					filenameonly = filenameonly[40:]
+				data = wx.TreeItemData()
+				data.SetData(file)
+				self.tree.AppendItem(section_editable, filenameonly, 1, data=data)
+
+		if len(files_uneditable) > 0:
+			section_noneditable = self.tree.AppendItem(section, "Non-Editable (%d)" % len(files_uneditable), 0)
+			for file in files_uneditable:
+				filenameonly, extension = os.path.splitext(os.path.basename(file.filename))
+				if len(filenameonly) > 40:
+					filenameonly = filenameonly[40:]
+				data = wx.TreeItemData()
+				data.SetData(file)
+				self.tree.AppendItem(section_noneditable, filenameonly, 1, data=data)
+		
+			
+	
 	def OnLeftDClick(self, event):
 		#this is just a shortcut!
-		self.selectedfn = self.tree.GetItemData(event.GetItem()).GetData()        
-		if self.selectedfn[-4:].lower() == "odef":
+		fileinfo = self.tree.GetItemData(event.GetItem()).GetData()        
+		if fileinfo is None:
+			event.Skip()
+			return
+		self.selectedfn = fileinfo.filename
+		if fileinfo.archive.getType() != 'FileSystem':
+			# no action for non editable files!
+			return
+		filenameonly, extension = os.path.splitext(os.path.basename(fileinfo.filename))
+		if extension.lower() == ".odef":
 			self.editOdef()
-		if self.selectedfn[-5:].lower() == "terrn":
+		if extension.lower() == ".terrn":
 			self.editTerrain()
-		if self.selectedfn[-5:].lower() == 'truck' or self.selectedfn[-4:].lower() == 'load':
+		if extension.lower() in ['.truck', '.load', '.trailer', '.airplane', '.boat']:
 			self.editTruck()
 		
 	def OnRightClick(self, event):
-		self.selectedfn = self.tree.GetItemData(event.GetItem()).GetData()
-		if self.selectedfn is None:
+		fileinfo = self.tree.GetItemData(event.GetItem()).GetData()        
+		if fileinfo is None:
 			event.Skip()
 			return
 		
-		menu = wx.Menu()
+		self.selectedfn = fileinfo.filename
+		if fileinfo.archive.getType() != 'FileSystem':
+			# no action for non editable files!
+			event.Skip()
+			return
+		filenameonly, extension = os.path.splitext(os.path.basename(fileinfo.filename))
 		
+		menu = wx.Menu()
 		#create various menu entries
-		if self.selectedfn[-4:].lower() == "odef":
+		if extension.lower() == ".odef":
 			item_edit_odef = menu.Append(wx.ID_ANY, "Edit in ODef Editor")
 			self.Bind(wx.EVT_MENU, self.editOdef, item_edit_odef)
-		if self.selectedfn[-5:].lower() == "terrn":
+		if extension.lower() == ".terrn":
 			item_edit_terrain = menu.Append(wx.ID_ANY, "Edit in Terrain Editor")
 			self.Bind(wx.EVT_MENU, self.editTerrain, item_edit_terrain)
-		if self.selectedfn[-5:].lower() == 'truck' or self.selectedfn[-4:].lower() == 'load':
+		if extension.lower() in ['.truck', '.load', '.trailer', '.airplane', '.boat']:
 			item_edit_truck = menu.Append(wx.ID_ANY, "Edit in Truck Editor")
 			self.Bind(wx.EVT_MENU, self.editTruck, item_edit_truck)
+		
 		menu.AppendSeparator()
 		item_add = menu.Append(wx.ID_ANY, "add to Terrain")
 		self.Bind(wx.EVT_MENU, self.addObjectToTerrain, item_add)
@@ -125,9 +195,11 @@ class RoRObjectTreeCtrl(wx.Panel):
 	#        wx.TreeEvent.Allow(event)
 	
 	def onTreeSelectionChange(self, event=None):
-		fn = self.tree.GetItemData(self.tree.GetSelection()).GetData()
-		if fn is None:
+		fileinfo = self.tree.GetItemData(event.GetItem()).GetData()        
+		if fileinfo is None:
+			event.Skip()
 			return
+		fn = fileinfo.filename
 		self.parent.previewObject(fn)
 	
 	def getInstalledFiles(self, extension):
