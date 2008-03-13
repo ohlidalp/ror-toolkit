@@ -73,9 +73,12 @@ class RoRObjectTreeCtrl(wx.Panel):
 		
 		files=[]
 		for pattern in filepattern:
+			#print pattern
 			newfiles = self.getInstalledFiles(pattern)
 			for newfile in newfiles:
 				files.append(newfile)
+		
+		#print files
 		
 		files_editable=[]
 		files_uneditable=[]
@@ -84,9 +87,19 @@ class RoRObjectTreeCtrl(wx.Panel):
 			if file.archive:
 				type = file.archive.getType()
 			if type == 'FileSystem':
-				files_editable.append(file)
+				ok = True
+				for filecheck in files_editable:
+					if filecheck.filename == file.filename:
+						ok=False
+				if ok:
+					files_editable.append(file)
 			else:
-				files_uneditable.append(file)
+				ok = True
+				for filecheck in files_uneditable:
+					if filecheck.filename == file.filename:
+						ok=False
+				if ok:
+					files_uneditable.append(file)
 		
 		section = None
 		if len(files_editable) > 0 or len(files_uneditable) > 0:
