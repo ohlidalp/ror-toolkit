@@ -204,7 +204,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.Bind(wx.EVT_KEY_UP, self.onKeyUp) 
 		self.Bind(wx.EVT_MOUSE_EVENTS, self.onMouseEvent)
 
-		
+		"""
 		self.spline = ogre.SimpleSpline()
 		# some spline material
 		mat = ogre.MaterialManager.getSingleton().create("matline","debugger")
@@ -242,7 +242,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		
 		# this is for debugging of the grid system:
 		#self.virtualMoveNode.attachObject(self.sceneManager.createEntity("afsdfsdfsfsdfsdfasdf", "arrow.mesh") )
-
+"""
 		#create objects
 		self.populateScene()
 		
@@ -458,8 +458,8 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.createWaterPlane()
 		self.createArrows()
 		
-		for t in self.terrain.trucks:
-			print str(t)
+		#for t in self.terrain.trucks:
+		#	print str(t)
 		
 		try:
 			if not self.terrain.CharacterStartPosition is None:
@@ -470,18 +470,11 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			log().error("Error while setting initial camera:")
 			log().error(str(err))
 		
-		for truck in self.terrain.trucks:
+		for beam in self.terrain.beamobjs:
 			try:
 				self.addTruckToTerrain(data=truck)
 			except Exception, err:
-				log().error("Error while adding a truck to the terrain:")
-				log().error(str(err))
-
-		for load in self.terrain.loads:
-			try:
-				self.addTruckToTerrain(data=load)
-			except Exception, err:
-				log().error("Error while adding a load to the terrain:")
+				log().error("Error while adding a Beam Construction to the terrain:")
 				log().error(str(err))
 
 		for object in self.terrain.objects:
@@ -544,7 +537,26 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			
 		self.entries[uuid] = entry
 		return True
-
+	
+	def deleteObjectFromFile(self, entry):
+		if entry.line == 0:
+			return
+		
+		for truck in self.terrain.beamobjs:
+			if truck.line == entry.line:
+				truck.deleted=True
+				print "truck in line %d deleted" % entry.line
+				return True
+		
+		for object in self.terrain.objects:
+			if object.line == entry.line:
+				object.deleted=True
+				print "object in line %d deleted" % entry.line
+				return True
+		
+		print "object in line %d not found!" % entry.line
+		return False
+				
 	def addTruckToTerrain(self, data=None, truckFilename=None, coords=None):
 		if coords is None:
 			coords = self.selectedCoords
@@ -560,16 +572,19 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			data.comments = ['// added by terrain editor\n']
 			data.setPosition(coords.x, coords.y, coords.z)
 			data.setRotation(0, 0, 0)
+			data.type="truck"
 			data.additionaloptions =[data.filename]
 			if truckFilename.split(".")[-1].lower() == "truck":
-				self.terrain.trucks.append(data)
+				data.type="truck"
 			elif truckFilename.split(".")[-1].lower() == "load":
-				self.terrain.loads.append(data)
+				data.type="load"
+			self.terrain.beamobj.append(data)
 		else:
+			#print data
 			truckFilename = data.filename
 
-		if os.path.basename(truckFilename) == truckFilename:
-			truckFilename = self.rordir + "\\data\\trucks\\"+truckFilename
+		#if os.path.basename(truckFilename) == truckFilename:
+		#	truckFilename = truckFilename
 			
 		entry = Entry()
 		entry.uuid = uuid
@@ -863,7 +878,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		width, height, a, b, c = self.renderWindow.getMetrics()       
 		
 		self.controlArrows(event)
+		"""
 		if event.LeftDown():
+			
 			pos = self.getPointedPosition(event)
 			self.spline.addPoint(pos)
 			
@@ -911,7 +928,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 				self.line[3].position(point)
 				self.line[3].position(point+ogre.Vector3(0,2,0))
 			self.line[3].end()
-			
+		"""
 			
 		if event.RightDown() or event.LeftDown():
 			self.SetFocus()
@@ -964,14 +981,13 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		if self.terrain is None:
 			return
 
+		# print keycode for debugging purposes
 		#print event.m_keyCode
 		d = 0.5
 		if event.ShiftDown():
 			d *= SHIFT_SPEED_FACTOR
 
-		if event.m_keyCode == 65: # A, wx.WXK_LEFT:
-			self.keyPress.x = -d
-			
+		"""
 		elif event.m_keyCode == 66: # B
 			lines = []
 			factor = 1
@@ -991,6 +1007,17 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			f = open("roads.out", 'w')
 			f.writelines(lines)
 			f.close()
+		"""
+			
+		if event.m_keyCode == 65: # A, wx.WXK_LEFT:
+			self.keyPress.x = -d
+		elif event.m_keyCode == 127:
+			# delete key
+			self.deleteObjectFromFile(self.selectedEntry.data)
+			self.selectedEntry.entity.getParentSceneNode().setVisible(False)
+			self.deselectSelection()
+			self.selectTerrain(event)
+			
 		elif event.m_keyCode == 68: # D, wx.WXK_RIGHT:
 			self.keyPress.x = d
 		elif event.m_keyCode == 87: # W ,wx.WXK_UP:
