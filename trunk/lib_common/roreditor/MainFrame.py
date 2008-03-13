@@ -116,11 +116,7 @@ class MainFrame(wx.Frame):
 		# see the end up FrameManager::Update() for the test
 		# code. For now, just hard code a frame minimum size
 		self.SetMinSize(wx.Size(600, 400))
-		try:
-			import ror.svn
-			self.SetTitle("Rigs of Rods Terrain Editor revision %d" % ror.svn.getRevision())
-		except:
-			self.SetTitle("Rigs of Rods Terrain Editor")       
+		self.SetTitle("Rigs of Rods Terrain Editor 0.34")
 		
 		# create some toolbars
 		self.terraintoolbar = wx.ToolBar(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TB_FLAT | wx.TB_NODIVIDER)
@@ -387,11 +383,14 @@ class MainFrame(wx.Frame):
 		#if comment.strip() != "":
 		#    txt = "%s / %s" % (n.getName(), comment)
 		#else:
-		txt = "%s %s" % (entry.data.name, " ".join(entry.data.additionaloptions))
-		self.statusbar.SetStatusText(txt, 2)
-		
-		posx, posy, posz, rotx, roty, rotz = self.terrainOgreWin.getSelectionPositionRotation()
-		txt = "%d, %0.2f, %0.2f, %0.2f / %0.2f, %0.2f, %0.2f" % (entry.data.line, posx, posy, posz, rotx, roty, rotz)
+		try:
+			txt = "%s %s" % (entry.data.name, " ".join(entry.data.additionaloptions))
+			self.statusbar.SetStatusText(txt, 2)
+			
+			posx, posy, posz, rotx, roty, rotz = self.terrainOgreWin.getSelectionPositionRotation()
+			txt = "%d, %0.2f, %0.2f, %0.2f / %0.2f, %0.2f, %0.2f" % (entry.data.line, posx, posy, posz, rotx, roty, rotz)
+		except:
+			txt = ""
 		self.statusbar.SetStatusText(txt, 3)
 
 	def OnGUITimer(self, event):

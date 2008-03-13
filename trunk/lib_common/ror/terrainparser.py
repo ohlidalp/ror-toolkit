@@ -18,8 +18,10 @@ class Object:
 	additionaloptions = []
 	comments = []
 	mayRotate = True
+	type=""
 	
 	error = None
+	deleted=False
 	
 	def setPosition(self, x, y, z):
 		self.x = x
@@ -32,7 +34,7 @@ class Object:
 		self.rotz = z
 		
 	def __str__(self):
-		return self.filename
+		return "Terrain entry: "+self.filename
 	
 
 class RoRTerrain:
@@ -41,9 +43,9 @@ class RoRTerrain:
 	TerrainConfig = ""
 	filename = ""
 
-	trucks = []
-	loads = []
+	beamobjs = []
 	objects = []
+	procroads = []
 	
 	UsingCaelum = False
 	WaterHeight = None
@@ -62,8 +64,7 @@ class RoRTerrain:
 	def __init__(self, filename):
 		self.filename = filename
 		content = loadResourceFile(filename)
-		self.trucks = []
-		self.loads = []
+		self.beamobj = []
 		self.objects = []
 		log().info("processing terrain file: %s" % filename)
 		self.processTerrnFile(content)
@@ -84,19 +85,52 @@ class RoRTerrain:
 	def processTerrnFile(self, content):
 		linecounter = 0
 		comm = []
+		treemode=False
+		procroad=False
+		procroadlines=[]
 		for i in range(0, len(content)):
 			# convert tabs to spaces!
 			content[i] = content[i].replace("\t", " ")
 		
+			if treemode:
+				comm.append(content[i])
+				if content[i].strip()[:8] == "tree_end":
+					treemode=False
+				continue
+			if procroad:
+				procroadlines.append(content[i].strip().split(','))
+				if content[i].strip()[:20] == "end_procedural_roads":
+					procroad=False
+					self.procroads.append(copy.copy(procroadlines))
+					# process now
+				continue
+				
 			if content[i].strip() == "":
 				comm.append(content[i])
 				continue
 			if content[i].strip()[0:4] == "////":
 				# ignore editor self made comments (usefull for those error msgs)
 				continue
-			if content[i].strip()[0:2] == "//":
+			if content[i].strip()[:2] == "//":
 				comm.append(content[i])
 				continue
+			if content[i].strip()[:5] == "grass":
+				comm.append(content[i])
+				continue
+			if content[i].strip()[:7] == "mpspawn":
+				comm.append(content[i])
+				continue
+			if content[i].strip()[:7] == "mpspawn":
+				comm.append(content[i])
+				continue
+			if content[i].strip()[:10] == "tree_begin":
+				comm.append(content[i])
+				treemode=True
+				continue
+			if content[i].strip()[:22] == "begin_procedural_roads":
+				procroad=True
+				continue
+				
 			if content[i].strip()[0:1] == ";":
 				# bugfix wrong characters!
 				comm.append(content[i].replace(";","//"))
@@ -149,34 +183,22 @@ class RoRTerrain:
 				log().error("unable to parse line: %s. ignoring it!" % content[i])
 				continue
 				
-			print objname
-			if objname[0].lower() == "truck" and len(objname) > 1:
+			#print objname
+			if objname[0].lower() in ["truck", "load", "machine", "boat"] and len(objname) > 1:
 				#print "truck"
 				truck = Object()
-				truck.name = "truck"
+				truck.name = objname[1]
 				truck.filename = objname[-1].strip()
 				truck.comments = comm
 				comm = []
 				truck.setPosition(x, y, z)
 				truck.setRotation(rx, ry, -rz)
-				truck.additionaloptions = objname[1:]
+				#if len(objname)>1:
+				#truck.additionaloptions = objname[2:]
 				truck.line = i
+				truck.type = objname[0].lower()
 				#truck.mayRotate=False
-				self.trucks.append(truck)
-				continue
-			if objname[0] == "load" and len(objname) > 1:
-				#print "load"
-				load = Object()
-				load.name = "load"
-				load.filename = objname[-1].strip()
-				load.comments = comm
-				load.line=i
-				comm = []
-				load.setPosition(x, y, z)
-				load.setRotation(rx, ry, -rz)
-				load.additionaloptions = objname[1:]
-				#load.mayRotate=False
-				self.loads.append(load)
+				self.beamobjs.append(truck)
 				continue
 			
 			#print "object"
@@ -192,6 +214,8 @@ class RoRTerrain:
 			obj.setRotation(rx, ry, rz)
 			obj.additionaloptions = objname[1:]
 			self.objects.append(obj)
+			
+		print "number of proceddual roads: %d" % len(self.procroads)
 
 	def getObjectLines(self, object):
 		lines = []
@@ -199,13 +223,15 @@ class RoRTerrain:
 		# add comments
 		if len(object.comments) > 0:
 			for comment in object.comments:
-				lines.append(comment)
+				lines.append(comment+"\n")
 
 		# construct objects name
-		objname = object.name 
+		#print object.name, object.type
+		objname = object.type+" "+object.name 
 		if len(object.additionaloptions) > 0:
-			tmp = (" " + " ".join(object.additionaloptions)).strip()
-			objname += " " + tmp
+			objname += " " + " ".join(object.additionaloptions)
+		#print objname
+		
 		
 		# add line itself
 		linearray = [self.formatFloat(object.x),
@@ -216,6 +242,8 @@ class RoRTerrain:
 					 self.formatFloat(object.rotz),
 					 objname]
 		line = ", ".join(linearray)
+		if object.deleted:
+			line = "//"+line
 		
 		if not object.error is None:
 			lines.append("//// the next object had errors, so the terraineditor commented it out:\n")
@@ -230,7 +258,9 @@ class RoRTerrain:
 	
 	def save(self, filename = None):
 		if filename is None:
-			filename = self.filename
+			rordir = getSettingsManager().getSetting("RigsOfRods", "BasePath")
+			filename = os.path.join(rordir, "data", "terrains", self.filename)
+		print "saving terrain as %s" % filename
 		lines = []
 		lines.append(self.TerrainName+"\n")
 		lines.append(self.TerrainConfig+"\n")
@@ -265,14 +295,9 @@ class RoRTerrain:
 
 		
 		#save trucks
-		for truck in self.trucks:
+		for truck in self.beamobjs:
 			trucklines = self.getObjectLines(truck)
 			for l in trucklines:
-				lines.append(l)
-		# save loads
-		for load in self.loads:
-			loadlines = self.getObjectLines(load)
-			for l in loadlines:
 				lines.append(l)
 				
 		# save objects                   
