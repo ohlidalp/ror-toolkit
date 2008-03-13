@@ -116,9 +116,23 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
 			terrain = RoRTerrain(filename)
 			cfgfile = os.path.join(os.path.dirname(filename), terrain.TerrainConfig)
 			self.objnode = self.sceneManager.getRootSceneNode().createChildSceneNode(uuid+"objnode")
-			self.objnode.setPosition(1500, 0, 1500)
+			(x, z) = self.getTerrainSize(cfgfile)
+			self.terrainsize = (x, z)
+			print "terrain size: ", x, z
+			self.objnode.setPosition(x/2, 0, z/2)
 			self.sceneManager.setWorldGeometry(cfgfile)
 
+	def getTerrainSize(self, filename):
+		lines = loadResourceFile(filename)
+		x=1500
+		z=1500
+		for line in lines:
+			if line.lower().strip()[:11] == 'pageworldx=':
+				x = int(line.lower().strip()[11:])
+			if line.lower().strip()[:11] == 'pageworldz=':
+				z = int(line.lower().strip()[11:])
+		return (x, z)
+		
 	def loadodef(self, filename, uuid):
 		try:
 			meshname, sx, sy, sz, ismovable, boxes = loadOdef(filename)
@@ -187,14 +201,14 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
 		#self.MainLight.setPosition (ogre.Vector3(20, 80, 130))
 
 		# add some fog
-		self.sceneManager.setFog(ogre.FOG_EXP, ogre.ColourValue.White, 0.00002)
+		self.sceneManager.setFog(ogre.FOG_EXP, ogre.ColourValue.White, 0.0000002)
 
 		# create a floor Mesh
 		plane = ogre.Plane()
 		plane.normal = ogre.Vector3(0, 1, 0)
 		plane.d = 200
 		uuid = str(randomID())
-		ogre.MeshManager.getSingleton().createPlane(uuid + 'FloorPlane', "General", plane, 200000.0, 200000.0,
+		ogre.MeshManager.getSingleton().createPlane(uuid + 'FloorPlane', "General", plane, 20000000.0, 20000000.0,
 													20, 20, True, 1, 50.0, 50.0,ogre.Vector3(0, 0, 1),
 													ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY,
 													ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY,
@@ -246,8 +260,8 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
 					pos = self.objnode.getPosition() + rotateheight + (self.objentity.getBoundingBox().getMinimum() + self.objentity.getBoundingBox().getMaximum() ) / 2
 					lookheight =  ogre.Vector3(0, height / 2, 0)
 				elif self.mode == "terrain":
-					self.radius = 3000
-					rotateheight = ogre.Vector3(0, 1600, 0)
+					self.radius = self.terrainsize[0]
+					rotateheight = ogre.Vector3(0, self.terrainsize[0]/2, 0)
 					pos = self.objnode.getPosition() + rotateheight
 					lookheight = -rotateheight
 

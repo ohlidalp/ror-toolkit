@@ -457,6 +457,10 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 
 		self.createWaterPlane()
 		self.createArrows()
+		
+		for t in self.terrain.trucks:
+			print str(t)
+		
 		try:
 			if not self.terrain.CharacterStartPosition is None:
 				self.camera.setPosition(self.terrain.CharacterStartPosition)
@@ -960,7 +964,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		if self.terrain is None:
 			return
 
-		print event.m_keyCode
+		#print event.m_keyCode
 		d = 0.5
 		if event.ShiftDown():
 			d *= SHIFT_SPEED_FACTOR

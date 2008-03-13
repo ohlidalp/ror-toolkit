@@ -30,6 +30,9 @@ class Object:
 		self.rotx = x
 		self.roty = y
 		self.rotz = z
+		
+	def __str__(self):
+		return self.filename
 	
 
 class RoRTerrain:
@@ -146,8 +149,9 @@ class RoRTerrain:
 				log().error("unable to parse line: %s. ignoring it!" % content[i])
 				continue
 				
-			#print objname
-			if objname[0][0:5].lower() == "truck" and len(objname) > 1:
+			print objname
+			if objname[0].lower() == "truck" and len(objname) > 1:
+				#print "truck"
 				truck = Object()
 				truck.name = "truck"
 				truck.filename = objname[-1].strip()
@@ -160,7 +164,8 @@ class RoRTerrain:
 				#truck.mayRotate=False
 				self.trucks.append(truck)
 				continue
-			if objname[0][0:4] == "load" and len(objname) > 1:
+			if objname[0] == "load" and len(objname) > 1:
+				#print "load"
 				load = Object()
 				load.name = "load"
 				load.filename = objname[-1].strip()
@@ -174,6 +179,7 @@ class RoRTerrain:
 				self.loads.append(load)
 				continue
 			
+			#print "object"
 			# now it can just be an static object
 			objectname = objname[0].strip()
 			obj = Object()
