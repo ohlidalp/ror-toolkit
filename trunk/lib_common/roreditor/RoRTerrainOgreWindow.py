@@ -237,12 +237,11 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			self.line[i].setDynamic(True)
 			self.linenode.append(self.sceneManager.getRootSceneNode().createChildSceneNode())
 			self.linenode[i].attachObject(self.line[i])
-		
+"""		
 		self.virtualMoveNode = self.sceneManager.getRootSceneNode().createChildSceneNode()
 		
 		# this is for debugging of the grid system:
 		#self.virtualMoveNode.attachObject(self.sceneManager.createEntity("afsdfsdfsfsdfsdfasdf", "arrow.mesh") )
-"""
 		#create objects
 		self.populateScene()
 		
@@ -291,14 +290,17 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		return pos.x, pos.y, pos.z, rotx, roty, rotz
 		
 	def reattachArrows(self, entity):
-		self.TranslateNode.setPosition(entity.getParentNode().getPosition())
-		#self.TranslateNode.setOrientation(entity.getParentNode().getOrientation())
-		
-		self.RotateNode.setOrientation(entity.getParentNode().getOrientation())
-		self.RotateNode.setPosition(entity.getParentNode().getPosition())
-		
-		self.virtualMoveNode.setOrientation(entity.getParentNode().getOrientation())
-		self.virtualMoveNode.setPosition(entity.getParentNode().getPosition())
+		try:
+			self.TranslateNode.setPosition(entity.getParentNode().getPosition())
+			#self.TranslateNode.setOrientation(entity.getParentNode().getOrientation())
+			
+			self.RotateNode.setOrientation(entity.getParentNode().getOrientation())
+			self.RotateNode.setPosition(entity.getParentNode().getPosition())
+			
+			self.virtualMoveNode.setOrientation(entity.getParentNode().getOrientation())
+			self.virtualMoveNode.setPosition(entity.getParentNode().getPosition())
+		except:
+			pass
 		
 	def createArrows(self):
 		if not self.TranslateNode is None:
