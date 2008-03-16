@@ -44,8 +44,8 @@ class SettingsDialog(wx.Frame):
 		self.btnSelectRoRDir = wx.Button(self.panel, wx.ID_ANY, "Select RoR Directory")
 		self.Bind(wx.EVT_BUTTON, self.OnSelectRoRDir, self.btnSelectRoRDir)
 
-		self.btnStartRoR = wx.Button(self.panel, wx.ID_ANY, "Start RoR")
-		self.Bind(wx.EVT_BUTTON, self.OnStartRoR, self.btnStartRoR)
+		#self.btnStartRoR = wx.Button(self.panel, wx.ID_ANY, "Start RoR")
+		#self.Bind(wx.EVT_BUTTON, self.OnStartRoR, self.btnStartRoR)
 
 		if sys.platform == 'win32':
 			self.cbbRenderEngine = wx.ComboBox(self.panel, wx.ID_ANY, RENDERSYSTEMS[0], style=wx.CB_READONLY, choices=RENDERSYSTEMS)
@@ -93,13 +93,13 @@ class SettingsDialog(wx.Frame):
 
 	def displayRoRDir(self):
 		if self.rordir == "":
-			self.btnStartRoR.Enable(False)
+			#self.btnStartRoR.Enable(False)
 			#self.btnStartTruckEditor.Enable(False)
 			self.btnStartTerrainEditor.Enable(False)
 			#self.btnBugReport.Enable(False)
 			self.lblRoRDir.SetLabel("Please select Rigs of Rods Directory!")
 		else:
-			self.btnStartRoR.Enable(True)
+			#self.btnStartRoR.Enable(True)
 			#self.btnStartTruckEditor.Enable(True)
 			self.btnStartTerrainEditor.Enable(True)
 			#self.btnBugReport.Enable(True)
@@ -259,7 +259,7 @@ class SettingsDialog(wx.Frame):
 		sizer_a.Add(self.lblRoRDir, 0, wx.EXPAND, 0)
 		sizer_a.Add(self.btnSelectRoRDir, 0, wx.EXPAND, 0)
 		#sizer_c.Add(self.btnStartTruckEditor, 1, wx.EXPAND, 0)
-		sizer_a.Add(self.btnStartRoR, 0, wx.EXPAND, 0)
+		#sizer_a.Add(self.btnStartRoR, 0, wx.EXPAND, 0)
 		sizer_a.Add(self.btnStartTerrainEditor, 1, wx.EXPAND, 0)
 
 		if sys.platform == 'win32':
