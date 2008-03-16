@@ -93,7 +93,10 @@ def initResources(rordir):
 	ogre.ResourceGroupManager.getSingleton().addResourceLocation("media/materials", "FileSystem", "General", False)
 	ogre.ResourceGroupManager.getSingleton().addResourceLocation("media/models", "FileSystem", "General", False)
 	
-	ogre.ResourceGroupManager.getSingleton().initialiseAllResourceGroups()
+	try:
+		ogre.ResourceGroupManager.getSingleton().initialiseAllResourceGroups()
+	except Exception, e:
+		print str(e)
 	
 def loadResourceFile(filename):
 	content = []
