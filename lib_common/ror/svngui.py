@@ -7,6 +7,9 @@ from subprocess import Popen
 from ror.logger import log
 from ror.settingsManager import getSettingsManager
 
+# these functions are deprecated
+
+"""
 import svn
 
 import wx, os, os.path
@@ -51,3 +54,4 @@ class svnUpdate():
         #self.pr.Update(self.changes % 100, msg)
         self.pr.Pulse(msg)
         
+"""
