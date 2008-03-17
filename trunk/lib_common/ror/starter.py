@@ -153,14 +153,14 @@ class SettingsDialog(wx.Frame):
 		gui.Show()
 		del gui
 
-	def OnUpdate(self, event=None):
-		import svngui
-		gui = svngui.svnUpdate()
-		del gui
+	#def OnUpdate(self, event=None):
+		#import svngui
+		#gui = svngui.svnUpdate()
+		#del gui
 
-	def checkForUpdate(self):
-		import svn
-		return svn.checkForUpdate()
+	#def checkForUpdate(self):
+	#	import svn
+	#	return svn.checkForUpdate()
 
 
 	def OnStartRoR(self, event=None):
@@ -245,8 +245,8 @@ class SettingsDialog(wx.Frame):
 
 	def __set_properties(self):
 		#try:
-		import ror.svn
-		self.SetTitle("RoR Toolkit r%d" % ror.svn.getRevision())
+		#import ror.svn
+		self.SetTitle("RoR Toolkit 0.34")
 		#except:
 		#    self.SetTitle("RoR Toolkit")
 

@@ -1,4 +1,6 @@
 #Thomas Fischer 28/06/2007, thomas@thomasfischer.biz
+# this functions are deprecated
+"""
 import sys, os, os.path
 try:
     import pysvn
@@ -30,12 +32,13 @@ def notify(event_dict):
     log().info(str(event_dict['action']) + ", " + event_dict['path'])
 
 def getRevision(client=None, path=None):
-    if client is None:
-        client = pysvn.Client()
-    if  path is None:
-         path = getRootPath()
-    info = client.info(path)
-    return info['revision'].number
+    #if client is None:
+    #    client = pysvn.Client()
+    #if  path is None:
+    #     path = getRootPath()
+    #info = client.info(path)
+    #return info['revision'].number
+	return -1
 
 def checkForUpdate():
     client = pysvn.Client()
@@ -163,5 +166,5 @@ def run():
         svnupdate()
         restoreBackup()
     else:
-        svncheckout()
-        
+        svncheckout()    
+"""

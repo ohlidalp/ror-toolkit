@@ -1,5 +1,7 @@
 import sys, os, os.path
 
+# deprecated
+"""
 def main():
 	if sys.platform in ['linux', 'linux2']:
 		sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib_common"))
@@ -22,6 +24,8 @@ def main():
 		#non-gui version:
 		import ror.svn
 		ror.svn.run()
-
+"""
+		
 if __name__=="__main__":
-	main()
+	print "this tool is deprecated, please do not use it anymore"
+	#main()
