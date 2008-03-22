@@ -66,9 +66,7 @@ class RoRTruckOgreWindow(wxOgreWindow):
 
 
 	def OnFrameStarted(self):
-		if self.enablephysics:
-			self.World.update(TIMER)
-			self.updateBeams()
+		pass
 
 	def OnFrameEnded(self):
 		pass
@@ -699,8 +697,6 @@ class RoRTruckOgreWindow(wxOgreWindow):
 								ogre.PM_POINTS ]
 				self.sceneDetailIndex = (self.sceneDetailIndex + 1) % len(detailsLevel)
 				self.camera.polygonMode=detailsLevel[self.sceneDetailIndex]
-			elif event.m_keyCode == 81: # Q, wx.WXK_LEFT:
-				self.enablephysics = not self.enablephysics
 		else:
 			if event.m_keyCode == 65: # A, wx.WXK_LEFT:
 				self.camera.moveRelative(ogre.Vector3(-d,0,0))
