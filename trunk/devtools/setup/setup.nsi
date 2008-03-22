@@ -43,7 +43,7 @@ CRCCheck on
 ; License page
 !insertmacro MUI_PAGE_LICENSE "readme-installer.txt"
 ; Components page
-!insertmacro MUI_PAGE_COMPONENTS
+;!insertmacro MUI_PAGE_COMPONENTS
 ; Directory page
 !insertmacro MUI_PAGE_DIRECTORY
 ; Instfiles page
@@ -78,13 +78,13 @@ CRCCheck on
 ; Reserve files
 !insertmacro MUI_RESERVEFILE_INSTALLOPTIONS
 
-InstType /NOCUSTOM
-InstType "full"
-InstType "minimal"
+;InstType /NOCUSTOM
+;InstType "full"
+;InstType "minimal"
 ; MUI end ------
 
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
-OutFile "RoRToolkitSetup.exe"
+OutFile "RoRToolkit-0.34-rc3-Setup.exe"
 InstallDir "$PROGRAMFILES\Rigs of Rods 0.34 Toolkit"
 ;InstallDir "c:\rortoolkit"
 ShowInstDetails show
@@ -236,12 +236,12 @@ Section "!RoR Toolkit" SEC04
 SectionEnd
 
 
-!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
-!insertmacro MUI_DESCRIPTION_TEXT ${SEC01} "python 2.5"
-!insertmacro MUI_DESCRIPTION_TEXT ${SEC02} "required Tools (directX)"
-!insertmacro MUI_DESCRIPTION_TEXT ${SEC03} "optional Tools (PyWin32 for bugreporting, PyParsing and GraphViz for Dependency Graphs)"
-!insertmacro MUI_DESCRIPTION_TEXT ${SEC04} "the RoR Toolkit. It includes the Truckeditor, Terraineditor and various other tools"
-!insertmacro MUI_FUNCTION_DESCRIPTION_END
+;!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+;!insertmacro MUI_DESCRIPTION_TEXT ${SEC01} "python 2.5"
+;!insertmacro MUI_DESCRIPTION_TEXT ${SEC02} "required Tools (directX)"
+;!insertmacro MUI_DESCRIPTION_TEXT ${SEC03} "optional Tools (PyWin32 for bugreporting, PyParsing and GraphViz for Dependency Graphs)"
+;!insertmacro MUI_DESCRIPTION_TEXT ${SEC04} "the RoR Toolkit. It includes the Truckeditor, Terraineditor and various other tools"
+;!insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 ;Function "LaunchPostInstallation"
 ;  ReadEnvStr $0 SYSTEMDRIVE
@@ -253,10 +253,10 @@ Section -AdditionalIcons
   #ReadEnvStr $0 SYSTEMDRIVE
   SetOutPath $INSTDIR
   WriteIniStr "$INSTDIR\${PRODUCT_NAME}.url" "InternetShortcut" "URL" "${PRODUCT_WEB_SITE}"
-  CreateDirectory "$SMPROGRAMS\RoRToolkit"
-  CreateShortCut "$SMPROGRAMS\Rigs of Rods Toolkit\Website.lnk" "$INSTDIR\${PRODUCT_NAME}.url"
-  CreateShortCut "$SMPROGRAMS\Rigs of Rods Toolkit\Uninstall.lnk" "$INSTDIR\uninst.exe"
-  CreateShortCut '$SMPROGRAMS\Rigs of Rods Toolkit\Start Toolkit.lnk' '$INSTDIR\rortoolkit.py' '' '$INSTDIR\ror.ico'
+  CreateDirectory "$SMPROGRAMS\Rigs of Rods 0.34 Toolkit"
+  CreateShortCut "$SMPROGRAMS\Rigs of Rods 0.34 Toolkit\Website.lnk" "$INSTDIR\${PRODUCT_NAME}.url"
+  CreateShortCut "$SMPROGRAMS\Rigs of Rods 0.34 Toolkit\Uninstall.lnk" "$INSTDIR\uninst.exe"
+  CreateShortCut '$SMPROGRAMS\Rigs of Rods 0.34 Toolkit\Start Toolkit.lnk' '$INSTDIR\start.bat' '' '$INSTDIR\ror.ico'
 SectionEnd
 
 Section -Post
@@ -285,7 +285,7 @@ Section Uninstall
   Delete "$INSTDIR\uninst.exe"
   RMDir  "/r" "$INSTDIR"
 
-  RMDir  "/r" "$SMPROGRAMS\RoRToolkit"
+  RMDir  "/r" "$SMPROGRAMS\Rigs of Rods 0.34 Toolkit"
   Delete "$STARTMENU.lnk"
   RMDir  "$INSTDIR"
   
