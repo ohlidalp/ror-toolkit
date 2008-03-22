@@ -348,5 +348,3 @@ class ODefEditorOgreWindow(wxOgreWindow):
 							ogre.PM_POINTS ]
 			self.sceneDetailIndex = (self.sceneDetailIndex + 1) % len(detailsLevel)
 			self.camera.polygonMode=detailsLevel[self.sceneDetailIndex]
-		elif event.m_keyCode == 81: # Q, wx.WXK_LEFT:
-			self.enablephysics = not self.enablephysics

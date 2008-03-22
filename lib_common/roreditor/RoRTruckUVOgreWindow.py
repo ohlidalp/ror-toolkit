@@ -11,7 +11,7 @@ from wxogre.OgreManager import *
 from wxogre.wxOgreWindow import *
 
 import ogre.renderer.OGRE as Ogre
-import ogre.physics.OgreNewt as OgreNewt
+#import ogre.physics.OgreNewt as OgreNewt
 import ogre.io.OIS as OIS
 
 IMGSCALE = 20
