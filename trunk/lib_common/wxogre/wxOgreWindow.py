@@ -3,6 +3,17 @@ import wx
 import ogre.renderer.OGRE as ogre 
 from wxogre.OgreManager import *
 
+# Standard python imports
+import ctypes as __ctypes
+import os.path as __path
+
+# Library Imports
+import wx as __wx
+
+if getPlatform() == 'linux':
+    # import gethandle workaround:
+    from wxogre_util import get_window_handle_str
+
 class wxOgreWindow(wx.PyWindow): 
     def __init__(self, parent, ID, size = wx.Size(200,200), **kwargs): 
         """
@@ -14,7 +25,7 @@ class wxOgreWindow(wx.PyWindow):
         wx.PyWindow.__init__(self, parent, ID, size = size, **kwargs) 
         self.parent = parent 
 
- 
+
         #Event bindings 
         self.Bind(wx.EVT_CLOSE,            self._OnCloseWindow) 
         self.Bind(wx.EVT_ERASE_BACKGROUND, self._OnEraseBackground) 
@@ -24,7 +35,14 @@ class wxOgreWindow(wx.PyWindow):
         self.ogreRoot = getOgreManager().getRoot()
 
         # create a new RenderWindow
-        self.renderWindow = getOgreManager().createRenderWindow(self, "wxPythonWxOgreRenderWindow", size[0], size[1], False, self.GetHandle())
+        handle = ""
+        if getPlatform() == 'linux':
+            handle = get_window_handle_str(self)
+        else:
+            handle = str(self.GetHandle())
+        #print "> window handle: " + handle
+        
+        self.renderWindow = getOgreManager().createRenderWindow(self, "wxPythonWxOgreRenderWindow", size[0], size[1], False, handle)
         self.renderWindow.active = True 
         
         try:
