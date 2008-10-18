@@ -66,6 +66,8 @@ class RoRTerrain:
 		content = loadResourceFile(filename)
 		self.beamobj = []
 		self.objects = []
+		self.beamobjs = []
+		self.procroads = []
 		log().info("processing terrain file: %s" % filename)
 		self.processTerrnFile(content)
 		#self.FixTerrainConfig(os.path.join(os.path.dirname(filename), self.TerrainConfig))        
