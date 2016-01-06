@@ -6,7 +6,7 @@
 # Author:       Pierre Hjälm (from C++ original by Julian Smart)
 #
 # Created:      2004-05-08
-# RCS-ID:       $Id: _divided.py,v 1.3 2004/09/18 17:21:57 RD Exp $
+# RCS-ID:       $Id: _divided.py 29206 2004-09-18 17:21:57Z RD $
 # Copyright:    (c) 2004 Pierre Hjälm - 1998 Julian Smart
 # Licence:      wxWindows license
 #----------------------------------------------------------------------------

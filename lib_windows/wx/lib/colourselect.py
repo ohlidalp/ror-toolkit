@@ -140,15 +140,17 @@ class ColourSelect(wx.BitmapButton):
 
     def SetBitmap(self, bmp):
         self.SetBitmapLabel(bmp)
-        self.SetBitmapSelected(bmp)
-        self.SetBitmapDisabled(bmp)
-        self.SetBitmapFocus(bmp)
-        self.SetBitmapSelected(bmp)
+        #self.SetBitmapSelected(bmp)
+        #self.SetBitmapDisabled(bmp)
+        #self.SetBitmapFocus(bmp)
+        #self.SetBitmapSelected(bmp)
         self.Refresh()
         
 
     def OnChange(self):
-        wx.PostEvent(self, ColourSelectEvent(self.GetId(), self.GetValue()))
+        evt = ColourSelectEvent(self.GetId(), self.GetValue())
+        evt.SetEventObject(self)
+        wx.PostEvent(self, evt)
         if self.callback is not None:
             self.callback()
 

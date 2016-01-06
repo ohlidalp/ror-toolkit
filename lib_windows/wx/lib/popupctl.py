@@ -6,9 +6,13 @@
 #
 # Created:      2002/11/20
 # Version:      0.1
-# RCS-ID:       $Id: popupctl.py,v 1.8 2004/05/02 02:41:24 RD Exp $
+# RCS-ID:       $Id: popupctl.py 55187 2008-08-23 02:20:11Z RD $
 # License:      wxWindows license
 #----------------------------------------------------------------------
+# 11/24/2007 - Cody Precord
+#
+# o Use RendererNative to draw button
+#
 # 12/09/2003 - Jeff Grimmett (grimmtooth@softhome.net)
 #
 # o 2.5 compatability update.
@@ -25,28 +29,15 @@ from wx.lib.buttons import GenButtonEvent
 
 class PopButton(wx.PyControl):
     def __init__(self,*_args,**_kwargs):
-        apply(wx.PyControl.__init__,(self,) + _args,_kwargs)
+        wx.PyControl.__init__(self, *_args, **_kwargs)
 
         self.up = True
         self.didDown = False
-
-        self.InitColours()
 
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
         self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
         self.Bind(wx.EVT_MOTION, self.OnMotion)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
-
-    def InitColours(self):
-        faceClr = wx.SystemSettings_GetColour(wx.SYS_COLOUR_BTNFACE)
-        self.faceDnClr = faceClr
-        self.SetBackgroundColour(faceClr)
-
-        shadowClr    = wx.SystemSettings_GetColour(wx.SYS_COLOUR_BTNSHADOW)
-        highlightClr = wx.SystemSettings_GetColour(wx.SYS_COLOUR_BTNHIGHLIGHT)
-        self.shadowPen    = wx.Pen(shadowClr, 1, wx.SOLID)
-        self.highlightPen = wx.Pen(highlightClr, 1, wx.SOLID)
-        self.blackPen     = wx.Pen(wx.BLACK, 1, wx.SOLID)
 
     def Notify(self):
         evt = GenButtonEvent(wx.wxEVT_COMMAND_BUTTON_CLICKED, self.GetId())
@@ -97,52 +88,15 @@ class PopButton(wx.PyControl):
                     return
         event.Skip()
 
-    def DrawBezel(self, dc, x1, y1, x2, y2):
-        # draw the upper left sides
-        if self.up:
-            dc.SetPen(self.highlightPen)
-        else:
-            dc.SetPen(self.shadowPen)
-        for i in range(2):
-            dc.DrawLine(x1+i, y1, x1+i, y2-i)
-            dc.DrawLine(x1, y1+i, x2-i, y1+i)
-
-        # draw the lower right sides
-        if self.up:
-            dc.SetPen(self.shadowPen)
-        else:
-            dc.SetPen(self.highlightPen)
-        for i in range(2):
-            dc.DrawLine(x1+i, y2-i, x2+1, y2-i)
-            dc.DrawLine(x2-i, y1+i, x2-i, y2)
-
-    def DrawArrow(self,dc):
-        w, h = self.GetSize()
-        mx = w / 2
-        my = h / 2
-        dc.SetPen(self.highlightPen)
-        dc.DrawLine(mx-5,my-5, mx+5,my-5)
-        dc.DrawLine(mx-5,my-5, mx,my+5)
-        dc.SetPen(self.shadowPen)
-        dc.DrawLine(mx+4,my-5, mx,my+5)
-        dc.SetPen(self.blackPen)
-        dc.DrawLine(mx+5,my-5, mx,my+5)
-
     def OnPaint(self, event):
-        width, height = self.GetClientSize()
-        x1 = y1 = 0
-        x2 = width - 1
-        y2 = height - 1
         dc = wx.BufferedPaintDC(self)
         if self.up:
-            dc.SetBackground(wx.Brush(self.GetBackgroundColour(), wx.SOLID))
+            flag = wx.CONTROL_CURRENT
         else:
-            dc.SetBackground(wx.Brush(self.faceDnClr, wx.SOLID))
-        dc.Clear()
-        self.DrawBezel(dc, x1, y1, x2, y2)
-        self.DrawArrow(dc)
+            flag = wx.CONTROL_PRESSED
+        wx.RendererNative.Get().DrawComboBoxDropButton(self, dc, self.GetClientRect(), flag)
 
-
+        
 #---------------------------------------------------------------------------
 
 
@@ -196,29 +150,46 @@ class PopupControl(wx.PyControl):
     def __init__(self,*_args,**_kwargs):
         if _kwargs.has_key('value'):
             del _kwargs['value']
-        apply(wx.PyControl.__init__,(self,) + _args,_kwargs)
+        style = _kwargs.get('style', 0)
+        if (style & wx.BORDER_MASK) == 0:
+            style |= wx.BORDER_NONE
+            _kwargs['style'] = style
+        wx.PyControl.__init__(self, *_args, **_kwargs)
 
-        self.textCtrl = wx.TextCtrl(self,-1,'',pos = (0,0))
-        self.bCtrl = PopButton(self,-1)
+        self.textCtrl = wx.TextCtrl(self, wx.ID_ANY, '', pos = (0,0))
+        self.bCtrl = PopButton(self, wx.ID_ANY, style=wx.BORDER_NONE)
         self.pop = None
         self.content = None
-        self.OnSize(None)
-
+        
         self.Bind(wx.EVT_SIZE, self.OnSize)
         self.bCtrl.Bind(wx.EVT_BUTTON, self.OnButton, self.bCtrl)
-        # embedded control should get focus on TAB keypress
         self.Bind(wx.EVT_SET_FOCUS, self.OnFocus)
 
+        self.SetInitialSize(_kwargs.get('size', wx.DefaultSize))
+        self.SendSizeEvent()
+        
+        
     def OnFocus(self,evt):
+        # embedded control should get focus on TAB keypress
         self.textCtrl.SetFocus()
         evt.Skip()
 
-    def OnSize(self,evt):
-        w,h = self.GetClientSize()
-        self.textCtrl.SetDimensions(0,0,w-17,h)
-        self.bCtrl.SetDimensions(w-17,0,17,h)
 
-    def OnButton(self,evt):
+    def OnSize(self, evt):
+        # layout the child widgets
+        w,h = self.GetClientSize()
+        self.textCtrl.SetDimensions(0, 0, w - self.marginWidth - self.buttonWidth, h)
+        self.bCtrl.SetDimensions(w - self.buttonWidth, 0, self.buttonWidth, h)
+
+    def DoGetBestSize(self):
+        # calculate the best size of the combined control based on the
+        # needs of the child widgets.
+        tbs = self.textCtrl.GetBestSize()
+        return wx.Size(tbs.width + self.marginWidth + self.buttonWidth,
+                       tbs.height)
+    
+
+    def OnButton(self, evt):
         if not self.pop:
             if self.content:
                 self.pop = PopupDialog(self,self.content)
@@ -228,12 +199,14 @@ class PopupControl(wx.PyControl):
         if self.pop:
             self.pop.Display()
 
-    def Enable(self,flag):
+
+    def Enable(self, flag):
         wx.PyControl.Enable(self,flag)
         self.textCtrl.Enable(flag)
         self.bCtrl.Enable(flag)
 
-    def SetPopupContent(self,content):
+
+    def SetPopupContent(self, content):
         if not self.pop:
             self.content = content
             self.content.Show(False)
@@ -247,12 +220,30 @@ class PopupControl(wx.PyControl):
         if self.pop:
             self.pop.EndModal(1)
 
-    def SetValue(self,value):
+    def SetValue(self, value):
         self.textCtrl.SetValue(value)
 
     def GetValue(self):
         return self.textCtrl.GetValue()
 
+    def SetFont(self, font):
+        self.textCtrl.SetFont(font)
+
+    def GetFont(self):
+        return self.textCtrl.GetFont()
+
+
+    def _get_marginWidth(self):
+        if 'wxMac' in wx.PlatformInfo:
+            return 6
+        else:
+            return 3
+    marginWidth = property(_get_marginWidth)
+
+    def _get_buttonWidth(self):
+        return 20
+    buttonWidth = property(_get_buttonWidth)
+    
 
 # an alias
 PopupCtrl = PopupControl

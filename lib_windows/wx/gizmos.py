@@ -358,7 +358,7 @@ wx.TREE_HITTEST_ONITEMCOLUMN = TREE_HITTEST_ONITEMCOLUMN
 TR_COLUMN_LINES = _gizmos.TR_COLUMN_LINES
 TR_VIRTUAL = _gizmos.TR_VIRTUAL
 wx.TR_COLUMN_LINES = TR_COLUMN_LINES
-wxTR_VIRTUAL = TR_VIRTUAL    
+wx.TR_VIRTUAL = TR_VIRTUAL    
 
 #// Compatibility aliases for old names/values
 TL_ALIGN_LEFT   = wx.ALIGN_LEFT
@@ -745,6 +745,14 @@ class TreeListCtrl(_core.Control):
         """GetItemParent(self, TreeItemId item) -> TreeItemId"""
         return _gizmos.TreeListCtrl_GetItemParent(*args, **kwargs)
 
+    def GetCurrentItem(*args, **kwargs):
+        """GetCurrentItem(self) -> TreeItemId"""
+        return _gizmos.TreeListCtrl_GetCurrentItem(*args, **kwargs)
+
+    def SetCurrentItem(*args, **kwargs):
+        """SetCurrentItem(self, TreeItemId newItem)"""
+        return _gizmos.TreeListCtrl_SetCurrentItem(*args, **kwargs)
+
     def GetFirstChild(*args, **kwargs):
         """GetFirstChild(self, TreeItemId item) -> PyObject"""
         return _gizmos.TreeListCtrl_GetFirstChild(*args, **kwargs)
@@ -875,10 +883,7 @@ class TreeListCtrl(_core.Control):
         return _gizmos.TreeListCtrl_UnselectAll(*args, **kwargs)
 
     def SelectItem(*args, **kwargs):
-        """
-        SelectItem(self, TreeItemId item, TreeItemId last=(wxTreeItemId *) NULL, 
-            bool unselect_others=True)
-        """
+        """SelectItem(self, TreeItemId item, TreeItemId last=None, bool unselect_others=True)"""
         return _gizmos.TreeListCtrl_SelectItem(*args, **kwargs)
 
     def SelectAll(*args, **kwargs):
@@ -940,6 +945,7 @@ class TreeListCtrl(_core.Control):
     Selection = property(GetSelection,doc="See `GetSelection`") 
     Selections = property(GetSelections,doc="See `GetSelections`") 
     StateImageList = property(GetStateImageList,SetStateImageList,doc="See `GetStateImageList` and `SetStateImageList`") 
+    CurrentItem = property(GetCurrentItem,SetCurrentItem) 
 _gizmos.TreeListCtrl_swigregister(TreeListCtrl)
 
 def PreTreeListCtrl(*args, **kwargs):

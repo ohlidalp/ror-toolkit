@@ -1,78 +1,267 @@
-import wx, os, os.path, copy
 
+#Lepes: various updates to this file. 
+# latest update date: 21 feb 2009
+# 
+ 
+
+import wx, os, os.path, copy
 import ogre.renderer.OGRE as ogre
 from logger import log
-from settingsManager import getSettingsManager
+from settingsManager import *
 from ror.rorcommon import *
+from lputils import *
+from roreditor.RoRConstants import *
 
-class Object:
-	x = None
-	y = None
-	z = None
-	rotx = None
-	roty = None
-	rotz = None
-	name = ""
-	filename = ""
-	line = 0
-	additionaloptions = []
-	comments = []
-	mayRotate = True
-	type=""
-	
-	error = None
-	deleted=False
-	
-	def setPosition(self, x, y, z):
-		self.x = x
-		self.y = y
-		self.z = z
+from types import *
+#from ogre.renderer.OGRE._ogre_ import *
 
-	def setRotation(self, x, y, z):
-		self.rotx = x
-		self.roty = y
-		self.rotz = z
+strErrors = "Errors: \n"
+noRotateObjects = ['truck', 'load', 'machine', 'airplane', 'boat', 'fixed']
+noRotateExt = ['.truck', '.load', '.machine', '.airplane', '.boat', '.fixed']
+
+class Object(object):
+# Lepes: those variables are initialized with the module instantiation instead of the object instance 
+#		 so they are moved to __init__ method :-|
+#	x = None
+#	y = None
+#	z = None
+#	rotx = None
+#	roty = None
+#	rotz = None
+#	name = ""
+#	line = 0
+#	additionalOptions = []
+#	comments = []
+#	mayRotate = True
+#	type = ""
+#	error = None
+#	deleted = False
+#	modified = True
+
+	
+	def __del__(self):
+#		super(Object, self).__del__()
+		pass
+
+	def __init__(self):
+		self._scale = 1, 1, 1
+		self._fileWithExt = ""
+		self.barename = ""
+		self.ext = ""
+
+		""" clear variables that are 
+		ONLY before __init__ method"""
+		self.x = None
+		self.y = None
+		self.z = None
+		self.rotx = None
+		self.roty = None
+		self.rotz = None
+		self.name = ""
+		self.line = 0 
+		self.additionalOptions = []
+		self.comments = []
+		self.mayRotate = True
+		self.type = ""
+		self.error = None
+		self.deleted = False
+		self.isBeam = False #needed to know if it is linked into beamObjs or Objects to free memory
+		self.line = -1 # there is no file line for this object
+		self.spline = ''
 		
+		self.modified = True
+		""" when loading and saving to file is changed to False
+		   if TerrainOgreWindow create an object, it will be True.
+		"""
+		
+		self.strPosRot = [] 
+		# position and rotation readed from .terrn file in string format, avoid to convert
+		# from string to float and viceversa due floats imprecision if object wasn't modified by user
+
+	def getallposition(self):
+		return self.x, self.y, self.z
+	   
+	def setallposition(self, value):
+		self.x, self.y, self.z = value
+
+	def getallrotation(self):
+		return self.rotx, self.roty, self.rotz
+	   
+	def setallrotation(self, value):
+		self.rotx, self.roty, self.rotz = value
+
+	def getpositionRotation(self):
+		return position, rotation
+	   
+	def setpositionRotation(self, value):
+		self.x, self.y, self.z, self.rotx, self.roty, self.rotz = value
+   
+	def allowSection72(self):
+		""" return true if this entry allow custom
+		7-2 section of terrain, in example 'village Coldwater'
+		
+		Special entries as Truckshop doesn't allow
+		that user uses custom values
+		"""
+
+		return self.type == hardcoded['terrain']['objecttype']['.odef'] and not self.name in FIXEDENTRIES
+	
+	def clearAdditionalOptions(self):
+		self.additionalOptions = []
+	
+	def CheckNewAdditionalOptions(self, qualifier, name):
+		""" Object Inspector allows to set up section 7-2 
+		for example: observatory qualifier Name
+		
+		qualifier is hardcoded for files in textures.zip with "icon_" prefix
+		name already uses underscores instead spaces.
+		
+		"""
+		if self.allowSection72():
+			self.additionalOptions = []
+			self.additionalOptions.append(qualifier)
+			self.additionalOptions.append(name)
+			return True
+		else:
+			return False
+		
+	def getScale(self):
+		return self._scale
+	   
+	def setScale(self, value):
+		self._scale = value
+	
+	def _getfileWithExt(self):
+		if self.ext == "": return self._fileWithExt + '.odef' 
+		return self._fileWithExt
+		   
+	def _setfileWithExt(self, value):
+		""" can receive:  
+		chapel.odef
+		wrecker.truck """
+		self.barename, self.ext = os.path.splitext(os.path.basename(value))
+		self.name = self.barename 
+		# only filename with ext (without path) 
+		self._fileWithExt = value
+		if self.ext != "":
+			if hardcoded['terrain']['objecttype'].has_key(self.ext.lower()):
+				self.type = hardcoded['terrain']['objecttype'][self.ext.lower()]
+	   
+	fileWithExt = property(_getfileWithExt, _setfileWithExt,
+					 doc="""Only Filename with Extension""")
+	scale = property(getScale, setScale,
+				 doc="sometimes used")
+
+	position = property(getallposition, setallposition,
+				 doc="Shortcuta to x, y, z variables")
+	rotation = property(getallrotation, setallrotation,
+				 doc="Shortcuta to rotx, roty, rotz")
+
+	positionRotation = property(getpositionRotation, setpositionRotation,
+				 doc="")	
+	
+	def setPosition(self, value):
+		setallposition(value)
+		
+	def setRotation(self, value):
+		setallrotation(value)
+
 	def __str__(self):
-		return "Terrain entry: "+self.filename
-	
+		return "Terrain entry: " + self._fileWithExt
+	def vector(self, text):
+		return ("%12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %s" % (self.x, self.y, self.z, self.rotx, self.roty, self.rotz, text))
+		
+			   
+	def logPosRot(self, text):
+		log().info(self.vector(text))
 
-class RoRTerrain:
-	filename = ""
-	TerrainName = ""
-	TerrainConfig = ""
-	filename = ""
+class RoRTerrain(object):
 
-	beamobjs = []
-	objects = []
-	procroads = []
-	
-	UsingCaelum = False
-	WaterHeight = None
-	SkyColor = None
-	SkyColorLine = None
-	TruckStartPosition = None
-	CameraStartPosition = None
-	CharacterStartPosition = None
-
-	def saveFile(self, filename, lines):
-		f = open(filename, 'w')
-		f.writelines(lines)
-		f.close()
-	
+	def geterrorSaving(self):
+		return self._errorSaving
+	   
+	def seterrorSaving(self, value):
+		if value == "" or value == None:
+			self._errorSaving = ""
+		else:
+			if self._errorSaving is "":
+				self._errorSaving = strErrors 
+			self._errorSaving += "\n- " + value 
+		
+	errorSaving = property(geterrorSaving, seterrorSaving,
+				 doc="string error with errors while saving")   
 
 	def __init__(self, filename):
+#		self.clear()
+		self.initVariables()
 		self.filename = filename
+		self.name = os.path.split(filename)[1].split(".")[0]
+		self._errorSaving = ""
 		content = loadResourceFile(filename)
-		self.beamobj = []
-		self.objects = []
-		self.beamobjs = []
-		self.procroads = []
 		log().info("processing terrain file: %s" % filename)
-		self.processTerrnFile(content)
-		#self.FixTerrainConfig(os.path.join(os.path.dirname(filename), self.TerrainConfig))        
+		if len(content) > 2:
+			self.processTerrnFile(content)
+			self.getTerrainSize(self.TerrainConfig)
+		else:
+			log().error("valid terrain must have at least 3 lines")
 		log().info("processing of terrain finished!")
+	def initVariables(self):
+		self.TruckStartPosition = 	 positionClass()
+		self.CameraStartPosition = 	positionClass()
+		self.CharacterStartPosition = positionClass()
 
+#	def clear(self):
+		self.objects = []
+		self.beamobjs = [] # lepes: bug found, this line was missing so it loaded twice  // author and the following lines !!
+		self.procroads = []
+		# only filename with extension
+		self.filename = ''
+		# name is filename without extension, useful for launching RoR command line
+		self.name = ''
+		self.TerrainConfig = ''
+		#name to show on Menu
+		self.TerrainName = ''
+	
+		self.UsingCaelum = False
+		self.WaterHeight = None
+		self.SkyColor = None
+		self.SkyColorLine = None
+		self.worldX = None
+		self.worldZ = None
+		self.worldMaxY = None
+		self.author = []
+		self.cubemap = None	
+
+	def __del__(self):
+		del self.objects
+		del self.beamobjs
+		del self.procroads
+		del self.TruckStartPosition
+		del self.CameraStartPosition
+		del self.CharacterStartPosition
+#		super(RoRTerrain, self).__del__()
+	
+	def getTerrainSize(self, cfgFile):
+		try:
+			lines = loadResourceFile(cfgFile)
+			for line in lines:
+				if line.lower().strip()[:11] == 'pageworldx=':
+					self.worldX = int(line.lower().strip()[11:])
+				if line.lower().strip()[:11] == 'pageworldz=':
+					self.worldZ = int(line.lower().strip()[11:])
+				if line.lower().strip()[:10] == 'maxheight=':
+					self.worldMaxY = float(line.lower().strip()[10:])
+				
+		except:
+			log().info("can not get size of the terrain (world dimensions) file: %s" % cfgFile)
+			
+	def isInWorld(self, vector):
+		if self.worldX and self.worldZ:
+			if vector.x > 0 and vector.x < self.worldX:
+				if vector.z > 0 and vector.z < self.worldZ:
+					return True
+		return False
+	
 	def FixTerrainConfig(self, filename):
 		# this is deprecated!
 		return
@@ -85,26 +274,37 @@ class RoRTerrain:
 		self.saveFile(filename, content)
 		
 	def processTerrnFile(self, content):
+		currentspline = ''
+		self._errorSaving = ""
 		linecounter = 0
-		comm = []
-		treemode=False
-		procroad=False
-		procroadlines=[]
+		comm = [] #comments added to the next object added
+		treemode = False
+		procroad = False
+		procroadlines = []
 		for i in range(0, len(content)):
 			# convert tabs to spaces!
 			content[i] = content[i].replace("\t", " ")
-		
 			if treemode:
 				comm.append(content[i])
 				if content[i].strip()[:8] == "tree_end":
-					treemode=False
+					treemode = False
 				continue
+			if content[i].lower()[:10] == '// splines':
+				v = content[i].lower().split(' ')
+				if len(v) > 2:
+					currentspline = v[2]
+				else:
+					currentspline = ''
+				continue
+			
 			if procroad:
-				procroadlines.append(content[i].strip().split(','))
 				if content[i].strip()[:20] == "end_procedural_roads":
-					procroad=False
-					self.procroads.append(copy.copy(procroadlines))
+					procroad = False
+					self.procroads.append(procroadlines[:len(procroadlines)])
+					procroadlines = [] #clear for next procroad
 					# process now
+				else:
+					procroadlines.append(content[i].strip().split(','))
 				continue
 				
 			if content[i].strip() == "":
@@ -114,12 +314,23 @@ class RoRTerrain:
 				# ignore editor self made comments (usefull for those error msgs)
 				continue
 			if content[i].strip()[:2] == "//":
-				comm.append(content[i])
+				if content[i].strip().find("author") != -1:
+					self.author.append(content[i].strip()[2:])
+				else:
+					comm.append(content[i])
 				continue
 			if content[i].strip()[:5] == "grass":
 				comm.append(content[i])
 				continue
-			if content[i].strip()[:7] == "mpspawn":
+			if content[i].strip()[:16] == "sandstormcubemap":
+				comm.append(content[i])
+				self.cubemap = content[i][17:]
+				continue
+
+			if content[i].strip()[:16] == "sandstormcubemap":
+				comm.append(content[i])
+				continue
+			if content[i].strip()[:7] == "mapsize": # deprecated !!
 				comm.append(content[i])
 				continue
 			if content[i].strip()[:7] == "mpspawn":
@@ -127,19 +338,25 @@ class RoRTerrain:
 				continue
 			if content[i].strip()[:10] == "tree_begin":
 				comm.append(content[i])
-				treemode=True
+				treemode = True
 				continue
+			if content[i].strip()[:len('landuse-config')] == 'landuse-config':
+				comm.append(content[i])
+				continue
+			if content[i].strip()[:len('trees ')] == 'trees ':
+				comm.append(content[i])
+				continue			
 			if content[i].strip()[:22] == "begin_procedural_roads":
-				procroad=True
+				procroad = True
 				continue
 				
+			
 			if content[i].strip()[0:1] == ";":
 				# bugfix wrong characters!
-				comm.append(content[i].replace(";","//"))
+				comm.append(content[i].replace(";", "//"))
 				continue
 			if content[i].strip().lower() == "end":
 				continue
-			
 			# do not count empty or comment lines!
 			linecounter += 1
 			if linecounter == 1:
@@ -165,151 +382,226 @@ class RoRTerrain:
 			if linecounter < 10  and len(content[i].split(",")) == 9 or len(content[i].split(",")) == 6:
 				# spawning Position
 				sp = content[i].split(",")
-				self.TruckStartPosition = [float(sp[0]), float(sp[1]), float(sp[2])]
+				self.TruckStartPosition.asStrList = [sp[0], sp[1], sp[2] ]
    
-				self.CameraStartPosition = [float(sp[3]), float(sp[4]), float(sp[5])]
+				self.CameraStartPosition.asStrList = [sp[3], sp[4], sp[5] ]
 				if len(sp) == 9:
-					self.CharacterStartPosition = [float(sp[6]), float(sp[7]), float(sp[8])]
+					self.CharacterStartPosition.asStrList = [ sp[6], sp[7], sp[8] ]
 				continue
 
 			arr = content[i].split(",")
 			try:
-				x = float(arr[0])
-				y = float(arr[1])
-				z = float(arr[2])
-				rx = float(arr[3])
-				ry = float(arr[4])
-				rz = float(arr[5])
+				x = round(float(arr[0]), 6)
+				y = round(float(arr[1]), 6)
+				z = round(float(arr[2]), 6)
+				rx = round(float(arr[3]), 1)
+				ry = round(float(arr[4]), 1)
+				rz = round(float(arr[5]), 1)
 				objname = (arr[6]).strip().split(" ")
+				strPosRot = [arr[0], arr[1], arr[2], arr[3], arr[4], arr[5]]
+				objname = [ele.strip() for ele in objname] #strip each element
+				strPosRot = [("%12s" % ele.strip()) for ele in strPosRot] #strip each element 
 			except:
-				log().error("unable to parse line: %s. ignoring it!" % content[i])
+				log().error("unable to parse line %d: %s. ignoring it!" % (i, content[i]))
+				comm.append(content[i])
+				self._errorSaving += " %6d : %s \n" % (i, content[i])
 				continue
 				
-			#print objname
-			if objname[0].lower() in ["truck", "load", "machine", "boat"] and len(objname) > 1:
+			# truck wrecker.truck	
+			if objname[0].lower() in noRotateObjects and len(objname) > 1:
 				#print "truck"
 				truck = Object()
-				truck.name = objname[1]
-				truck.filename = objname[-1].strip()
+				truck.line = i
+				truck.isBeam = True
+				truck.fileWithExt = objname[1]
 				truck.comments = comm
 				comm = []
-				truck.setPosition(x, y, z)
-				truck.setRotation(rx, ry, -rz)
-				#if len(objname)>1:
-				#truck.additionaloptions = objname[2:]
+				truck.position = x, y, z
+				truck.rotation = rx, ry, rz
+				truck.strPosRot = strPosRot 
 				truck.line = i
-				truck.type = objname[0].lower()
-				#truck.mayRotate=False
 				self.beamobjs.append(truck)
+				log().info('adding beamobjs ' + str(truck))
+				truck.modified = False
 				continue
 			
 			#print "object"
 			# now it can just be an static object
-			objectname = objname[0].strip()
 			obj = Object()
-			obj.name = objectname
-			obj.filename = objectname
-			obj.comments = comm
-			obj.line=i
-			comm = []
-			obj.setPosition(x, y, z)
-			obj.setRotation(rx, ry, rz)
-			obj.additionaloptions = objname[1:]
-			self.objects.append(obj)
+			obj.line = i
 			
-		print "number of proceddual roads: %d" % len(self.procroads)
+			#check section 7-2 Terrn_file_description
+			lobj = len(objname)
+			if lobj == 1:													   # chapel
+				obj.fileWithExt = objname[0] 
+				
+			elif lobj == 2:													   
+				if objname[0] in hardcoded['terrain']['objecttype'].values():   #truck wrecker.truck
+					obj.fileWithExt = objname[1]
+					
+				else:														   #smallhouse farm
+					obj.fileWithExt = objname[0]
+					obj.additionalOptions = objname[1:]
+					
+			elif lobj == 3:													   
+				if objname[1] in hardcoded['odef']['event'].values():		   #load-spawner sale Coldwater / bigsign_town sign parameter1 parameter2?? / truckshop shop
+					obj.fileWithExt = objname[0] 
+					obj.type = objname[1]
+					obj.additionalOptions = objname[2:]
+				if obj.type.strip() == "":									  # we are not lucky, may be "smallhouse farm Jhonston"
+					obj.fileWithExt = objname[0]
+					obj.additionalOptions = objname[1:]
+			obj.comments = comm
+			obj.line = i
+			comm = []
+			obj.position = x, y, z
+			obj.rotation = rx, ry, rz
+			obj.strPosRot = strPosRot
+			self.objects.append(obj)
+			obj.modified = False
+			obj.spline = currentspline
+			
+		log().debug("number of procedural roads: %d" % len(self.procroads))
 
-	def getObjectLines(self, object):
+	def getObjectLines(self, obj):
 		lines = []
-
+		linearray = []
+		objname = ""
+		line = "" 
 		# add comments
-		if len(object.comments) > 0:
-			for comment in object.comments:
-				lines.append(comment+"\n")
-
-		# construct objects name
-		#print object.name, object.type
-		objname = object.type+" "+object.name 
-		if len(object.additionaloptions) > 0:
-			objname += " " + " ".join(object.additionaloptions)
-		#print objname
-		
-		
-		# add line itself
-		linearray = [self.formatFloat(object.x),
-					 self.formatFloat(object.y),
-					 self.formatFloat(object.z), 
-					 self.formatFloat(object.rotx),
-					 self.formatFloat(object.roty),
-					 self.formatFloat(object.rotz),
-					 objname]
-		line = ", ".join(linearray)
-		if object.deleted:
-			line = "//"+line
-		
-		if not object.error is None:
-			lines.append("//// the next object had errors, so the terraineditor commented it out:\n")
-			lines.append("//"+line.strip()+"\n")
+		if len(obj.comments) > 0:
+			for comment in obj.comments:
+				lines.append(comment + "\n")
+		if obj.modified:
+			linearray = [self.formatFloat(obj.x),
+						 self.formatFloat(obj.y),
+						 self.formatFloat(obj.z),
+						 self.formatFloatR(obj.rotx),
+						 self.formatFloatR(obj.roty),
+						 self.formatFloatR(obj.rotz)]
+			obj.strPosRot = [self.formatFloat(obj.x),
+						 self.formatFloat(obj.y),
+						 self.formatFloat(obj.z),
+						 self.formatFloatR(obj.rotx),
+						 self.formatFloatR(obj.roty),
+						 self.formatFloatR(obj.rotz)]
+			#FIXME: update strPosRot to the new coordenate ofrdelete strPosRot and test with round
 		else:
-			lines.append(line.strip()+"\n")
+			linearray = obj.strPosRot[:] #new allocated memory
+
+		if obj.type in hardcoded['odef']['event'].values():
+		  objname = obj.barename + " " + obj.type
+
+		elif obj.type != "" and obj.type in hardcoded['terrain']['objecttype'].values():
+			objname = obj.type + " " + obj.fileWithExt
+		else:
+			objname = obj.barename
+		
+		if len(obj.additionalOptions) > 0: 
+			objname = objname + " " + " ".join(obj.additionalOptions)
+		# add line itself
+		linearray.append(objname)
+		line = ", ".join(linearray) 
+		if obj.deleted:
+			line = "//" + line
+		
+		if not obj.error is None:
+			lines.append("//// the next obj had errors, so the terrain editor commented it out:\n")
+			lines.append("//" + line.strip() + "\n")
+		else:
+			lines.append(line.strip() + "\n")
 		return lines
 				
 	def formatFloat(self, fl):
 		return "%12s" % ("%0.6f" % (float(fl)))
 		
+	def formatFloatR(self, fl):
+		return "%12s" % ("%0.6f" % round(float(fl), 1))
 	
-	def save(self, filename = None):
+	def save(self, filename=None):
+		self.errorSaving = ""
 		if filename is None:
-			rordir = getSettingsManager().getSetting("RigsOfRods", "BasePath")
-			filename = os.path.join(rordir, "data", "terrains", self.filename)
-		print "saving terrain as %s" % filename
+			self.errorSaving = "you must supply a filename to save"
+			return False
+
+		log().debug("saving terrain as %s" % filename)
 		lines = []
-		lines.append(self.TerrainName+"\n")
-		lines.append(self.TerrainConfig+"\n")
+		lines.append(self.TerrainName + "\n")
+		lines.append(self.TerrainConfig + "\n")
 		if not self.WaterHeight is None:
-			lines.append("w "+str(self.WaterHeight)+"\n")
+			if self.WaterHeight != 0.0:
+				lines.append("w " + str(self.WaterHeight) + "\n")
 		if self.UsingCaelum:
 			lines.append("caelum\n")
-		lines.append(self.SkyColorLine.strip()+"\n")
-
+		lines.append(self.SkyColorLine.strip() + "\n")
+		errores = ""
 		ar = []
 		try:
-			ar.append(str(self.TruckStartPosition[0]))
-			ar.append(str(self.TruckStartPosition[1]))
-			ar.append(str(self.TruckStartPosition[2]))
+			ar.append(str(self.TruckStartPosition.x))
+			ar.append(str(self.TruckStartPosition.y))
+			ar.append(str(self.TruckStartPosition.z))
 		except Exception, err:
 			log().error(str(err))
+			self.errorSaving = "Bad Truck Start Position"
+			log().error(self.errorSaving)
 		try:
-			ar.append(str(self.CameraStartPosition[0]))
-			ar.append(str(self.CameraStartPosition[1]))
-			ar.append(str(self.CameraStartPosition[2]))
+			ar.append(str(self.CameraStartPosition.x))
+			ar.append(str(self.CameraStartPosition.y))
+			ar.append(str(self.CameraStartPosition.z))
 		except Exception, err:
 			log().error(str(err))
+			self.errorSaving = "Bad Camera Start Position"
+			
 		if not self.CharacterStartPosition is None:
 			try:
-				ar.append(str(self.CharacterStartPosition[0]))
-				ar.append(str(self.CharacterStartPosition[1]))
-				ar.append(str(self.CharacterStartPosition[2]))
+				ar.append(str(self.CharacterStartPosition.x))
+				ar.append(str(self.CharacterStartPosition.y))
+				ar.append(str(self.CharacterStartPosition.z))
 			except Exception, err:
 				log().error(str(err))
-		startline = ", ".join(ar)+"\n"
+				self.errorSaving = "Bad Character Start Position"
+		startline = ", ".join(ar) + "\n"
 		lines.append(startline)
 
-		
+
 		#save trucks
 		for truck in self.beamobjs:
 			trucklines = self.getObjectLines(truck)
 			for l in trucklines:
 				lines.append(l)
-				
-		# save objects                   
-		for object in self.objects:
-			objectlines = self.getObjectLines(object)
+			truck.modified = False
+		
+		#Lepes: save procroads XD
+		for p in self.procroads:
+			lines.append('begin_procedural_roads\n')
+			for l in p:
+				lines.append(', '.join(l) + '\n')
+			lines.append('end_procedural_roads\n')
+		
+		# save objects
+		lastspline = ''				   
+		for objectline in self.objects:
+			objectlines = self.getObjectLines(objectline)
+			if lastspline != objectline.spline:
+				objectlines.insert(0, "// splines %s\n" % objectline.spline)
+				lastspline = objectline.spline
 			for l in objectlines:
 				lines.append(l)
-
+			objectline.modified = False
 		lines.append("end\n")
-		self.saveFile(filename, lines)
-		return True
+		try:
+			f = open(filename, 'w')
+			f.writelines(lines)
+			f.close()
+		except Exception, err:
+			log().error(str(err))
+			self._errorSaving = ("Can not save Terrain, error accessing to disk file:\n %s \n\n Try with Save As...\n" + self._errorSaving) % filename
+			# if exception ocourr, we assert to set modified to True, so it will saved when user choose save As
+			for truck in self.beamobjs:
+				truck.modified = True
+			for objectline in self.objects:
+				objectline.modified = True
+
+		return self.errorSaving == ""
 
 		

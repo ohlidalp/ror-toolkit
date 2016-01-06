@@ -4,7 +4,7 @@
 #
 # Author:      Riaan Booysen
 #
-# RCS-ID:      $Id: img2pyartprov.py,v 1.1 2006/12/02 04:50:45 RD Exp $
+# RCS-ID:      $Id: img2pyartprov.py 51004 2008-01-03 08:17:39Z RD $
 # Copyright:   (c) 2006
 # Licence:     wxPython
 #-----------------------------------------------------------------------------
@@ -51,8 +51,7 @@ class Img2PyArtProvider(wx.ArtProvider):
         if artId.startswith(self.artIdPrefix):
             name = artId[len(self.artIdPrefix):]
             if name in self.catalog:
-                return self.catalog[name].getBitmap()
+                return self.catalog[name].GetBitmap()
 
         return _NULL_BMP
-    
-    
+

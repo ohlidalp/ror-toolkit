@@ -84,7 +84,7 @@ class Colour(_core.Object):
     window colours, etc.  Valid RGB values are in the range 0 to 255.
 
     In wxPython there are typemaps that will automatically convert from a
-    colour name, from a '#RRGGBB' colour hex value string, or from a 3
+    colour name, from a '#RRGGBB' colour hex value string, or from a 3 or 4
     integer tuple to a wx.Colour object when calling C++ methods that
     expect a wxColour.  This means that the following are all
     equivallent::
@@ -94,9 +94,22 @@ class Colour(_core.Object):
         win.SetBackgroundColour('#0000FF')
         win.SetBackgroundColour((0,0,255))
 
+    In addition to the RGB values, the alpha transparency can optionally
+    be set.  This is supported by the typemaps as well as the wx.Colour
+    constructors and setters.  (The alpha value is ignored in many places
+    that take a wx.Colour object, but it is honored in things like wx.GCDC
+    or wx.GraphicsContext.)  Adding an alpha value of 0xC0 (192) to the
+    above samples looks like this:
+
+        win.SetBackgroundColour(wxColour(0,0,255,192))
+        win.SetBackgroundColour('BLUE:C0')
+        win.SetBackgroundColour('#0000FFC0')
+        win.SetBackgroundColour((0,0,255,192))
+
     Additional colour names and their coresponding values can be added
-    using `wx.ColourDatabase`.  Various system colours (as set in the
-    user's system preferences) can be retrieved with
+    using `wx.ColourDatabase`. Also see `wx.lib.colourdb` for a large set
+    of colour names and values.  Various system colours (as set in the
+    user's system preferences or control panel) can be retrieved with
     `wx.SystemSettings.GetColour`.
 
     """
@@ -106,7 +119,7 @@ class Colour(_core.Object):
         """
         __init__(self, byte red=0, byte green=0, byte blue=0, byte alpha=ALPHA_OPAQUE) -> Colour
 
-        Constructs a colour from red, green and blue values.
+        Constructs a colour from red, green, blue and alpha values.
 
         :see: Alternate constructors `wx.NamedColour` and `wx.ColourRGB`.
 
@@ -172,14 +185,15 @@ class Colour(_core.Object):
         """
         return _gdi_.Colour_SetRGB(*args, **kwargs)
 
-    def SetFromName(*args, **kwargs):
+    def SetFromString(self, colourName):
         """
-        SetFromName(self, String colourName)
-
         Sets the RGB intensity values using a colour name listed in
-        ``wx.TheColourDatabase``.
+        ``wx.TheColourDatabase``, or any string format supported by
+        the wxColour typemaps.
         """
-        return _gdi_.Colour_SetFromName(*args, **kwargs)
+        c = wx.NamedColour(colourName)
+        self.Set(c.red, c.green, c.blue, c.alpha)
+    SetFromName = SetFromString
 
     def GetAsString(*args, **kwargs):
         """
@@ -223,9 +237,9 @@ class Colour(_core.Object):
 
     def Get(*args, **kwargs):
         """
-        Get() -> (r, g, b)
+        Get(self, bool includeAlpha=False) -> (r,g,b) or (r,g,b,a)
 
-        Returns the RGB intensity values as a tuple.
+        Returns the RGB intensity values as a tuple, optionally the alpha value as well.
         """
         return _gdi_.Colour_Get(*args, **kwargs)
 
@@ -239,7 +253,15 @@ class Colour(_core.Object):
 
     asTuple = wx._deprecated(Get, "asTuple is deprecated, use `Get` instead")
     def __str__(self):                  return str(self.Get(True))
-    def __repr__(self):                 return 'wx.Colour' + str(self.Get(True))
+
+    # help() can access the stock colors before they are created,  
+    # so make sure there is a this attribute before calling any wrapper method.
+    def __repr__(self): 
+        if hasattr(self, 'this'):
+            return 'wx.Colour' + str(self.Get(True))
+        else:
+            return 'wx.Colour()'
+
     def __len__(self):                  return len(self.Get())
     def __getitem__(self, index):       return self.Get()[index]
     def __nonzero__(self):              return self.IsOk()
@@ -248,14 +270,19 @@ class Colour(_core.Object):
 
     Pixel = property(GetPixel,doc="See `GetPixel`") 
     RGB = property(GetRGB,SetRGB,doc="See `GetRGB` and `SetRGB`") 
+    red = property(Red) 
+    green = property(Green) 
+    blue = property(Blue) 
+    alpha = property(Alpha) 
 _gdi_.Colour_swigregister(Colour)
 
 def NamedColour(*args, **kwargs):
     """
-    NamedColour(String colorName) -> Colour
+    NamedColour(String colourName) -> Colour
 
     Constructs a colour object using a colour name listed in
-    ``wx.TheColourDatabase``.
+    ``wx.TheColourDatabase``, or any string format supported by the
+    wxColour typemaps.
     """
     val = _gdi_.new_NamedColour(*args, **kwargs)
     return val
@@ -278,7 +305,7 @@ class Palette(GDIObject):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
     __repr__ = _swig_repr
     def __init__(self, *args, **kwargs): 
-        """__init__(self, int n, unsigned char red, unsigned char green, unsigned char blue) -> Palette"""
+        """__init__(self, wxArrayInt red, wxArrayInt green, wxArrayInt blue) -> Palette"""
         _gdi_.Palette_swiginit(self,_gdi_.new_Palette(*args, **kwargs))
     __swig_destroy__ = _gdi_.delete_Palette
     __del__ = lambda self : None;
@@ -287,7 +314,7 @@ class Palette(GDIObject):
         return _gdi_.Palette_GetPixel(*args, **kwargs)
 
     def GetRGB(*args, **kwargs):
-        """GetRGB(self, int pixel) -> (R,G,B)"""
+        """GetRGB(self, int pixel) -> (success, R,G,B)"""
         return _gdi_.Palette_GetRGB(*args, **kwargs)
 
     def GetColoursCount(*args, **kwargs):
@@ -510,6 +537,10 @@ def BrushFromBitmap(*args, **kwargs):
     val = _gdi_.new_BrushFromBitmap(*args, **kwargs)
     return val
 
+BitmapBufferFormat_RGB = _gdi_.BitmapBufferFormat_RGB
+BitmapBufferFormat_RGBA = _gdi_.BitmapBufferFormat_RGBA
+BitmapBufferFormat_RGB32 = _gdi_.BitmapBufferFormat_RGB32
+BitmapBufferFormat_ARGB32 = _gdi_.BitmapBufferFormat_ARGB32
 class Bitmap(GDIObject):
     """
     The wx.Bitmap class encapsulates the concept of a platform-dependent
@@ -695,21 +726,51 @@ class Bitmap(GDIObject):
 
     def CopyFromBuffer(*args, **kwargs):
         """
-        CopyFromBuffer(self, buffer data)
+        CopyFromBuffer(self, buffer data, int format=BitmapBufferFormat_RGB, int stride=-1)
 
-        Copy data from a RGB buffer object to replace the bitmap pixel data.
-        See `wx.BitmapFromBuffer` for more .
+        Copy data from a buffer object to replace the bitmap pixel data.
+        Default format is plain RGB, but other formats are now supported as
+        well.  The following symbols are used to specify the format of the
+        bytes in the buffer:
+
+            =============================  ================================
+            wx.BitmapBufferFormat_RGB      A simple sequence of RGB bytes
+            wx.BitmapBufferFormat_RGBA     A simple sequence of RGBA bytes
+            wx.BitmapBufferFormat_ARGB32   A sequence of 32-bit values in native
+                                           endian order, with alpha in the upper
+                                           8 bits, followed by red, green, and
+                                           blue.
+            wx.BitmapBufferFormat_RGB32    Same as above but the alpha byte
+                                           is ignored.
+            =============================  ================================
+
         """
         return _gdi_.Bitmap_CopyFromBuffer(*args, **kwargs)
 
-    def CopyFromBufferRGBA(*args, **kwargs):
+    def CopyFromBufferRGBA(self, buffer):
         """
-        CopyFromBufferRGBA(self, buffer data)
+        Copy data from a RGBA buffer object to replace the bitmap pixel
+        data.  This method is now just a compatibility wrapper around
+        CopyFrombuffer.
+        """
+        self.CopyFromBuffer(buffer, wx.BitmapBufferFormat_RGBA)           
 
-        Copy data from a RGBA buffer object to replace the bitmap pixel data.
-        See `wx.BitmapFromBufferRGBA` for more .
+    def CopyToBuffer(*args, **kwargs):
         """
-        return _gdi_.Bitmap_CopyFromBufferRGBA(*args, **kwargs)
+        CopyToBuffer(self, buffer data, int format=BitmapBufferFormat_RGB, int stride=-1)
+
+        Copy pixel data to a buffer object.  See `CopyFromBuffer` for buffer
+        format .
+        """
+        return _gdi_.Bitmap_CopyToBuffer(*args, **kwargs)
+
+    def HasAlpha(*args, **kwargs):
+        """HasAlpha(self) -> bool"""
+        return _gdi_.Bitmap_HasAlpha(*args, **kwargs)
+
+    def UseAlpha(*args, **kwargs):
+        """UseAlpha(self)"""
+        return _gdi_.Bitmap_UseAlpha(*args, **kwargs)
 
     def __nonzero__(self): return self.IsOk() 
     def __eq__(*args, **kwargs):
@@ -777,8 +838,8 @@ def BitmapFromBits(*args, **kwargs):
 
     Creates a bitmap from an array of bits.  You should only use this
     function for monochrome bitmaps (depth 1) in portable programs: in
-    this case the bits parameter should contain an XBM image.  For other
-    bit depths, the behaviour is platform dependent.
+    this case the bits parameter should contain an XBM image as a data
+    string.  For other bit depths, the behaviour is platform dependent.
     """
     val = _gdi_.new_BitmapFromBits(*args, **kwargs)
     return val
@@ -799,8 +860,8 @@ def BitmapFromBuffer(width, height, dataBuffer, alphaBuffer=None):
     expected to contain a series of RGB bytes and be width*height*3
     bytes long.  A buffer object can optionally be supplied for the
     image's alpha channel data, and it is expected to be width*height
-    bytes long.  On Windows the RGB values are 'premultiplied' by the
-    alpha values.  (The other platforms do the multiplication
+    bytes long.  On Windows and Mac the RGB values are 'premultiplied'
+    by the alpha values.  (The other platforms do the multiplication
     themselves.)
 
     Unlike `wx.ImageFromBuffer` the bitmap created with this function
@@ -829,8 +890,8 @@ def BitmapFromBufferRGBA(width, height, dataBuffer):
     parameter must be a Python object that implements the buffer
     interface, such as a string, array, etc.  The dataBuffer object is
     expected to contain a series of RGBA bytes (red, green, blue and
-    alpha) and be width*height*4 bytes long.  On Windows the RGB
-    values are 'premultiplied' by the alpha values.  (The other
+    alpha) and be width*height*4 bytes long.  On Windows and Mac the
+    RGB values are 'premultiplied' by the alpha values.  (The other
     platforms do the multiplication themselves.)
 
     Unlike `wx.ImageFromBuffer` the bitmap created with this function
@@ -845,6 +906,20 @@ def BitmapFromBufferRGBA(width, height, dataBuffer):
           `wx.AlphaPixelData`, `wx.ImageFromBuffer`
     """
     return _gdi_._BitmapFromBufferRGBA(width, height, dataBuffer)
+
+
+def _EmptyBitmapRGBA(*args, **kwargs):
+  """
+    _EmptyBitmapRGBA(int width, int height, byte red, byte green, byte blue, 
+        byte alpha) -> Bitmap
+    """
+  return _gdi_._EmptyBitmapRGBA(*args, **kwargs)
+def EmptyBitmapRGBA(width, height, red=0, green=0, blue=0, alpha=0):
+    """
+    Returns a new empty 32-bit bitmap where every pixel has been
+    initialized with the given RGBA values.
+    """
+    return _gdi_._EmptyBitmapRGBA(width, height, red, green, blue, alpha)
 
 class PixelDataBase(object):
     """Proxy of C++ PixelDataBase class"""
@@ -930,13 +1005,13 @@ class NativePixelData(PixelDataBase):
             
         pf = PixelFacade()        
         for y in xrange(height):
+            pixels.MoveTo(self, 0, y)
             for x in xrange(width):
 
 
 
                 yield pf    
                 pixels.nextPixel()
-            pixels.MoveTo(self, 0, y)
 
     Pixels = property(GetPixels,doc="See `GetPixels`") 
 _gdi_.NativePixelData_swigregister(NativePixelData)
@@ -1046,13 +1121,13 @@ class AlphaPixelData(PixelDataBase):
             
         pf = PixelFacade()        
         for y in xrange(height):
+            pixels.MoveTo(self, 0, y)
             for x in xrange(width):
 
 
 
                 yield pf    
                 pixels.nextPixel()
-            pixels.MoveTo(self, 0, y)
 
     Pixels = property(GetPixels,doc="See `GetPixels`") 
 _gdi_.AlphaPixelData_swigregister(AlphaPixelData)
@@ -1311,7 +1386,7 @@ class Cursor(GDIObject):
         __init__(self, String cursorName, long type, int hotSpotX=0, int hotSpotY=0) -> Cursor
 
         Construct a Cursor from a file.  Specify the type of file using
-        wx.BITAMP_TYPE* constants, and specify the hotspot if not using a .cur
+        wx.BITMAP_TYPE* constants, and specify the hotspot if not using a .cur
         file.
         """
         _gdi_.Cursor_swiginit(self,_gdi_.new_Cursor(*args, **kwargs))
@@ -2264,6 +2339,10 @@ class Font(GDIObject):
         """GetNoAntiAliasing(self) -> bool"""
         return _gdi_.Font_GetNoAntiAliasing(*args, **kwargs)
 
+    def GetHFONT(*args, **kwargs):
+        """GetHFONT(self) -> void"""
+        return _gdi_.Font_GetHFONT(*args, **kwargs)
+
     def GetDefaultEncoding(*args, **kwargs):
         """
         GetDefaultEncoding() -> int
@@ -2621,6 +2700,7 @@ LANGUAGE_RHAETO_ROMANCE = _gdi_.LANGUAGE_RHAETO_ROMANCE
 LANGUAGE_ROMANIAN = _gdi_.LANGUAGE_ROMANIAN
 LANGUAGE_RUSSIAN = _gdi_.LANGUAGE_RUSSIAN
 LANGUAGE_RUSSIAN_UKRAINE = _gdi_.LANGUAGE_RUSSIAN_UKRAINE
+LANGUAGE_SAMI = _gdi_.LANGUAGE_SAMI
 LANGUAGE_SAMOAN = _gdi_.LANGUAGE_SAMOAN
 LANGUAGE_SANGHO = _gdi_.LANGUAGE_SANGHO
 LANGUAGE_SANSKRIT = _gdi_.LANGUAGE_SANSKRIT
@@ -2684,6 +2764,7 @@ LANGUAGE_URDU_PAKISTAN = _gdi_.LANGUAGE_URDU_PAKISTAN
 LANGUAGE_UZBEK = _gdi_.LANGUAGE_UZBEK
 LANGUAGE_UZBEK_CYRILLIC = _gdi_.LANGUAGE_UZBEK_CYRILLIC
 LANGUAGE_UZBEK_LATIN = _gdi_.LANGUAGE_UZBEK_LATIN
+LANGUAGE_VALENCIAN = _gdi_.LANGUAGE_VALENCIAN
 LANGUAGE_VIETNAMESE = _gdi_.LANGUAGE_VIETNAMESE
 LANGUAGE_VOLAPUK = _gdi_.LANGUAGE_VOLAPUK
 LANGUAGE_WELSH = _gdi_.LANGUAGE_WELSH
@@ -2964,13 +3045,13 @@ def EncodingConverter_CanConvert(*args, **kwargs):
   return _gdi_.EncodingConverter_CanConvert(*args, **kwargs)
 
 #----------------------------------------------------------------------------
-# On MSW add the directory where the wxWidgets catalogs were installed
-# to the default catalog path.
-if wx.Platform == "__WXMSW__":
-    import os
-    _localedir = os.path.join(os.path.split(__file__)[0], "locale")
+# Add the directory where the wxWidgets catalogs were installed
+# to the default catalog path, if they were put in the pacakge dir.
+import os
+_localedir = os.path.join(os.path.dirname(__file__), "locale")
+if os.path.exists(_localedir):
     Locale.AddCatalogLookupPathPrefix(_localedir)
-    del os
+del os
 
 #----------------------------------------------------------------------------
 
@@ -3545,6 +3626,10 @@ class DC(_core.Object):
         screen is damaged.
         """
         return _gdi_.DC_SetClippingRect(*args, **kwargs)
+
+    def SetDeviceClippingRegion(*args, **kwargs):
+        """SetDeviceClippingRegion(self, Region region)"""
+        return _gdi_.DC_SetDeviceClippingRegion(*args, **kwargs)
 
     def DrawLines(*args, **kwargs):
         """
@@ -4515,6 +4600,11 @@ class DCTextColourChanger(object):
         _gdi_.DCTextColourChanger_swiginit(self,_gdi_.new_DCTextColourChanger(*args, **kwargs))
     __swig_destroy__ = _gdi_.delete_DCTextColourChanger
     __del__ = lambda self : None;
+    def __enter__(self):
+        return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return False
+
 _gdi_.DCTextColourChanger_swigregister(DCTextColourChanger)
 
 class DCPenChanger(object):
@@ -4534,6 +4624,11 @@ class DCPenChanger(object):
         _gdi_.DCPenChanger_swiginit(self,_gdi_.new_DCPenChanger(*args, **kwargs))
     __swig_destroy__ = _gdi_.delete_DCPenChanger
     __del__ = lambda self : None;
+    def __enter__(self):
+        return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return False
+
 _gdi_.DCPenChanger_swigregister(DCPenChanger)
 
 class DCBrushChanger(object):
@@ -4553,6 +4648,11 @@ class DCBrushChanger(object):
         _gdi_.DCBrushChanger_swiginit(self,_gdi_.new_DCBrushChanger(*args, **kwargs))
     __swig_destroy__ = _gdi_.delete_DCBrushChanger
     __del__ = lambda self : None;
+    def __enter__(self):
+        return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return False
+
 _gdi_.DCBrushChanger_swigregister(DCBrushChanger)
 
 class DCClipper(object):
@@ -4576,6 +4676,11 @@ class DCClipper(object):
         _gdi_.DCClipper_swiginit(self,_gdi_.new_DCClipper(*args))
     __swig_destroy__ = _gdi_.delete_DCClipper
     __del__ = lambda self : None;
+    def __enter__(self):
+        return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return False
+
 _gdi_.DCClipper_swigregister(DCClipper)
 
 #---------------------------------------------------------------------------
@@ -5021,6 +5126,10 @@ class MetaFile(_core.Object):
         _gdi_.MetaFile_swiginit(self,_gdi_.new_MetaFile(*args, **kwargs))
     __swig_destroy__ = _gdi_.delete_MetaFile
     __del__ = lambda self : None;
+    def Play(*args, **kwargs):
+        """Play(self, DC dc) -> bool"""
+        return _gdi_.MetaFile_Play(*args, **kwargs)
+
     def IsOk(*args, **kwargs):
         """IsOk(self) -> bool"""
         return _gdi_.MetaFile_IsOk(*args, **kwargs)
@@ -5186,6 +5295,17 @@ class GraphicsFont(GraphicsObject):
     __swig_destroy__ = _gdi_.delete_GraphicsFont
     __del__ = lambda self : None;
 _gdi_.GraphicsFont_swigregister(GraphicsFont)
+
+class GraphicsBitmap(GraphicsObject):
+    """Proxy of C++ GraphicsBitmap class"""
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
+    __repr__ = _swig_repr
+    def __init__(self, *args, **kwargs): 
+        """__init__(self) -> GraphicsBitmap"""
+        _gdi_.GraphicsBitmap_swiginit(self,_gdi_.new_GraphicsBitmap(*args, **kwargs))
+    __swig_destroy__ = _gdi_.delete_GraphicsBitmap
+    __del__ = lambda self : None;
+_gdi_.GraphicsBitmap_swigregister(GraphicsBitmap)
 
 class GraphicsMatrix(GraphicsObject):
     """
@@ -5505,9 +5625,7 @@ class GraphicsContext(GraphicsObject):
 
         Create a lightwieght context that can be used for measuring text only.
         """
-        val = _gdi_.GraphicsContext_CreateMeasuringContext(*args)
-        val.__dc = args[0] # save a ref so the dc will not be deleted before self
-        return val
+        return _gdi_.GraphicsContext_CreateMeasuringContext(*args)
 
     CreateMeasuringContext = staticmethod(CreateMeasuringContext)
     def CreateFromNative(*args, **kwargs):
@@ -5585,6 +5703,10 @@ class GraphicsContext(GraphicsObject):
         """
         return _gdi_.GraphicsContext_CreateFont(*args, **kwargs)
 
+    def CreateBitmap(*args, **kwargs):
+        """CreateBitmap(self, Bitmap bitmap) -> GraphicsBitmap"""
+        return _gdi_.GraphicsContext_CreateBitmap(*args, **kwargs)
+
     def CreateMatrix(*args, **kwargs):
         """
         CreateMatrix(self, Double a=1.0, Double b=0.0, Double c=0.0, Double d=1.0, 
@@ -5616,7 +5738,7 @@ class GraphicsContext(GraphicsObject):
         """
         ClipRegion(self, Region region)
 
-        Clips drawings to the region, combined to current clipping region.
+        Clips drawings to the region intersected with the current clipping region.
         """
         return _gdi_.GraphicsContext_ClipRegion(*args, **kwargs)
 
@@ -5624,7 +5746,7 @@ class GraphicsContext(GraphicsObject):
         """
         Clip(self, Double x, Double y, Double w, Double h)
 
-        Clips drawings to the rectangle.
+        Clips drawings to the rectangle intersected with the current clipping region..
         """
         return _gdi_.GraphicsContext_Clip(*args, **kwargs)
 
@@ -5811,6 +5933,10 @@ class GraphicsContext(GraphicsObject):
         """
         return _gdi_.GraphicsContext_GetPartialTextExtents(*args, **kwargs)
 
+    def DrawGraphicsBitmap(*args, **kwargs):
+        """DrawGraphicsBitmap(self, GraphicsBitmap bmp, Double x, Double y, Double w, Double h)"""
+        return _gdi_.GraphicsContext_DrawGraphicsBitmap(*args, **kwargs)
+
     def DrawBitmap(*args, **kwargs):
         """
         DrawBitmap(self, Bitmap bmp, Double x, Double y, Double w, Double h)
@@ -5844,13 +5970,13 @@ class GraphicsContext(GraphicsObject):
         """
         return _gdi_.GraphicsContext_StrokeLines(*args, **kwargs)
 
-    def StrokeLineSegements(*args, **kwargs):
+    def StrokeLineSegments(*args, **kwargs):
         """
         StrokeLineSegments(self, List beginPoints, List endPoints)
 
         Stroke disconnected lines from begin to end points
         """
-        return _gdi_.GraphicsContext_StrokeLineSegements(*args, **kwargs)
+        return _gdi_.GraphicsContext_StrokeLineSegments(*args, **kwargs)
 
     def DrawLines(*args, **kwargs):
         """
@@ -5897,6 +6023,7 @@ cvar = _gdi_.cvar
 NullGraphicsPen = cvar.NullGraphicsPen
 NullGraphicsBrush = cvar.NullGraphicsBrush
 NullGraphicsFont = cvar.NullGraphicsFont
+NullGraphicsBitmap = cvar.NullGraphicsBitmap
 NullGraphicsMatrix = cvar.NullGraphicsMatrix
 NullGraphicsPath = cvar.NullGraphicsPath
 
@@ -5917,9 +6044,7 @@ def GraphicsContext_CreateMeasuringContext(*args):
 
     Create a lightwieght context that can be used for measuring text only.
     """
-  val = _gdi_.GraphicsContext_CreateMeasuringContext(*args)
-  val.__dc = args[0] # save a ref so the dc will not be deleted before self
-  return val
+  return _gdi_.GraphicsContext_CreateMeasuringContext(*args)
 
 def GraphicsContext_CreateFromNative(*args, **kwargs):
   """
@@ -5953,6 +6078,11 @@ class GraphicsRenderer(_core.Object):
         return _gdi_.GraphicsRenderer_GetDefaultRenderer(*args, **kwargs)
 
     GetDefaultRenderer = staticmethod(GetDefaultRenderer)
+    def GetCairoRenderer(*args, **kwargs):
+        """GetCairoRenderer() -> GraphicsRenderer"""
+        return _gdi_.GraphicsRenderer_GetCairoRenderer(*args, **kwargs)
+
+    GetCairoRenderer = staticmethod(GetCairoRenderer)
     def CreateContext(*args):
         """
         CreateContext(self, WindowDC dc) -> GraphicsContext
@@ -6009,11 +6139,19 @@ class GraphicsRenderer(_core.Object):
         """CreateFont(self, Font font, Colour col=*wxBLACK) -> GraphicsFont"""
         return _gdi_.GraphicsRenderer_CreateFont(*args, **kwargs)
 
+    def CreateBitmap(*args, **kwargs):
+        """CreateBitmap(self, Bitmap bmp) -> GraphicsBitmap"""
+        return _gdi_.GraphicsRenderer_CreateBitmap(*args, **kwargs)
+
 _gdi_.GraphicsRenderer_swigregister(GraphicsRenderer)
 
 def GraphicsRenderer_GetDefaultRenderer(*args):
   """GraphicsRenderer_GetDefaultRenderer() -> GraphicsRenderer"""
   return _gdi_.GraphicsRenderer_GetDefaultRenderer(*args)
+
+def GraphicsRenderer_GetCairoRenderer(*args):
+  """GraphicsRenderer_GetCairoRenderer() -> GraphicsRenderer"""
+  return _gdi_.GraphicsRenderer_GetCairoRenderer(*args)
 
 class GCDC(DC):
     """Proxy of C++ GCDC class"""
@@ -6036,6 +6174,10 @@ class GCDC(DC):
     def SetGraphicsContext(*args, **kwargs):
         """SetGraphicsContext(self, GraphicsContext ctx)"""
         return _gdi_.GCDC_SetGraphicsContext(*args, **kwargs)
+
+    def Flush(*args, **kwargs):
+        """Flush(self)"""
+        return _gdi_.GCDC_Flush(*args, **kwargs)
 
     GraphicsContext = property(GetGraphicsContext,SetGraphicsContext) 
 _gdi_.GCDC_swigregister(GCDC)
@@ -6066,6 +6208,8 @@ class DCOverlay(object):
         __init__(self, Overlay overlay, WindowDC dc) -> DCOverlay
         """
         _gdi_.DCOverlay_swiginit(self,_gdi_.new_DCOverlay(*args))
+        self.__dc = args[1] # save a ref so the dc will not be deleted before self
+
     __swig_destroy__ = _gdi_.delete_DCOverlay
     __del__ = lambda self : None;
     def Clear(*args, **kwargs):
@@ -6553,6 +6697,7 @@ class Effects(_core.Object):
     MediumShadow = property(GetMediumShadow,SetMediumShadow,doc="See `GetMediumShadow` and `SetMediumShadow`") 
 _gdi_.Effects_swigregister(Effects)
 
+Effects = wx._deprecated(Effects) 
 #---------------------------------------------------------------------------
 
 CONTROL_DISABLED = _gdi_.CONTROL_DISABLED
@@ -6817,6 +6962,22 @@ class RendererNative(object):
         """
         return _gdi_.RendererNative_GetSplitterParams(*args, **kwargs)
 
+    def DrawChoice(*args, **kwargs):
+        """DrawChoice(self, Window win, DC dc, Rect rect, int flags=0)"""
+        return _gdi_.RendererNative_DrawChoice(*args, **kwargs)
+
+    def DrawComboBox(*args, **kwargs):
+        """DrawComboBox(self, Window win, DC dc, Rect rect, int flags=0)"""
+        return _gdi_.RendererNative_DrawComboBox(*args, **kwargs)
+
+    def DrawTextCtrl(*args, **kwargs):
+        """DrawTextCtrl(self, Window win, DC dc, Rect rect, int flags=0)"""
+        return _gdi_.RendererNative_DrawTextCtrl(*args, **kwargs)
+
+    def DrawRadioButton(*args, **kwargs):
+        """DrawRadioButton(self, Window win, DC dc, Rect rect, int flags=0)"""
+        return _gdi_.RendererNative_DrawRadioButton(*args, **kwargs)
+
     def Get(*args, **kwargs):
         """
         Get() -> RendererNative
@@ -6912,6 +7073,22 @@ def RendererNative_Set(*args, **kwargs):
     """
   return _gdi_.RendererNative_Set(*args, **kwargs)
 
+
+def Renderer_DrawChoice(*args, **kwargs):
+  """Renderer_DrawChoice(Window win, DC dc, Rect rect, int flags=0)"""
+  return _gdi_.Renderer_DrawChoice(*args, **kwargs)
+
+def Renderer_DrawComboBox(*args, **kwargs):
+  """Renderer_DrawComboBox(Window win, DC dc, Rect rect, int flags=0)"""
+  return _gdi_.Renderer_DrawComboBox(*args, **kwargs)
+
+def Renderer_DrawTextCtrl(*args, **kwargs):
+  """Renderer_DrawTextCtrl(Window win, DC dc, Rect rect, int flags=0)"""
+  return _gdi_.Renderer_DrawTextCtrl(*args, **kwargs)
+
+def Renderer_DrawRadioButton(*args, **kwargs):
+  """Renderer_DrawRadioButton(Window win, DC dc, Rect rect, int flags=0)"""
+  return _gdi_.Renderer_DrawRadioButton(*args, **kwargs)
 #---------------------------------------------------------------------------
 
 class PseudoDC(_core.Object):

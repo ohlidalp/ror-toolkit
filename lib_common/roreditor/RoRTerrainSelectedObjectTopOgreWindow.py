@@ -12,7 +12,7 @@ class RoRTerrainSelectedObjectTopOgreWindow(wxOgreWindow):
         self.sceneManager = RoRTerrainOgreWindow.sceneManager
         self.mainWindow = RoRTerrainOgreWindow
         self.rand = str(random())
-        wxOgreWindow.__init__(self, parent, ID, size = size, **kwargs) 
+        wxOgreWindow.__init__(self, parent, ID,"terrainSelectedObjectTop", size = size, **kwargs) 
         self.parent = parent
         self.distance = 50
 

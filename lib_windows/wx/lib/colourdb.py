@@ -6,7 +6,7 @@
 # Author:      Robin Dunn
 #
 # Created:     13-March-2001
-# RCS-ID:      $Id: colourdb.py,v 1.8 2005/05/12 22:46:52 RD Exp $
+# RCS-ID:      $Id: colourdb.py 34032 2005-05-12 22:46:53Z RD $
 # Copyright:   (c) 2001 by Total Control Software
 # Licence:     wxWindows license
 #----------------------------------------------------------------------

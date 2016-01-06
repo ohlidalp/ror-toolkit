@@ -4,7 +4,7 @@ import ogre.renderer.OGRE as ogre
 from ror.truckparser import *
 
 from ror.logger import log
-from ror.settingsManager import getSettingsManager
+from ror.settingsManager import rorSettings
 
 from ror.rorcommon import *
 from wxogre.OgreManager import *
@@ -19,33 +19,35 @@ IMGSCALE = 20
 class RoRTruckUVOgreWindow(wxOgreWindow):
 	def __init__(self, parent, ID, size = wx.Size(200,200), **kwargs):
 		self.parent = parent
-		self.rordir = getSettingsManager().getSetting("RigsOfRods", "BasePath")
+		self.rordir = rorSettings().rorFolder
 		self.sceneManager = None
 		self.trucktree = None
 		self.clearlist = {'entity':[]}
 		self.initScene()
-		wxOgreWindow.__init__(self, parent, ID, size = size, **kwargs)
+		wxOgreWindow.__init__(self, parent, ID, "truckUV", size = size, **kwargs)
 
 	def initScene(self):
 		if not self.sceneManager is None:
-			self.sceneManager.destroyAllManualObjects()
+			self.sceneManager.clearScene()
 		self.EntityCount = 0
 		self.bodies=[]
-
-		# try to clear things up
-		try:
-			if self.nodes != {}:
-				for n in self.nodes:
-					n[0].detachAllObjects()
-					self.sceneManager.destroySceneNode(n[0].getName())
-		except:
-			pass
-		try:
-			for e in self.clearlist['entity']:
-				print e
-				self.sceneManager.destroyEntity(e)
-		except:
-			pass
+		self.trucktree = None
+		self.clearlist = {'entity':[]}
+# Lepes comment it
+#		# try to clear things up
+#		try:
+#			if self.nodes != {}:
+#				for n in self.nodes:
+#					n[0].detachAllObjects()
+#					self.sceneManager.destroySceneNode(n[0].getName())
+#		except:
+#			pass
+#		try:
+#			for e in self.clearlist['entity']:
+#				print e
+#				self.sceneManager.destroyEntity(e)
+#		except:
+#			pass
 
 		self.nodes = {}
 		self.beams = {}
@@ -70,7 +72,7 @@ class RoRTruckUVOgreWindow(wxOgreWindow):
 		pass
 
 	def SceneInitialisation(self):
-		initResources(self.rordir)
+		initResources()
 	
 		#get the scenemanager
 		self.sceneManager = getOgreManager().createSceneManager(ogre.ST_GENERIC)
@@ -104,7 +106,7 @@ class RoRTruckUVOgreWindow(wxOgreWindow):
 		self.sceneManager.AmbientLight = ogre.ColourValue(0.7, 0.7, 0.7 )
 
 		fadeColour = (0.8, 0.8, 0.8)
-		self.sceneManager.setFog(ogre.FOG_EXP, ogre.ColourValue.White, 0.0002)
+#		self.sceneManager.setFog(ogre.FOG_EXP, ogre.ColourValue.White, 0.0002)
 		#self.sceneManager.setFog(ogre.FOG_LINEAR, fadeColour, 0.001, 5000.0, 10000.0)
 		self.renderWindow.getViewport(0).BackgroundColour = fadeColour
 
@@ -144,21 +146,25 @@ class RoRTruckUVOgreWindow(wxOgreWindow):
 		#print smg
 		# read in nodes
 		nodes = {}
+		print "nodes"
 		for nodeobj in self.trucktree['nodes']:
 			if nodeobj.has_key('type'):
 				continue
 			node = nodeobj['data']
+			print node
 			nodes[int(node[0])] = ogre.Vector3(float(node[1]),float(node[2]),float(node[3]))
 
 		# read in UVs then
 		uv = {}
+		print "uv"
 		for data in smg['texcoords']:
 			tex = data['data']
+			print tex
 			uv[int(tex[0])] = [float(tex[1]), float(tex[2])]
 
 		# and create the triangles
-
-		#print tree['globals'][0]['data'][2]
+		print "triangles"
+		print self.trucktree['globals'][0]['data'][2]
 		matname = self.trucktree['globals'][0]['data'][2]
 
 		idstr = str(smgid)
@@ -167,8 +173,10 @@ class RoRTruckUVOgreWindow(wxOgreWindow):
 		sm.begin(matname, ogre.RenderOperation.OT_TRIANGLE_LIST)
 
 		uvcounter = smgid * 100
+		print "cab"
 		for data in smg['cab']:
 			cab = data['data']
+			print cab
 			if len(cab) == 0:
 				continue
 
@@ -178,7 +186,7 @@ class RoRTruckUVOgreWindow(wxOgreWindow):
 			mat = "TruckEditor/UVBeam"
 			line.begin(mat, ogre.RenderOperation.OT_LINE_LIST)
 
-			depth = 1
+			depth = 10
 
 			uv1 = uv[int(cab[0])]
 			pos1 = Ogre.Vector3((1-uv1[0]) * self.imgwidth/IMGSCALE - self.imgwidth/IMGSCALE/2, depth, (1-uv1[1]) * self.imgheight/IMGSCALE - self.imgheight/IMGSCALE/2)
@@ -197,24 +205,32 @@ class RoRTruckUVOgreWindow(wxOgreWindow):
 			line.setCastShadows(False)
 			linenode = self.sceneManager.getRootSceneNode().createChildSceneNode()
 			linenode.attachObject(line)
+			linenode.showBoundingBox(True)
 
 
 	def createUVIslands(self):
 		smgcounter = 0
-		for smg in self.trucktree['submeshgroups']:
-			self.createUVIsland(smg, smgcounter)
-			smgcounter += 1
+		if self.trucktree:
+			for smg in self.trucktree['submeshgroups']:
+				self.createUVIsland(smg, smgcounter)
+				smgcounter += 1
 
 	def createUVPlane(self):
+		self.imgwidth = 600
+		self.imgheight = 480
+		matname = None
+		if self.trucktree:
+			log().info("truck editor len(trucktree) = " +str(len(self.trucktree) ))
+			matname = self.trucktree['globals'][0]['data'][2]
+			mat = ogre.MaterialManager.getSingleton().getByName(matname)
+			if mat is not None:
+				texturename = mat.getTechnique(0).getPass(0).getTextureUnitState(0).getTextureName()
+				pair = mat.getTechnique(0).getPass(0).getTextureUnitState(0).getTextureDimensions()
+				texture = Ogre.TextureManager.getSingleton().getByName(texturename)
+				self.imgwidth = texture.getSrcWidth()
+				self.imgheight = texture.getSrcHeight()
+				log().debug("texture name %s, image Width %d, image Height %d " %( texturename, int(self.imgwidth), int(self.imgheight)))
 
-		matname = self.trucktree['globals'][0]['data'][2]
-		mat = ogre.MaterialManager.getSingleton().getByName(matname)
-		texturename = mat.getTechnique(0).getPass(0).getTextureUnitState(0).getTextureName()
-		pair = mat.getTechnique(0).getPass(0).getTextureUnitState(0).getTextureDimensions()
-		texture = Ogre.TextureManager.getSingleton().getByName(texturename)
-		self.imgwidth = texture.getSrcWidth()
-		self.imgheight = texture.getSrcHeight()
-		print texturename, self.imgwidth, self.imgheight
 
 		plane = ogre.Plane()
 		plane.normal = ogre.Vector3(0, 1, 0)
@@ -234,12 +250,14 @@ class RoRTruckUVOgreWindow(wxOgreWindow):
 		#texture = rm.getByName(texturename)
 		#print "texture: ", texturename, texture.getWidth(), texture.getHeight()
 
-		entity.setMaterialName(matname)
+		if matname:
+			entity.setMaterialName(matname)
 		self.uvplanenode = self.sceneManager.getRootSceneNode().createChildSceneNode()
 		self.uvplanenode.attachObject(entity)
 
 	def onMouseEvent(self,event):
-		width, height, a, b, c = self.renderWindow.getMetrics()
+		width = self.renderWindow.getWidth()
+		height = self.renderWindow.getHeight()
 		if event.GetWheelRotation() != 0:
 			zfactor = 0.01
 			if event.ShiftDown():
@@ -247,7 +265,7 @@ class RoRTruckUVOgreWindow(wxOgreWindow):
 			zoom = zfactor * -event.GetWheelRotation()
 			newclip = self.camera.getNearClipDistance() + zoom
 			if newclip > 5 and newclip < 98:
-				print newclip
+				#print newclip
 				self.camera.setNearClipDistance(newclip)
 
 		if event.RightDown():

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 __author__ = "Patrick K. O'Brien <pobrien@orbtech.com>"
-__cvsid__ = "$Id: test_interpreter.py,v 1.2 2003/11/12 21:28:52 RD Exp $"
-__revision__ = "$Revision: 1.2 $"[11:-2]
+__cvsid__ = "$Id: test_interpreter.py 24541 2003-11-12 21:34:20Z RD $"
+__revision__ = "$Revision: 24541 $"[11:-2]
 
 import unittest
 

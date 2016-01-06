@@ -1,9 +1,10 @@
+#!/usr/bin/env python
 """PyWrap is a command line utility that runs a wxPython program with
 additional runtime-tools, such as PyCrust."""
 
 __author__ = "Patrick K. O'Brien <pobrien@orbtech.com>"
-__cvsid__ = "$Id: PyWrap.py,v 1.6 2004/03/15 13:42:37 PKO Exp $"
-__revision__ = "$Revision: 1.6 $"[11:-2]
+__cvsid__ = "$Id: PyWrap.py 63479 2010-02-14 05:24:22Z RD $"
+__revision__ = "$Revision: 63479 $"[11:-2]
 
 import wx
 from wx import py

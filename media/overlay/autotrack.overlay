@@ -1,0 +1,17 @@
+// Ogre overlay scripts
+POCore/autotrack
+{
+	zorder 500
+	// Stats block
+	container BorderPanel(POCore/autotrackPanel)
+	{
+		metrics_mode relative
+		horz_align right
+		vert_align top
+		left -0.1 
+		top 0.01
+		width 0.03
+		height 0.04
+		material POCore/autotrackMaterial
+	}
+}

@@ -3,7 +3,7 @@
 # Author:       Will Sadkin
 # Created:      09/19/2002
 # Copyright:    (c) 2002 by Will Sadkin, 2002
-# RCS-ID:       $Id: timectrl.py,v 1.4 2005/02/28 18:45:13 RD Exp $
+# RCS-ID:       $Id: timectrl.py 58925 2009-02-16 00:06:57Z RD $
 # License:      wxWindows license
 #----------------------------------------------------------------------------
 # NOTE:
@@ -637,6 +637,24 @@ class TimeCtrl(BaseMaskedTextCtrl):
 
 ##        dbg('strtime:', strtime)
         self._SetValue(strtime)
+##        dbg(indent=0)
+
+    def ChangeValue(self, value):
+        """
+        Validating ChangeValue function for time values:
+        This function will do dynamic type checking on the value argument,
+        and convert wxDateTime, mxDateTime, or 12/24 format time string
+        into the appropriate format string for the control.
+        """
+##        dbg('TimeCtrl::ChangeValue(%s)' % repr(value), indent=1)
+        try:
+            strtime = self._toGUI(self.__validateValue(value))
+        except:
+##            dbg('validation failed', indent=0)
+            raise
+
+##        dbg('strtime:', strtime)
+        self._ChangeValue(strtime)
 ##        dbg(indent=0)
 
     def GetValue(self,

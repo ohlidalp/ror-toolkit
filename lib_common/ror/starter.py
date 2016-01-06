@@ -6,8 +6,9 @@ from subprocess import Popen
 import subprocess
 
 from ror.logger import log
-from ror.settingsManager import getSettingsManager
+from ror.settingsManager import *
 import roreditor.MainFrame
+import roreditor.ShapedControls 
 
 import wx, os, os.path
 
@@ -15,7 +16,7 @@ RENDERSYSTEMS = ['OpenGL', 'DirectX9']
 
 DIRECTXLINE = "Plugin=RenderSystem_Direct3D9.dll"
 OPENGLLINE = "Plugin=RenderSystem_GL.dll"
-SPLASHIMAGE = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "splash.bmp"))
+SPLASHIMAGE = rorSettings().getConcatPath(rorSettings().toolkitMainFolder, ["media","gui", "splash.bmp"],True)
 
 
 class ImagePanel(wx.Panel):
@@ -30,30 +31,78 @@ class ImagePanel(wx.Panel):
 			raise SystemExit
 
 
-class SettingsDialog(wx.Frame):
+class SettingsDialog(wx.Dialog):
 	rordir = None
 	def __init__(self, *args, **kwds):
+		log().debug("starter is being created")
 		kwds["style"] = wx.SYSTEM_MENU | wx.CAPTION | wx.CLIP_CHILDREN | wx.CLOSE_BOX
-		wx.Frame.__init__(self, *args, **kwds)
+		wx.Dialog.__init__(self, *args, **kwds)
+		self.SetBackgroundColour(roreditor.ShapedControls.skinBackColor)
+		grid = wx.GridBagSizer(5,5) 
+		grid.SetEmptyCellSize(wx.Size(230,20))
+		r = 0
+		c = 0
 
-		self.panel = wx.Panel(self, wx.ID_ANY)
+		self.image = ImagePanel(self, wx.ID_ANY, SPLASHIMAGE)
+		grid.Add(self.image, pos = wx.GBPosition(r,c), span = wx.GBSpan(3, 5))
 
-		self.image = ImagePanel(self.panel, wx.ID_ANY, SPLASHIMAGE)
+		r += 4
+		c = 0
+		dummy = wx.StaticText(self, wx.ID_ANY, "Step 1: ", size = (80, 60), style = wx.ALIGN_CENTER)
+		#dummy.SetForegroundColour(wx.BLUE)
+		dummy.SetFont(wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD))
+		grid.Add(dummy, pos = wx.GBPosition(r,c), span = wx.GBSpan(1, 1))
 
-		self.lblRoRDir = wx.StaticText(self.panel, wx.ID_ANY, "Please select Rigs of Rods Directory!", size = (20, 40), style = wx.ALIGN_CENTRE | wx.ST_NO_AUTORESIZE)
-		self.btnSelectRoRDir = wx.Button(self.panel, wx.ID_ANY, "Select RoR Directory")
+		
+		c += 1
+		self.lblRoRDir = wx.StaticText(self, wx.ID_ANY, "Please select folder where Rigs of Rods is installed:", size = (210, 40), style = wx.ALIGN_LEFT | wx.ST_NO_AUTORESIZE)
+		grid.Add(self.lblRoRDir, pos = wx.GBPosition(r,c), span = wx.GBSpan(1, 1))
+		
+		c += 1
+		self.btnSelectRoRDir = wx.Button(self, wx.ID_ANY, "Select RoR Folder", size = wx.Size(100,20))
+		grid.Add(self.btnSelectRoRDir, pos = wx.GBPosition(r,c), span = wx.GBSpan(1, 1))
 		self.Bind(wx.EVT_BUTTON, self.OnSelectRoRDir, self.btnSelectRoRDir)
 
 		#self.btnStartRoR = wx.Button(self.panel, wx.ID_ANY, "Start RoR")
 		#self.Bind(wx.EVT_BUTTON, self.OnStartRoR, self.btnStartRoR)
 
-		if sys.platform == 'win32':
-			self.cbbRenderEngine = wx.ComboBox(self.panel, wx.ID_ANY, RENDERSYSTEMS[0], style=wx.CB_READONLY, choices=RENDERSYSTEMS)
-			self.Bind(wx.EVT_COMBOBOX, self.OnSelectRenderer, self.cbbRenderEngine)
+		r +=1
+		c = 0
+		dummy = wx.StaticText(self, wx.ID_ANY, "Step 2: ", size = (80, 60), style = wx.ALIGN_CENTER)
+		#dummy.SetForegroundColour(wx.BLUE)
+		dummy.SetFont(wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD))
+		grid.Add(dummy, pos = wx.GBPosition(r,c), span = wx.GBSpan(1, 1))
 
-		self.btnStartTerrainEditor = wx.Button(self.panel, wx.ID_ANY, "Start Editor")
+		c += 1
+		l = wx.StaticText(self, wx.ID_ANY, "Please select Graphic Renderer you want to use:", size = (210, 40))
+		grid.Add(l, pos = wx.GBPosition(r,c), span = wx.GBSpan(1, 1)) 
+		
+
+		c +=1
+		self.cbbRenderEngine = wx.ComboBox(self, wx.ID_ANY, RENDERSYSTEMS[1], size = wx.Size(100,20), style=wx.CB_READONLY, choices=RENDERSYSTEMS)
+		self.Bind(wx.EVT_COMBOBOX, self.OnSelectRenderer, self.cbbRenderEngine)
+		grid.Add(self.cbbRenderEngine, pos = wx.GBPosition(r,c), span = wx.GBSpan(1, 1))
+
+#		r += 1
+#		c = 0
+#		l = wx.StaticText(self, wx.ID_ANY, "Once the button bellow will be enabled, you can start RoR Toolkit.", size = (120, 40), style = wx.ALIGN_CENTRE | wx.ST_NO_AUTORESIZE)
+#		grid.Add(l, pos = wx.GBPosition(r,c), span = wx.GBSpan(1, 2)) 
+		
+		r +=1
+		c = 0
+		dummy = wx.StaticText(self, wx.ID_ANY, "Step 3: ", size = (80, 60), style = wx.ALIGN_CENTER)
+		#dummy.SetForegroundColour(wx.BLUE)
+		dummy.SetFont(wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD))
+		grid.Add(dummy, pos = wx.GBPosition(r,c), span = wx.GBSpan(1, 1))
+
+		c += 1
+		l = wx.StaticText(self, wx.ID_ANY, "Start Editor button will remain Disable until you complete previous steps.", size = (210, 40))
+		grid.Add(l, pos = wx.GBPosition(r,c), span = wx.GBSpan(1, 1)) 
+
+		c += 1
+		self.btnStartTerrainEditor = wx.Button(self, wx.ID_ANY, "Start Editor", size = wx.Size(100,20))
 		self.Bind(wx.EVT_BUTTON, self.OnTerrainEditor, self.btnStartTerrainEditor)
-
+		grid.Add(self.btnStartTerrainEditor , pos = wx.GBPosition(r,c), span = wx.GBSpan(1, 1))
 		#self.btnBugReport = wx.Button(self.panel, wx.ID_ANY, "Report a Bug")
 		#self.Bind(wx.EVT_BUTTON, self.OnBugReport, self.btnBugReport)
 		#if sys.platform != 'win32':
@@ -74,18 +123,26 @@ class SettingsDialog(wx.Frame):
 		#self.btnRepClient = wx.Button(self.panel, wx.ID_ANY, "Repository Client")
 		#self.Bind(wx.EVT_BUTTON, self.OnRepClient, self.btnRepClient)
 
-		self.btnExit = wx.Button(self.panel, wx.ID_ANY, "Exit")
-		self.Bind(wx.EVT_BUTTON, self.OnExit, self.btnExit)
+		r += 1
+		c = 3
+		self.btnExit = wx.Button(self, wx.ID_CANCEL, "Exit", size = wx.Size(90,20))
+		self.Bind(wx.EVT_BUTTON, self.OnAbort, self.btnExit)
+		grid.Add(self.btnExit, pos = wx.GBPosition(r,c), span = wx.GBSpan(1, 1)) 
 
-		self.rordir = getSettingsManager().getSetting("RigsOfRods", "BasePath")
+		self.SetEscapeId(self.btnExit.GetId())
+		self.SetAffirmativeId(self.btnStartTerrainEditor.GetId())
+		self.SetSizerAndFit(grid)
+		self.SetAutoLayout(True)
+		self.rordir = rorSettings().rorFolder
 		self.checkRoRDir(self.rordir)
 
 		#print self.rordir
+
 		self.displayRoRDir()
 		self.__set_properties()
-		self.__do_layout()
 
-		self.renderSystem = RENDERSYSTEMS[0]
+		self.renderSystem = 1
+		self.updateRenderer()
 
 	def OnRepClient(self, event=None):
 		import repomanager
@@ -97,35 +154,36 @@ class SettingsDialog(wx.Frame):
 			#self.btnStartTruckEditor.Enable(False)
 			self.btnStartTerrainEditor.Enable(False)
 			#self.btnBugReport.Enable(False)
-			self.lblRoRDir.SetLabel("Please select Rigs of Rods Directory!")
+			self.lblRoRDir.SetLabel("Please select where Rigs of Rods was Installed on your computer:")
 		else:
 			#self.btnStartRoR.Enable(True)
 			#self.btnStartTruckEditor.Enable(True)
 			self.btnStartTerrainEditor.Enable(True)
 			#self.btnBugReport.Enable(True)
-			self.lblRoRDir.SetLabel("Selected Rigs of Rods Directory: " + self.rordir)
+			self.lblRoRDir.SetLabel("Selected Rigs of Rods Folder: " + self.rordir)
 
 	def OnSelectRenderer(self, id=None, func=None):
 		self.renderSystem = self.cbbRenderEngine.GetCurrentSelection()
 		self.updateRenderer()
 
 	def updateRenderer(self):
+		log().debug("updateRenderer: retrieving plugins_windows.cfg")
 		filename = os.path.join(os.getcwd(), "plugins_windows.cfg")
 		f=open(filename, 'r')
 		content = f.readlines()
 		f.close()
 		log().info("selected rendersystem: %s" % RENDERSYSTEMS[self.renderSystem])
 		for i in range(0, len(content)):
-			if content[i].find(OPENGLLINE) >= 0:
-				if self.renderSystem == 0:
-					content[i] = OPENGLLINE+"\n"
-				else:
-					content[i] = "#"+OPENGLLINE+"\n"
-			elif content[i].find(DIRECTXLINE) >= 0:
+			if content[i].find(DIRECTXLINE) >= 0:
 				if self.renderSystem == 1:
 					content[i] = DIRECTXLINE+"\n"
 				else:
 					content[i] = "#"+DIRECTXLINE+"\n"
+			elif content[i].find(OPENGLLINE) >= 0:
+				if self.renderSystem == 0:
+					content[i] = OPENGLLINE+"\n"
+				else:
+					content[i] = "#"+OPENGLLINE+"\n"
 
 		f=open(filename, 'w')
 		f.writelines(content)
@@ -204,26 +262,10 @@ class SettingsDialog(wx.Frame):
 			log().exception(str(e))
 
 	def OnTerrainEditor(self, event=None):
-		try:
-			log().info("starting Terraineditor")
-			self.Close()
-			app = roreditor.MainFrame.startApp()
-			del app
-			#self.Show()
-		except Exception, e:
-			log().exception(str(e))
+		event.Skip()
 
 	def checkRoRDir(self, fn):
-		# what a damn bug by myself :-\
-		if not checkRoRDirectory(fn):
-			dlg = wx.MessageDialog(self, "RoR binary executable not found in the selected directory!\nPlease select a new directory!", "Error", wx.OK | wx.ICON_INFORMATION)
-			dlg.ShowModal()
-			dlg.Destroy()
-			self.rordir = ""
-			return False
-
-		self.rordir = fn
-		return True
+		return checkRoRDirectory(fn)
 
 	def OnSelectRoRDir(self, event=None):
 		dialog = wx.DirDialog(self, "Choose RoR Directory", "")
@@ -236,70 +278,25 @@ class SettingsDialog(wx.Frame):
 			# no need to escape here!
 			#newpath = newpath.replace(" ", "\ ")
 			self.rordir = newpath
-			getSettingsManager().setSetting("RigsOfRods", "BasePath", newpath)
+			rorSettings().setSetting("RigsOfRods", "BasePath", newpath)
+			rorSettings().rorFolder = newpath
+			log().debug("starter: saved BasePath")
 			self.displayRoRDir()
 
-	def OnExit(self, event=None):
-		self.Close()
+	def OnAbort(self, event=None):
+		log().debug('starter finalize RoR Toolkit')
 		sys.exit(0)
 
 	def __set_properties(self):
-		#try:
-		#import ror.svn
-		self.SetTitle("RoR Toolkit 0.34")
-		#except:
-		#    self.SetTitle("RoR Toolkit")
+		self.SetTitle(rorSettings().title)
 
-	def __do_layout(self):
-
-		sizer_panel = wx.BoxSizer(wx.VERTICAL)
-		sizer_panel.Add(self.image, 0, wx.EXPAND, 0)
-
-		sizer_a = wx.BoxSizer(wx.VERTICAL)
-		sizer_a.Add(self.lblRoRDir, 0, wx.EXPAND, 0)
-		sizer_a.Add(self.btnSelectRoRDir, 0, wx.EXPAND, 0)
-		#sizer_c.Add(self.btnStartTruckEditor, 1, wx.EXPAND, 0)
-		#sizer_a.Add(self.btnStartRoR, 0, wx.EXPAND, 0)
-		sizer_a.Add(self.btnStartTerrainEditor, 1, wx.EXPAND, 0)
-
-		if sys.platform == 'win32':
-			sizer_a.Add(self.cbbRenderEngine, 0, wx.EXPAND, 0)
-			sizer_panel.Add(sizer_a, 1, wx.EXPAND, 0)
-
-		#sizer_d = wx.BoxSizer(wx.HORIZONTAL)
-		#sizer_d.Add(self.btnBugReport, 1, wx.EXPAND, 0)
-		#sizer_d.Add(self.btnUpdate, 1, wx.EXPAND, 0)
-		#sizer_panel.Add(sizer_d, 0, wx.EXPAND, 0)
-
-
-		#sizer_e = wx.BoxSizer(wx.HORIZONTAL)
-		#sizer_e.Add(self.btnDepGraph, 1, wx.EXPAND, 0)
-		#sizer_e.Add(self.btnRepClient, 1, wx.EXPAND, 0)
-		#sizer_e.Add(self.btnModUninstaller, 1, wx.EXPAND, 0)
-		#sizer_panel.Add(sizer_e, 0, wx.EXPAND, 0)
-
-		sizer_panel.Add(self.btnExit, 0, wx.EXPAND, 0)
-		self.panel.SetSizer(sizer_panel)
-
-		sizer_main = wx.BoxSizer(wx.VERTICAL)
-		sizer_main.Add(self.panel, 0, wx.EXPAND, 0)
-
-		self.SetAutoLayout(True)
-		self.SetSizer(sizer_main)
-		sizer_main.Fit(self)
-		sizer_main.SetSizeHints(self)
-		self.Layout()
-
-def startApp():
-	MainApp = wx.PySimpleApp()
-	wx.InitAllImageHandlers() #you may or may not need this
-	myFrame = SettingsDialog(None, -1, "")
+def startApp(MainApp):
+# Lepes: No new application needed, just a ShowModal() Frame
+#	MainApp = wx.PySimpleApp()
+#	wx.InitAllImageHandlers() #you may or may not need this
+	myFrame = SettingsDialog(MainApp, -1, "")
 
 	# add icon to the window
 	icon = wx.Icon("ror.ico",wx.BITMAP_TYPE_ICO)
 	myFrame.SetIcon(icon)
-	MainApp.SetTopWindow(myFrame)
-
-	myFrame.Show()
-
-	MainApp.MainLoop()
+	return myFrame

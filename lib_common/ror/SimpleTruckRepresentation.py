@@ -16,7 +16,7 @@ def createTruckMesh(sceneManager, fn, uuid):
     p.parse(fn)
     if not 'nodes' in p.tree.keys() or not 'beams' in p.tree.keys():
         log().error("error while processing truck file %s" % fn)
-        return False
+        return None, None, None
         
     try:
     
@@ -137,4 +137,4 @@ def createTruckMesh(sceneManager, fn, uuid):
     except Exception, err:
         log().error("error while processing truck file %s" % fn)
         log().error(str(err))
-        return None, None, None
+        raise 

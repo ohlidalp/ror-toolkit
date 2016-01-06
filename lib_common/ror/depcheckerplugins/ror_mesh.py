@@ -3,7 +3,7 @@ import subprocess,os,sys,signal,pty,time,errno,thread
 
 from deptools import *
 
-cb = getSettingsManager().getSetting("RoRToolkit", "OgreXMLConverterExecutable")
+cb = rorSettings().getSetting("RoRToolkit", "OgreXMLConverterExecutable")
 if cb != '':
 	CONVERTERBIN = cb
 else:

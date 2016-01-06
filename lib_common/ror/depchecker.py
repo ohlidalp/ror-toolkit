@@ -2,7 +2,7 @@
 import sys, os, os.path, copy, md5
 
 from ror.logger import log
-from ror.settingsManager import getSettingsManager
+from ror.settingsManager import rorSettings
 
 DEPCHECKPATH = "depcheckerplugins"
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), DEPCHECKPATH))

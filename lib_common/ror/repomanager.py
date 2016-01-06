@@ -2,7 +2,7 @@
 
 import repoclient
 from logger import log
-from settingsManager import getSettingsManager
+from settingsManager import *
 import wx, wx.grid, wx.html, os, os.path, base64, sys
 from datetime import *
 

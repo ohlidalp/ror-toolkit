@@ -6,7 +6,7 @@
 # Author:       Pierre Hjälm (from C++ original by Julian Smart)
 #
 # Created:      2004-05-08
-# RCS-ID:       $Id: _bmpshape.py,v 1.2 2004/06/18 16:32:02 RD Exp $
+# RCS-ID:       $Id: _bmpshape.py 27884 2004-06-18 16:32:03Z RD $
 # Copyright:    (c) 2004 Pierre Hjälm - 1998 Julian Smart
 # Licence:      wxWindows license
 #----------------------------------------------------------------------------

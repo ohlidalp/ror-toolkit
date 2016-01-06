@@ -4,7 +4,7 @@
 # Email:        wsadkin@nameconnector.com
 # Created:      02/11/2003
 # Copyright:    (c) 2003 by Will Sadkin, 2003
-# RCS-ID:       $Id: ipaddrctrl.py,v 1.3 2004/10/11 22:13:01 RD Exp $
+# RCS-ID:       $Id: ipaddrctrl.py 29787 2004-10-11 22:13:18Z RD $
 # License:      wxWidgets license
 #----------------------------------------------------------------------------
 # NOTE:

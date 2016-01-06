@@ -5,7 +5,7 @@ import sys, os, os.path, base64
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
 from logger import log
-from settingsManager import getSettingsManager
+from settingsManager import *
 import modtool
 
 import wx, wx.html
@@ -40,7 +40,7 @@ class ModGUI(wx.Frame):
         self.__do_layout()
 
     def updateData(self):
-        self.data = modtool.ModTool().getRoRMods(False)
+        self.data = modtool.ModTool().getRoRMods(True)
         self.listbox.Set(self.data)
         
         
@@ -59,7 +59,7 @@ class ModGUI(wx.Frame):
         for number in self.listbox.GetSelections():
             targetname = self.data[number]
             log().info("trying to uninstall mod %s ..." % targetname)
-            modtool.ModTool().work("uninstall", targetname, False, dryrun)
+            modtool.ModTool().work("uninstall", targetname, True, dryrun)
             counter += 1
         if not dryrun:
             dlg = wx.MessageDialog(self, "%d Mods uninstalled!" % counter, "Info", wx.OK | wx.ICON_INFORMATION)

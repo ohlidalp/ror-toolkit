@@ -4,7 +4,7 @@ import sys, os, os.path
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 
 from ror.logger import log
-from ror.settingsManager import getSettingsManager
+from ror.settingsManager import rorSettings
 
 REQUIRES = 'requires'
 OPTIONAL = 'optional'

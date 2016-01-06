@@ -1,0 +1,4 @@
+[skin]
+SkinBackgroundColor =  187, 165, 228
+SkinTransparentColor = 0, 0, 0
+color= 187, 165, 228

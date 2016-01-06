@@ -3,7 +3,7 @@
 # Author:       Will Sadkin
 # Created:      03/21/2003
 # Copyright:    (c) 2003 by Will Sadkin
-# RCS-ID:       $Id: scrolledpanel.py,v 1.11 2006/10/31 08:49:23 RD Exp $
+# RCS-ID:       $Id: scrolledpanel.py 63505 2010-02-17 01:55:31Z RD $
 # License:      wxWindows license
 #----------------------------------------------------------------------------
 # 12/11/2003 - Jeff Grimmett (grimmtooth@softhome.net)
@@ -42,7 +42,8 @@ class ScrolledPanel( wx.PyScrolledWindow ):
         self.Bind(wx.EVT_CHILD_FOCUS, self.OnChildFocus)
 
 
-    def SetupScrolling(self, scroll_x=True, scroll_y=True, rate_x=20, rate_y=20):
+    def SetupScrolling(self, scroll_x=True, scroll_y=True, rate_x=20, rate_y=20, 
+                       scrollToTop=True):
         """
         This function sets up the event handling necessary to handle
         scrolling properly. It should be called within the __init__
@@ -66,12 +67,13 @@ class ScrolledPanel( wx.PyScrolledWindow ):
                 h += rate_y - (h % rate_y)
             self.SetVirtualSize( (w, h) )
         self.SetScrollRate(rate_x, rate_y)        
-        wx.CallAfter(self._SetupAfter) # scroll back to top after initial events
+        wx.CallAfter(self._SetupAfter, scrollToTop) # scroll back to top after initial events
 
 
-    def _SetupAfter(self):
+    def _SetupAfter(self, scrollToTop):
         self.SetVirtualSize(self.GetBestVirtualSize())
-        self.Scroll(0,0)
+        if scrollToTop:
+            self.Scroll(0,0)
 
 
     def OnChildFocus(self, evt):
@@ -79,7 +81,13 @@ class ScrolledPanel( wx.PyScrolledWindow ):
         # this handler will try to scroll enough to see it.
         evt.Skip()
         child = evt.GetWindow()
+        self.ScrollChildIntoView(child)
+        
 
+    def ScrollChildIntoView(self, child):
+        """
+        Scrolls the panel such that the specified child window is in view.
+        """        
         sppu_x, sppu_y = self.GetScrollPixelsPerUnit()
         vs_x, vs_y   = self.GetViewStart()
         cr = child.GetRect()
@@ -100,17 +108,17 @@ class ScrolledPanel( wx.PyScrolledWindow ):
 
         # is it past the right edge ?
         if cr.right > clntsz.width and sppu_x > 0:
-            diff = (cr.right - clntsz.width) / sppu_x
+            diff = (cr.right - clntsz.width + 1) / sppu_x
             if cr.x - diff * sppu_x > 0:
-                new_vs_x = vs_x + diff + 1
+                new_vs_x = vs_x + diff
             else:
                 new_vs_x = vs_x + (cr.x / sppu_x)
                 
         # is it below the bottom ?
         if cr.bottom > clntsz.height and sppu_y > 0:
-            diff = (cr.bottom - clntsz.height) / sppu_y
+            diff = (cr.bottom - clntsz.height + 1) / sppu_y
             if cr.y - diff * sppu_y > 0:
-                new_vs_y = vs_y + diff + 1
+                new_vs_y = vs_y + diff
             else:
                 new_vs_y = vs_y + (cr.y / sppu_y)
 

@@ -1,0 +1,37 @@
+// Ogre overlay scripts
+POCore/spline
+{
+	zorder 500
+	// Stats block
+	container BorderPanel(POCore/splinePanel)
+	{
+		metrics_mode relative
+		horz_align right
+		vert_align top
+		left -0.25
+		top 0.01
+		width 0.03
+		height 0.04
+		material POCore/splineMaterial
+
+		element TextArea(POCore/splineKm)
+		{
+			metrics_mode relative
+			horz_align right
+			left 0.008
+			top 0.01
+			width 0.1
+			height 0.04
+			
+			font_name BlueHighway
+			char_height 0.03
+			caption km:
+			colour_top 1 0.0 0.0
+			//1 1 0.7
+			colour_bottom 1 0 0.0
+			//1 1 0.7
+		}
+	
+	}
+	
+}

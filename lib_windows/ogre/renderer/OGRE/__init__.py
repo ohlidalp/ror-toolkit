@@ -34,7 +34,7 @@ def Degree( d=None, r=None ):
     elif isinstance( d, _ogre_.Degree ):
         return _ogre_.Degree().assign( d )
     elif r: 
-        return _ogre.Degree (r=r)
+        return _ogre_.Degree (r=r)
     else:
         return _ogre_.Degree( d=d )
         

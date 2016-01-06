@@ -1,0 +1,26 @@
+Main TODO List
+===============
+
+Here it is what Lepes was thinking about Toolkit, before he implement nothing :-D
+
+truck editor:
+renumbering tool, delete groups of nodes/beams...etc
+
+
+RoR Terrain
+- DEGA: save button enable only if saved previously.
+- DEGA: non understood lines (as trees) shouldn't been deleted from terrain
+- Lenni request: implement begin_tree 
+- fixed: rotating planes / bridges when saving
+- don't allow camera to get out of the terrain : because ogre.Ray doesn't work and hang !! solutions:
+    - just disable click in objects 
+    - "C" key will control both settings (go underground and out of terrain bounds)
+- Before minimizing main window, hide main_frame_tools_xxxxx (it is shown on task bar ugly and it hangs main app.
+- fix shapedWindow when dragging on main StaticText (info window is not fixed)
+- fixed: shapedwindow main label Font Size
+- interesting: saving an object on position (0,0,0) RoR crash with Report bug window ;-)
+- configurable keymap
+- fixed: dynamic scale for RoRCharacter / RoRcamera / Truck Start Position, so you could drag & drop easily with larger zoom. 
+
+
+- imposible to move from float to decimal due ogre wrapper.

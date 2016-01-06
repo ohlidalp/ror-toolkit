@@ -9,7 +9,7 @@ except ImportError:
     print "If you are running ubuntu install the python-svn package"
 
 from ror.logger import log
-from ror.settingsManager import getSettingsManager
+from ror.settingsManager import rorSettings
 
 URL = "http://roreditor.svn.sourceforge.net/svnroot/roreditor/trunk"
 changes = 0

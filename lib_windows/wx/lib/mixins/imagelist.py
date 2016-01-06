@@ -5,7 +5,7 @@
 # Author:      Robin Dunn
 #
 # Created:     15-May-2001
-# RCS-ID:      $Id: imagelist.py,v 1.5 2003/12/17 00:33:46 RD Exp $
+# RCS-ID:      $Id: imagelist.py 24889 2003-12-17 00:34:40Z RD $
 # Copyright:   (c) 2001 by Total Control Software
 # Licence:     wxWindows license
 #----------------------------------------------------------------------------

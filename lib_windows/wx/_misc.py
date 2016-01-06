@@ -101,6 +101,7 @@ SYS_COLOUR_GRADIENTACTIVECAPTION = _misc_.SYS_COLOUR_GRADIENTACTIVECAPTION
 SYS_COLOUR_GRADIENTINACTIVECAPTION = _misc_.SYS_COLOUR_GRADIENTINACTIVECAPTION
 SYS_COLOUR_MENUHILIGHT = _misc_.SYS_COLOUR_MENUHILIGHT
 SYS_COLOUR_MENUBAR = _misc_.SYS_COLOUR_MENUBAR
+SYS_COLOUR_LISTBOXTEXT = _misc_.SYS_COLOUR_LISTBOXTEXT
 SYS_COLOUR_MAX = _misc_.SYS_COLOUR_MAX
 SYS_MOUSE_BUTTONS = _misc_.SYS_MOUSE_BUTTONS
 SYS_BORDER_X = _misc_.SYS_BORDER_X
@@ -906,6 +907,11 @@ class BusyCursor(object):
         _misc_.BusyCursor_swiginit(self,_misc_.new_BusyCursor(*args, **kwargs))
     __swig_destroy__ = _misc_.delete_BusyCursor
     __del__ = lambda self : None;
+    def __enter__(self):
+        return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return False
+
 _misc_.BusyCursor_swigregister(BusyCursor)
 
 class WindowDisabler(object):
@@ -917,6 +923,11 @@ class WindowDisabler(object):
         _misc_.WindowDisabler_swiginit(self,_misc_.new_WindowDisabler(*args, **kwargs))
     __swig_destroy__ = _misc_.delete_WindowDisabler
     __del__ = lambda self : None;
+    def __enter__(self):
+        return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return False
+
 _misc_.WindowDisabler_swigregister(WindowDisabler)
 
 class BusyInfo(_core.Object):
@@ -929,6 +940,11 @@ class BusyInfo(_core.Object):
     __swig_destroy__ = _misc_.delete_BusyInfo
     __del__ = lambda self : None;
     def Destroy(self): pass 
+    def __enter__(self):
+        return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return False
+
 _misc_.BusyInfo_swigregister(BusyInfo)
 
 class StopWatch(object):
@@ -1725,6 +1741,10 @@ class LogChain(Log):
         """GetOldLog(self) -> Log"""
         return _misc_.LogChain_GetOldLog(*args, **kwargs)
 
+    def DetachOldLog(*args, **kwargs):
+        """DetachOldLog(self)"""
+        return _misc_.LogChain_DetachOldLog(*args, **kwargs)
+
     OldLog = property(GetOldLog,doc="See `GetOldLog`") 
 _misc_.LogChain_swigregister(LogChain)
 
@@ -1807,6 +1827,11 @@ class LogNull(object):
         _misc_.LogNull_swiginit(self,_misc_.new_LogNull(*args, **kwargs))
     __swig_destroy__ = _misc_.delete_LogNull
     __del__ = lambda self : None;
+    def __enter__(self):
+        return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return False
+
 _misc_.LogNull_swigregister(LogNull)
 
 def LogTrace(*args):
@@ -1927,7 +1952,7 @@ class Process(_core.EvtHandler):
         return _misc_.Process_GetErrorStream(*args, **kwargs)
 
     def GetOutputStream(*args, **kwargs):
-        """GetOutputStream(self) -> OutputStream"""
+        """GetOutputStream(self) -> wxOutputStream"""
         return _misc_.Process_GetOutputStream(*args, **kwargs)
 
     def CloseOutput(*args, **kwargs):
@@ -2396,6 +2421,8 @@ class FileTypeInfo(object):
     def __init__(self, *args, **kwargs): 
         """__init__(self, String mimeType, String openCmd, String printCmd, String desc) -> FileTypeInfo"""
         _misc_.FileTypeInfo_swiginit(self,_misc_.new_FileTypeInfo(*args, **kwargs))
+    __swig_destroy__ = _misc_.delete_FileTypeInfo
+    __del__ = lambda self : None;
     def IsValid(*args, **kwargs):
         """IsValid(self) -> bool"""
         return _misc_.FileTypeInfo_IsValid(*args, **kwargs)
@@ -3548,11 +3575,12 @@ class DateTime(object):
         return _misc_.DateTime_GetCentury(*args, **kwargs)
 
     GetCentury = staticmethod(GetCentury)
-    def GetNumberOfDaysinYear(*args, **kwargs):
-        """GetNumberOfDaysinYear(int year, int cal=Gregorian) -> int"""
-        return _misc_.DateTime_GetNumberOfDaysinYear(*args, **kwargs)
+    def GetNumberOfDaysInYear(*args, **kwargs):
+        """GetNumberOfDaysInYear(int year, int cal=Gregorian) -> int"""
+        return _misc_.DateTime_GetNumberOfDaysInYear(*args, **kwargs)
 
-    GetNumberOfDaysinYear = staticmethod(GetNumberOfDaysinYear)
+    GetNumberOfDaysInYear = staticmethod(GetNumberOfDaysInYear)
+    GetNumberOfDaysinYear = GetNumberOfDaysInYear # for compatibility 
     def GetNumberOfDaysInMonth(*args, **kwargs):
         """GetNumberOfDaysInMonth(int month, int year=Inv_Year, int cal=Gregorian) -> int"""
         return _misc_.DateTime_GetNumberOfDaysInMonth(*args, **kwargs)
@@ -4079,9 +4107,9 @@ def DateTime_GetCentury(*args, **kwargs):
   """DateTime_GetCentury(int year=Inv_Year) -> int"""
   return _misc_.DateTime_GetCentury(*args, **kwargs)
 
-def DateTime_GetNumberOfDaysinYear(*args, **kwargs):
-  """DateTime_GetNumberOfDaysinYear(int year, int cal=Gregorian) -> int"""
-  return _misc_.DateTime_GetNumberOfDaysinYear(*args, **kwargs)
+def DateTime_GetNumberOfDaysInYear(*args, **kwargs):
+  """DateTime_GetNumberOfDaysInYear(int year, int cal=Gregorian) -> int"""
+  return _misc_.DateTime_GetNumberOfDaysInYear(*args, **kwargs)
 
 def DateTime_GetNumberOfDaysInMonth(*args, **kwargs):
   """DateTime_GetNumberOfDaysInMonth(int month, int year=Inv_Year, int cal=Gregorian) -> int"""
@@ -4362,12 +4390,12 @@ class TimeSpan(object):
     def __str__(self):
         return self.Format().encode(wx.GetDefaultPyEncoding())
 
-    Days = property(GetDays,doc="See `GetDays`") 
-    Hours = property(GetHours,doc="See `GetHours`") 
-    Milliseconds = property(GetMilliseconds,doc="See `GetMilliseconds`") 
-    Minutes = property(GetMinutes,doc="See `GetMinutes`") 
-    Seconds = property(GetSeconds,doc="See `GetSeconds`") 
-    Weeks = property(GetWeeks,doc="See `GetWeeks`") 
+    days = property(GetDays,doc="See `GetDays`") 
+    hours = property(GetHours,doc="See `GetHours`") 
+    milliseconds = property(GetMilliseconds,doc="See `GetMilliseconds`") 
+    minutes = property(GetMinutes,doc="See `GetMinutes`") 
+    seconds = property(GetSeconds,doc="See `GetSeconds`") 
+    weeks = property(GetWeeks,doc="See `GetWeeks`") 
 _misc_.TimeSpan_swigregister(TimeSpan)
 
 def TimeSpan_Milliseconds(*args, **kwargs):
@@ -4559,11 +4587,11 @@ class DateSpan(object):
         """__ne__(self, DateSpan other) -> bool"""
         return _misc_.DateSpan___ne__(*args, **kwargs)
 
-    Days = property(GetDays,SetDays,doc="See `GetDays` and `SetDays`") 
-    Months = property(GetMonths,SetMonths,doc="See `GetMonths` and `SetMonths`") 
-    TotalDays = property(GetTotalDays,doc="See `GetTotalDays`") 
-    Weeks = property(GetWeeks,SetWeeks,doc="See `GetWeeks` and `SetWeeks`") 
-    Years = property(GetYears,SetYears,doc="See `GetYears` and `SetYears`") 
+    days = property(GetDays,SetDays,doc="See `GetDays` and `SetDays`") 
+    months = property(GetMonths,SetMonths,doc="See `GetMonths` and `SetMonths`") 
+    totalDays = property(GetTotalDays,doc="See `GetTotalDays`") 
+    weeks = property(GetWeeks,SetWeeks,doc="See `GetWeeks` and `SetWeeks`") 
+    years = property(GetYears,SetYears,doc="See `GetYears` and `SetYears`") 
 _misc_.DateSpan_swigregister(DateSpan)
 
 def DateSpan_Days(*args, **kwargs):
@@ -4915,7 +4943,7 @@ _misc_.PyDataObjectSimple_swigregister(PyDataObjectSimple)
 class DataObjectComposite(DataObject):
     """
     wx.DataObjectComposite is the simplest `wx.DataObject` derivation
-    which may be sued to support multiple formats. It contains several
+    which may be used to support multiple formats. It contains several
     'wx.DataObjectSimple` objects and supports any format supported by at
     least one of them. Only one of these data objects is *preferred* (the
     first one if not explicitly changed by using the second parameter of
@@ -4934,7 +4962,7 @@ class DataObjectComposite(DataObject):
         __init__(self) -> DataObjectComposite
 
         wx.DataObjectComposite is the simplest `wx.DataObject` derivation
-        which may be sued to support multiple formats. It contains several
+        which may be used to support multiple formats. It contains several
         'wx.DataObjectSimple` objects and supports any format supported by at
         least one of them. Only one of these data objects is *preferred* (the
         first one if not explicitly changed by using the second parameter of
@@ -5257,11 +5285,11 @@ class MetafileDataObject(DataObjectSimple):
         """__init__(self) -> MetafileDataObject"""
         _misc_.MetafileDataObject_swiginit(self,_misc_.new_MetafileDataObject(*args, **kwargs))
     def SetMetafile(*args, **kwargs):
-        """SetMetafile(self, wxMetafile metafile)"""
+        """SetMetafile(self, MetaFile metafile)"""
         return _misc_.MetafileDataObject_SetMetafile(*args, **kwargs)
 
     def GetMetafile(*args, **kwargs):
-        """GetMetafile(self) -> wxMetafile"""
+        """GetMetafile(self) -> MetaFile"""
         return _misc_.MetafileDataObject_GetMetafile(*args, **kwargs)
 
 _misc_.MetafileDataObject_swigregister(MetafileDataObject)
@@ -6006,7 +6034,7 @@ class StandardPaths(object):
     that these are just  examples and the actual values may differ. For
     example, under Windows the system administrator may change the
     standard directories locations, i.e. the Windows directory may be
-    named W:\Win2003 instead of the default C:\Windows.
+    named W:/Win2003 instead of the default C:/Windows.
 
     The strings appname and username should be replaced with the value
     returned by `wx.App.GetAppName` and the name of the currently logged
@@ -6053,7 +6081,7 @@ class StandardPaths(object):
         GetConfigDir(self) -> String
 
         Return the directory with system config files: /etc under Unix,
-        'c:\Documents and Settings\All Users\Application Data' under Windows,
+        'c:/Documents and Settings/All Users/Application Data' under Windows,
         /Library/Preferences for Mac
         """
         return _misc_.StandardPaths_GetConfigDir(*args, **kwargs)
@@ -6063,7 +6091,7 @@ class StandardPaths(object):
         GetUserConfigDir(self) -> String
 
         Return the directory for the user config files: $HOME under Unix,
-        'c:\Documents and Settings\username' under Windows, and 
+        'c:/Documents and Settings/username' under Windows, and 
         ~/Library/Preferences under Mac
             
         Only use this if you have a single file to put there, otherwise
@@ -6077,7 +6105,7 @@ class StandardPaths(object):
 
         Return the location of the application's global, (i.e. not
         user-specific,) data files: prefix/share/appname under Unix,
-        'c:\Program Files\appname' under Windows,
+        'c:/Program Files/appname' under Windows,
         appname.app/Contents/SharedSupport app bundle directory under Mac.
         """
         return _misc_.StandardPaths_GetDataDir(*args, **kwargs)
@@ -6097,8 +6125,8 @@ class StandardPaths(object):
         GetUserDataDir(self) -> String
 
         Return the directory for the user-dependent application data files:
-        $HOME/.appname under Unix, c:\Documents and
-        Settings\username\Application Data\appname under Windows and
+        $HOME/.appname under Unix, c:/Documents and
+        Settings/username/Application Data/appname under Windows and
         ~/Library/Application Support/appname under Mac
         """
         return _misc_.StandardPaths_GetUserDataDir(*args, **kwargs)
@@ -6111,7 +6139,7 @@ class StandardPaths(object):
         with the other machines
 
         Same as `GetUserDataDir` for all platforms except Windows where it is
-        the 'Local Settings\Application Data\appname' directory.
+        the 'Local Settings/Application Data/appname' directory.
         """
         return _misc_.StandardPaths_GetUserLocalDataDir(*args, **kwargs)
 
@@ -6157,7 +6185,7 @@ class StandardPaths(object):
 
         Return the Documents directory for the current user.
 
-        C:\Documents and Settings\username\Documents under Windows,
+        C:/Documents and Settings/username/Documents under Windows,
         $HOME under Unix and ~/Documents under Mac
         """
         return _misc_.StandardPaths_GetDocumentsDir(*args, **kwargs)

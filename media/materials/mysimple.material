@@ -167,7 +167,7 @@ material mysimple/transbluesel
 			depth_check off
             cull_hardware none 
             scene_blend alpha_blend
-            depth_write off
+            depth_write on
             texture_unit
             {
                 colour_op_ex source1 src_manual src_current 0 0 1
@@ -176,8 +176,100 @@ material mysimple/transbluesel
         } 
     }
 }
+material mysimple/transyellow
+{
+    technique
+    {
+        pass
+        {
+			lighting off
+			depth_check off
+            cull_hardware none 
+            scene_blend alpha_blend
+            depth_write on
+            texture_unit
+            {
+                colour_op_ex source1 src_manual src_current 0.9 0.9 0
+                alpha_op_ex source1 src_manual src_current 0.5
+            }
+        } 
+    }
+}
 
 
+material mysimple/yellow
+{
+    technique
+    {
+        pass
+        {
+			lighting off
+			depth_check on
+            cull_hardware none 
+            //scene_blend alpha_blend
+            depth_write on
+            texture_unit
+            {
+                colour_op_ex source1 src_manual src_current 0.9 0.9 0
+            }
+        } 
+    }
+}
+material mysimple/green
+{
+    technique
+    {
+        pass
+        {
+			lighting off
+			depth_check on
+            cull_hardware none 
+            //scene_blend alpha_blend
+            depth_write on
+            texture_unit
+            {
+                colour_op_ex source1 src_manual src_current 0 0.9 0
+            }
+        } 
+    }
+}
+
+material mysimple/red
+{
+    technique
+    {
+        pass
+        {
+			lighting off
+			depth_check on
+            cull_hardware none 
+            //scene_blend alpha_blend
+            depth_write on
+            texture_unit
+            {
+                colour_op_ex source1 src_manual src_current 0.9 0 0
+            }
+        } 
+    }
+}
+material mysimple/blue
+{
+    technique
+    {
+        pass
+        {
+			lighting off
+			depth_check on
+            cull_hardware none 
+            //scene_blend alpha_blend
+            depth_write on
+            texture_unit
+            {
+                colour_op_ex source1 src_manual src_current 0 0 0.5
+            }
+        } 
+    }
+}
 material mysimple/truckEditorGround
 {
 	technique
@@ -240,4 +332,20 @@ material mysimple/terraineditor/previewwindowsky
             }
         } 
     }
+}
+material mysimple/translucientred
+{
+	receive_shadows off
+	technique
+	{
+		pass
+		{
+			ambient 0.416440 0.036356 0.036356 0.491538
+			diffuse 0.306323 0.026742 0.026742 0.491538
+			specular 0.269680 0.269680 0.269680 0.491538 33.000000
+			emissive 0.000000 0.000000 0.000000 0.491538
+			scene_blend alpha_blend
+			depth_write off
+		}
+	}
 }

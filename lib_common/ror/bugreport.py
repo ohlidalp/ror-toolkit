@@ -1,7 +1,7 @@
 import wx, os, os.path
 
 from ror.logger import log
-from ror.settingsManager import getSettingsManager
+from ror.settingsManager import rorSettings
 
 BUGREPORT_FILENAME = "hwinfo.txt"
 ATTACHEDLOGFILES = ['editorlog.log', 'Ogre.log', 'ogre.cfg', 'editor.ini']

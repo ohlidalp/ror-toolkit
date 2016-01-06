@@ -7,7 +7,7 @@
 #
 # Author:      Mike Fletcher
 #
-# RCS-ID:      $Id: filebrowsebutton.py,v 1.14.4.1 2007/02/19 21:17:21 RD Exp $
+# RCS-ID:      $Id: filebrowsebutton.py 59674 2009-03-20 21:00:16Z RD $
 # Copyright:   (c) 2000 by Total Control Software
 # Licence:     wxWindows license
 #----------------------------------------------------------------------
@@ -43,7 +43,8 @@ class FileBrowseButton(wx.Panel):
                   fileMode = wx.OPEN,
                   # callback for when value changes (optional)
                   changeCallback= lambda x:x,
-                  labelWidth = 0
+                  labelWidth = 0,
+                  name = 'fileBrowseButton',
         ):
         """
         :param labelText:      Text for label to left of text field
@@ -71,7 +72,7 @@ class FileBrowseButton(wx.Panel):
         self.labelWidth = labelWidth
 
         # create the dialog
-        self.createDialog(parent, id, pos, size, style )
+        self.createDialog(parent, id, pos, size, style, name )
         # Setting a value causes the changeCallback to be called.
         # In this case that would be before the return of the
         # constructor. Not good. So a default value on
@@ -79,9 +80,9 @@ class FileBrowseButton(wx.Panel):
         self.SetValue( initialValue, 0)
 
 
-    def createDialog( self, parent, id, pos, size, style ):
+    def createDialog( self, parent, id, pos, size, style, name ):
         """Setup the graphic representation of the dialog"""
-        wx.Panel.__init__ (self, parent, id, pos, size, style)
+        wx.Panel.__init__ (self, parent, id, pos, size, style, name)
         self.SetMinSize(size) # play nice with sizers
 
         box = wx.BoxSizer(wx.HORIZONTAL)
@@ -158,6 +159,7 @@ class FileBrowseButton(wx.Panel):
             directory = directory [0]
         else:
             directory = self.startDirectory
+            current = ''
         dlg = wx.FileDialog(self, self.dialogTitle, directory, current,
                             self.fileMask, self.fileMode)
 
@@ -180,11 +182,15 @@ class FileBrowseButton(wx.Panel):
         self.callCallback =  save
 
 
-    def Enable (self, value):
+    def Enable (self, value=True):
         """ Convenient enabling/disabling of entire control """
         self.label.Enable (value)
         self.textControl.Enable (value)
         return self.browseButton.Enable (value)
+
+    def Disable (self,):
+        """ Convenient disabling of entire control """
+        self.Enable(False)
 
     def GetLabel( self ):
         """ Retrieve the label's current text """
@@ -238,7 +244,9 @@ class FileBrowseButtonWithHistory( FileBrowseButton ):
         if callable(self.history):
             self.historyCallBack=self.history
             self.history=None
-        apply( FileBrowseButton.__init__, ( self,)+arguments, namedarguments)
+        name = namedarguments.get('name', 'fileBrowseButtonWithHistory')
+        namedarguments['name'] = name
+        FileBrowseButton.__init__(self, *arguments, **namedarguments)
 
 
     def createTextControl( self):
@@ -339,11 +347,13 @@ class DirBrowseButton(FileBrowseButton):
                  startDirectory = '.',
                  changeCallback = None,
                  dialogClass = wx.DirDialog,
-                 newDirectory = False):
+                 newDirectory = False,
+                 name = 'dirBrowseButton'):
         FileBrowseButton.__init__(self, parent, id, pos, size, style,
                                   labelText, buttonText, toolTip,
                                   dialogTitle, startDirectory,
-                                  changeCallback = changeCallback)
+                                  changeCallback = changeCallback,
+                                  name = name)
         self.dialogClass = dialogClass
         self.newDirectory = newDirectory
     #

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="ASCII"?>
+<metamodel:Root xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:metamodel="http://www.sf.net/projects/gems/metamodel2">
+  <RealRoot Name="name" Id="ffffffffc0a80121_111">
+    <Entity Name="wx.Frame" Id="ffffffffc0a80121_112" X="385" Y="16" Width="73" Height="72" DerivedFrom="//@RealRoot/@Inheritance.0"/>
+    <Entity Name="ShapedWindow" Id="ffffffffc0a80121_195" X="388" Y="214" Width="82" Height="72" DerivedFrom="//@RealRoot/@Inheritance.1" Derived="//@RealRoot/@Inheritance.0"/>
+    <Entity Name="ObjectInspector" Id="ffffffffc0a80121_196" X="21" Y="484" Width="86" Height="72" Derived="//@RealRoot/@Inheritance.1"/>
+    <Entity Name="ObjectTree" Id="ffffffffc0a80121_197" X="188" Y="484" Width="73" Height="72" ExpandedWidth="50" ExpandedHeight="35" DerivedFrom="//@RealRoot/@Inheritance.1"/>
+    <Entity Name="ObjectPreviewOgreWindow" Id="ffffffffc0a80121_332" X="1124" Y="484" Width="140" Height="72" Derived="//@RealRoot/@Inheritance.3"/>
+    <Entity Name="wx.PyWindow" Id="ffffffffc0a80121_336" X="1144" Y="9" Width="76" Height="72" DerivedFrom="//@RealRoot/@Inheritance.2"/>
+    <Entity Name="RoRPreviewCtrl" Id="ffffffffc0a80121_391" X="293" Y="491" Width="161" Height="58" ExpandedWidth="0" ExpandedHeight="0" Expanded="true" DerivedFrom="//@RealRoot/@Inheritance.1">
+      <Attribute Name="ObjectPreview" Id="ffffffffc0a80121_392" AttributeType="Reference"/>
+    </Entity>
+    <Entity Name="wxOgreWindow" Id="ffffffffc0a80121_456" X="1144" Y="207" Width="84" Height="72" DerivedFrom="//@RealRoot/@Inheritance.3" Derived="//@RealRoot/@Inheritance.2"/>
+    <Entity Name="MapOptionClass" Id="ffffffffc0a80121_306" X="495" Y="484" Width="85" Height="72" DerivedFrom="//@RealRoot/@Inheritance.1"/>
+    <Entity Name="RoadSystemClass" Id="ffffffffc0a80121_331" X="625" Y="484" Width="93" Height="72" DerivedFrom="//@RealRoot/@Inheritance.1"/>
+    <Entity Name="CameraWindlow" Id="ffffffffc0a80121_207" X="752" Y="486" Width="85" Height="72" DerivedFrom="//@RealRoot/@Inheritance.1"/>
+    <Entity Name="PivotControlWindow" Id="ffffffffc0a80121_388" X="891" Y="492" DerivedFrom="//@RealRoot/@Inheritance.1"/>
+    <Inheritance Name="name" Id="ffffffffc0a80121_194" X="406" Y="116" Width="36" Height="24" Base="//@RealRoot/@Entity.1" Derived="//@RealRoot/@Entity.0"/>
+    <Inheritance Name="name" Id="ffffffffc0a80121_199" X="415" Y="312" Width="36" Height="24" Base="//@RealRoot/@Entity.2" Derived="//@RealRoot/@Entity.1 //@RealRoot/@Entity.3 //@RealRoot/@Entity.6 //@RealRoot/@Entity.8 //@RealRoot/@Entity.9 //@RealRoot/@Entity.10 //@RealRoot/@Entity.11"/>
+    <Inheritance Name="name" Id="ffffffffc0a80121_337" X="1165" Y="109" Width="36" Height="24" Base="//@RealRoot/@Entity.7" Derived="//@RealRoot/@Entity.5"/>
+    <Inheritance Name="name" Id="ffffffffc0a80121_457" X="1166" Y="305" Width="36" Height="24" Base="//@RealRoot/@Entity.4" Derived="//@RealRoot/@Entity.7"/>
+  </RealRoot>
+</metamodel:Root>

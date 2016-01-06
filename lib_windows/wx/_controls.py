@@ -79,9 +79,10 @@ class Button(_core.Control):
 
         Create and show a button.  The preferred way to create standard
         buttons is to use a standard ID and an empty label.  In this case
-        wxWigets will automatically use a stock label that coresponds to the
-        ID given.  In additon, the button will be decorated with stock icons
-        under GTK+ 2.
+        wxWigets will automatically use a stock label that corresponds to the
+        ID given.  These labels may vary across platforms as the platform
+        itself will provide the label if possible.  In addition, the button
+        will be decorated with stock icons under GTK+ 2.
         """
         _controls_.Button_swiginit(self,_controls_.new_Button(*args, **kwargs))
         self._setOORInfo(self)
@@ -1469,7 +1470,52 @@ class CheckListBox(ListBox):
         """GetItemHeight(self) -> int"""
         return _controls_.CheckListBox_GetItemHeight(*args, **kwargs)
 
-    ItemHeight = property(GetItemHeight,doc="See `GetItemHeight`") 
+    def GetChecked(self):
+        """
+        GetChecked(self)
+
+        Return a tuple of integers corresponding to the checked items in
+        the control, based on `IsChecked`.
+        """
+        return tuple([i for i in range(self.Count) if self.IsChecked(i)])
+
+    def GetCheckedStrings(self):
+        """
+        GetCheckedStrings(self)
+
+        Return a tuple of strings corresponding to the checked
+        items of the control, based on `GetChecked`.
+        """
+        return tuple([self.GetString(i) for i in self.GetChecked()])
+
+    def SetChecked(self, indexes):
+        """
+        SetChecked(self, indexes)
+
+        Sets the checked state of items if the index of the item is 
+        found in the indexes sequence.
+        """
+        for i in indexes:
+            assert 0 <= i < self.Count, "Index (%s) out of range" % i
+        for i in range(self.Count):
+            self.Check(i, i in indexes)
+
+    def SetCheckedStrings(self, strings):
+        """
+        SetCheckedStrings(self, indexes)
+
+        Sets the checked state of items if the item's string is found
+        in the strings sequence.
+        """
+        for s in strings:
+            assert s in self.GetStrings(), "String ('%s') not found" % s
+        for i in range(self.Count):
+            self.Check(i, self.GetString(i) in strings)
+
+    Checked = property(GetChecked,SetChecked)
+    CheckedStrings = property(GetCheckedStrings,SetCheckedStrings)
+
+    ItemHeight = property(GetItemHeight) 
 _controls_.CheckListBox_swigregister(CheckListBox)
 
 def PreCheckListBox(*args, **kwargs):
@@ -2633,10 +2679,6 @@ class Slider(_core.Control):
         """SetValue(self, int value)"""
         return _controls_.Slider_SetValue(*args, **kwargs)
 
-    def SetRange(*args, **kwargs):
-        """SetRange(self, int minValue, int maxValue)"""
-        return _controls_.Slider_SetRange(*args, **kwargs)
-
     def GetMin(*args, **kwargs):
         """GetMin(self) -> int"""
         return _controls_.Slider_GetMin(*args, **kwargs)
@@ -2652,6 +2694,13 @@ class Slider(_core.Control):
     def SetMax(*args, **kwargs):
         """SetMax(self, int maxValue)"""
         return _controls_.Slider_SetMax(*args, **kwargs)
+
+    def SetRange(*args, **kwargs):
+        """SetRange(self, int minValue, int maxValue)"""
+        return _controls_.Slider_SetRange(*args, **kwargs)
+
+    def GetRange(self):
+        return self.GetMin(), self.GetMax()
 
     def SetLineSize(*args, **kwargs):
         """SetLineSize(self, int lineSize)"""
@@ -4584,7 +4633,6 @@ class ListCtrl(_core.Control):
         """GetItemSpacing(self) -> Size"""
         return _controls_.ListCtrl_GetItemSpacing(*args, **kwargs)
 
-    GetItemSpacing = wx._deprecated(GetItemSpacing) 
     def GetSelectedItemCount(*args, **kwargs):
         """GetSelectedItemCount(self) -> int"""
         return _controls_.ListCtrl_GetSelectedItemCount(*args, **kwargs)
@@ -5607,6 +5655,23 @@ DIRCTRL_SELECT_FIRST = _controls_.DIRCTRL_SELECT_FIRST
 DIRCTRL_SHOW_FILTERS = _controls_.DIRCTRL_SHOW_FILTERS
 DIRCTRL_3D_INTERNAL = _controls_.DIRCTRL_3D_INTERNAL
 DIRCTRL_EDIT_LABELS = _controls_.DIRCTRL_EDIT_LABELS
+class DirItemData(_core.Object):
+    """Proxy of C++ DirItemData class"""
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
+    def __init__(self): raise AttributeError, "No constructor defined"
+    __repr__ = _swig_repr
+    def SetNewDirName(*args, **kwargs):
+        """SetNewDirName(self, String path)"""
+        return _controls_.DirItemData_SetNewDirName(*args, **kwargs)
+
+    m_path = property(_controls_.DirItemData_m_path_get, _controls_.DirItemData_m_path_set)
+    m_name = property(_controls_.DirItemData_m_name_get, _controls_.DirItemData_m_name_set)
+    m_isHidden = property(_controls_.DirItemData_m_isHidden_get, _controls_.DirItemData_m_isHidden_set)
+    m_isExpanded = property(_controls_.DirItemData_m_isExpanded_get, _controls_.DirItemData_m_isExpanded_set)
+    m_isDir = property(_controls_.DirItemData_m_isDir_get, _controls_.DirItemData_m_isDir_set)
+_controls_.DirItemData_swigregister(DirItemData)
+DirDialogDefaultFolderStr = cvar.DirDialogDefaultFolderStr
+
 class GenericDirCtrl(_core.Control):
     """Proxy of C++ GenericDirCtrl class"""
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
@@ -5696,6 +5761,10 @@ class GenericDirCtrl(_core.Control):
         """GetFilterListCtrl(self) -> DirFilterListCtrl"""
         return _controls_.GenericDirCtrl_GetFilterListCtrl(*args, **kwargs)
 
+    def GetDirItemData(*args, **kwargs):
+        """GetDirItemData(self, TreeItemId id) -> DirItemData"""
+        return _controls_.GenericDirCtrl_GetDirItemData(*args, **kwargs)
+
     def FindChild(*args, **kwargs):
         """
         FindChild(wxTreeItemId parentId, wxString path) -> (item, done)
@@ -5725,7 +5794,6 @@ class GenericDirCtrl(_core.Control):
     RootId = property(GetRootId,doc="See `GetRootId`") 
     TreeCtrl = property(GetTreeCtrl,doc="See `GetTreeCtrl`") 
 _controls_.GenericDirCtrl_swigregister(GenericDirCtrl)
-DirDialogDefaultFolderStr = cvar.DirDialogDefaultFolderStr
 
 def PreGenericDirCtrl(*args, **kwargs):
     """PreGenericDirCtrl() -> GenericDirCtrl"""
@@ -5831,109 +5899,114 @@ class PyControl(_core.Control):
         return _controls_.PyControl_OnInternalIdle(*args, **kwargs)
 
     def base_DoMoveWindow(*args, **kw):
-        return PyScrolledWindow.DoMoveWindow(*args, **kw)
+        return PyControl.DoMoveWindow(*args, **kw)
     base_DoMoveWindow = wx._deprecated(base_DoMoveWindow,
-                                   "Please use PyScrolledWindow.DoMoveWindow instead.")
+                                   "Please use PyControl.DoMoveWindow instead.")
 
     def base_DoSetSize(*args, **kw):
-        return PyScrolledWindow.DoSetSize(*args, **kw)
+        return PyControl.DoSetSize(*args, **kw)
     base_DoSetSize = wx._deprecated(base_DoSetSize,
-                                   "Please use PyScrolledWindow.DoSetSize instead.")
+                                   "Please use PyControl.DoSetSize instead.")
 
     def base_DoSetClientSize(*args, **kw):
-        return PyScrolledWindow.DoSetClientSize(*args, **kw)
+        return PyControl.DoSetClientSize(*args, **kw)
     base_DoSetClientSize = wx._deprecated(base_DoSetClientSize,
-                                   "Please use PyScrolledWindow.DoSetClientSize instead.")
+                                   "Please use PyControl.DoSetClientSize instead.")
 
     def base_DoSetVirtualSize(*args, **kw):
-        return PyScrolledWindow.DoSetVirtualSize(*args, **kw)
+        return PyControl.DoSetVirtualSize(*args, **kw)
     base_DoSetVirtualSize = wx._deprecated(base_DoSetVirtualSize,
-                                   "Please use PyScrolledWindow.DoSetVirtualSize instead.")
+                                   "Please use PyControl.DoSetVirtualSize instead.")
 
     def base_DoGetSize(*args, **kw):
-        return PyScrolledWindow.DoGetSize(*args, **kw)
+        return PyControl.DoGetSize(*args, **kw)
     base_DoGetSize = wx._deprecated(base_DoGetSize,
-                                   "Please use PyScrolledWindow.DoGetSize instead.")
+                                   "Please use PyControl.DoGetSize instead.")
 
     def base_DoGetClientSize(*args, **kw):
-        return PyScrolledWindow.DoGetClientSize(*args, **kw)
+        return PyControl.DoGetClientSize(*args, **kw)
     base_DoGetClientSize = wx._deprecated(base_DoGetClientSize,
-                                   "Please use PyScrolledWindow.DoGetClientSize instead.")
+                                   "Please use PyControl.DoGetClientSize instead.")
 
     def base_DoGetPosition(*args, **kw):
-        return PyScrolledWindow.DoGetPosition(*args, **kw)
+        return PyControl.DoGetPosition(*args, **kw)
     base_DoGetPosition = wx._deprecated(base_DoGetPosition,
-                                   "Please use PyScrolledWindow.DoGetPosition instead.")
+                                   "Please use PyControl.DoGetPosition instead.")
 
     def base_DoGetVirtualSize(*args, **kw):
-        return PyScrolledWindow.DoGetVirtualSize(*args, **kw)
+        return PyControl.DoGetVirtualSize(*args, **kw)
     base_DoGetVirtualSize = wx._deprecated(base_DoGetVirtualSize,
-                                   "Please use PyScrolledWindow.DoGetVirtualSize instead.")
+                                   "Please use PyControl.DoGetVirtualSize instead.")
 
     def base_DoGetBestSize(*args, **kw):
-        return PyScrolledWindow.DoGetBestSize(*args, **kw)
+        return PyControl.DoGetBestSize(*args, **kw)
     base_DoGetBestSize = wx._deprecated(base_DoGetBestSize,
-                                   "Please use PyScrolledWindow.DoGetBestSize instead.")
+                                   "Please use PyControl.DoGetBestSize instead.")
 
     def base_InitDialog(*args, **kw):
-        return PyScrolledWindow.InitDialog(*args, **kw)
+        return PyControl.InitDialog(*args, **kw)
     base_InitDialog = wx._deprecated(base_InitDialog,
-                                   "Please use PyScrolledWindow.InitDialog instead.")
+                                   "Please use PyControl.InitDialog instead.")
 
     def base_TransferDataToWindow(*args, **kw):
-        return PyScrolledWindow.TransferDataToWindow(*args, **kw)
+        return PyControl.TransferDataToWindow(*args, **kw)
     base_TransferDataToWindow = wx._deprecated(base_TransferDataToWindow,
-                                   "Please use PyScrolledWindow.TransferDataToWindow instead.")
+                                   "Please use PyControl.TransferDataToWindow instead.")
 
     def base_TransferDataFromWindow(*args, **kw):
-        return PyScrolledWindow.TransferDataFromWindow(*args, **kw)
+        return PyControl.TransferDataFromWindow(*args, **kw)
     base_TransferDataFromWindow = wx._deprecated(base_TransferDataFromWindow,
-                                   "Please use PyScrolledWindow.TransferDataFromWindow instead.")
+                                   "Please use PyControl.TransferDataFromWindow instead.")
 
     def base_Validate(*args, **kw):
-        return PyScrolledWindow.Validate(*args, **kw)
+        return PyControl.Validate(*args, **kw)
     base_Validate = wx._deprecated(base_Validate,
-                                   "Please use PyScrolledWindow.Validate instead.")
+                                   "Please use PyControl.Validate instead.")
 
     def base_AcceptsFocus(*args, **kw):
-        return PyScrolledWindow.AcceptsFocus(*args, **kw)
+        return PyControl.AcceptsFocus(*args, **kw)
     base_AcceptsFocus = wx._deprecated(base_AcceptsFocus,
-                                   "Please use PyScrolledWindow.AcceptsFocus instead.")
+                                   "Please use PyControl.AcceptsFocus instead.")
 
     def base_AcceptsFocusFromKeyboard(*args, **kw):
-        return PyScrolledWindow.AcceptsFocusFromKeyboard(*args, **kw)
+        return PyControl.AcceptsFocusFromKeyboard(*args, **kw)
     base_AcceptsFocusFromKeyboard = wx._deprecated(base_AcceptsFocusFromKeyboard,
-                                   "Please use PyScrolledWindow.AcceptsFocusFromKeyboard instead.")
+                                   "Please use PyControl.AcceptsFocusFromKeyboard instead.")
 
     def base_GetMaxSize(*args, **kw):
-        return PyScrolledWindow.GetMaxSize(*args, **kw)
+        return PyControl.GetMaxSize(*args, **kw)
     base_GetMaxSize = wx._deprecated(base_GetMaxSize,
-                                   "Please use PyScrolledWindow.GetMaxSize instead.")
+                                   "Please use PyControl.GetMaxSize instead.")
+
+    def base_Enable(*args, **kw):
+        return PyControl.Enable(*args, **kw)
+    base_Enable = wx._deprecated(base_Enable,
+                                   "Please use PyControl.Enable instead.")
 
     def base_AddChild(*args, **kw):
-        return PyScrolledWindow.AddChild(*args, **kw)
+        return PyControl.AddChild(*args, **kw)
     base_AddChild = wx._deprecated(base_AddChild,
-                                   "Please use PyScrolledWindow.AddChild instead.")
+                                   "Please use PyControl.AddChild instead.")
 
     def base_RemoveChild(*args, **kw):
-        return PyScrolledWindow.RemoveChild(*args, **kw)
+        return PyControl.RemoveChild(*args, **kw)
     base_RemoveChild = wx._deprecated(base_RemoveChild,
-                                   "Please use PyScrolledWindow.RemoveChild instead.")
+                                   "Please use PyControl.RemoveChild instead.")
 
     def base_ShouldInheritColours(*args, **kw):
-        return PyScrolledWindow.ShouldInheritColours(*args, **kw)
+        return PyControl.ShouldInheritColours(*args, **kw)
     base_ShouldInheritColours = wx._deprecated(base_ShouldInheritColours,
-                                   "Please use PyScrolledWindow.ShouldInheritColours instead.")
+                                   "Please use PyControl.ShouldInheritColours instead.")
 
     def base_GetDefaultAttributes(*args, **kw):
-        return PyScrolledWindow.GetDefaultAttributes(*args, **kw)
+        return PyControl.GetDefaultAttributes(*args, **kw)
     base_GetDefaultAttributes = wx._deprecated(base_GetDefaultAttributes,
-                                   "Please use PyScrolledWindow.GetDefaultAttributes instead.")
+                                   "Please use PyControl.GetDefaultAttributes instead.")
 
     def base_OnInternalIdle(*args, **kw):
-        return PyScrolledWindow.OnInternalIdle(*args, **kw)
+        return PyControl.OnInternalIdle(*args, **kw)
     base_OnInternalIdle = wx._deprecated(base_OnInternalIdle,
-                                   "Please use PyScrolledWindow.OnInternalIdle instead.")
+                                   "Please use PyControl.OnInternalIdle instead.")
 
 _controls_.PyControl_swigregister(PyControl)
 
@@ -6365,7 +6438,72 @@ DP_SPIN = _controls_.DP_SPIN
 DP_DROPDOWN = _controls_.DP_DROPDOWN
 DP_SHOWCENTURY = _controls_.DP_SHOWCENTURY
 DP_ALLOWNONE = _controls_.DP_ALLOWNONE
-class DatePickerCtrl(_core.Control):
+class DatePickerCtrlBase(_core.Control):
+    """Proxy of C++ DatePickerCtrlBase class"""
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
+    def __init__(self): raise AttributeError, "No constructor defined"
+    __repr__ = _swig_repr
+    def SetValue(*args, **kwargs):
+        """
+        SetValue(self, DateTime dt)
+
+        Changes the current value of the control. The date should be valid and
+        included in the currently selected range, if any.
+
+        Calling this method does not result in a date change event.
+        """
+        return _controls_.DatePickerCtrlBase_SetValue(*args, **kwargs)
+
+    def GetValue(*args, **kwargs):
+        """
+        GetValue(self) -> DateTime
+
+        Returns the currently selected date. If there is no selection or the
+        selection is outside of the current range, an invalid `wx.DateTime`
+        object is returned.
+        """
+        return _controls_.DatePickerCtrlBase_GetValue(*args, **kwargs)
+
+    def SetRange(*args, **kwargs):
+        """
+        SetRange(self, DateTime dt1, DateTime dt2)
+
+        Sets the valid range for the date selection. If dt1 is valid, it
+        becomes the earliest date (inclusive) accepted by the control. If dt2
+        is valid, it becomes the latest possible date.
+
+        If the current value of the control is outside of the newly set range
+        bounds, the behaviour is undefined.
+        """
+        return _controls_.DatePickerCtrlBase_SetRange(*args, **kwargs)
+
+    def GetLowerLimit(*args, **kwargs):
+        """
+        GetLowerLimit(self) -> DateTime
+
+        Get the lower limit of the valid range for the date selection, if any.
+        If there is no range or there is no lower limit, then the
+        `wx.DateTime` value returned will be invalid.
+        """
+        return _controls_.DatePickerCtrlBase_GetLowerLimit(*args, **kwargs)
+
+    def GetUpperLimit(*args, **kwargs):
+        """
+        GetUpperLimit(self) -> DateTime
+
+        Get the upper limit of the valid range for the date selection, if any.
+        If there is no range or there is no upper limit, then the
+        `wx.DateTime` value returned will be invalid.
+        """
+        return _controls_.DatePickerCtrlBase_GetUpperLimit(*args, **kwargs)
+
+    LowerLimit = property(GetLowerLimit,doc="See `GetLowerLimit`") 
+    UpperLimit = property(GetUpperLimit,doc="See `GetUpperLimit`") 
+    Value = property(GetValue,SetValue,doc="See `GetValue` and `SetValue`") 
+_controls_.DatePickerCtrlBase_swigregister(DatePickerCtrlBase)
+DatePickerCtrlNameStr = cvar.DatePickerCtrlNameStr
+
+class DatePickerCtrl(DatePickerCtrlBase):
     """
     This control allows the user to select a date. Unlike
     `wx.calendar.CalendarCtrl`, which is a relatively big control,
@@ -6402,65 +6540,7 @@ class DatePickerCtrl(_core.Control):
         """
         return _controls_.DatePickerCtrl_Create(*args, **kwargs)
 
-    def SetValue(*args, **kwargs):
-        """
-        SetValue(self, DateTime dt)
-
-        Changes the current value of the control. The date should be valid and
-        included in the currently selected range, if any.
-
-        Calling this method does not result in a date change event.
-        """
-        return _controls_.DatePickerCtrl_SetValue(*args, **kwargs)
-
-    def GetValue(*args, **kwargs):
-        """
-        GetValue(self) -> DateTime
-
-        Returns the currently selected date. If there is no selection or the
-        selection is outside of the current range, an invalid `wx.DateTime`
-        object is returned.
-        """
-        return _controls_.DatePickerCtrl_GetValue(*args, **kwargs)
-
-    def SetRange(*args, **kwargs):
-        """
-        SetRange(self, DateTime dt1, DateTime dt2)
-
-        Sets the valid range for the date selection. If dt1 is valid, it
-        becomes the earliest date (inclusive) accepted by the control. If dt2
-        is valid, it becomes the latest possible date.
-
-        If the current value of the control is outside of the newly set range
-        bounds, the behaviour is undefined.
-        """
-        return _controls_.DatePickerCtrl_SetRange(*args, **kwargs)
-
-    def GetLowerLimit(*args, **kwargs):
-        """
-        GetLowerLimit(self) -> DateTime
-
-        Get the lower limit of the valid range for the date selection, if any.
-        If there is no range or there is no lower limit, then the
-        `wx.DateTime` value returned will be invalid.
-        """
-        return _controls_.DatePickerCtrl_GetLowerLimit(*args, **kwargs)
-
-    def GetUpperLimit(*args, **kwargs):
-        """
-        GetUpperLimit(self) -> DateTime
-
-        Get the upper limit of the valid range for the date selection, if any.
-        If there is no range or there is no upper limit, then the
-        `wx.DateTime` value returned will be invalid.
-        """
-        return _controls_.DatePickerCtrl_GetUpperLimit(*args, **kwargs)
-
-    LowerLimit = property(GetLowerLimit,doc="See `GetLowerLimit`") 
-    UpperLimit = property(GetUpperLimit,doc="See `GetUpperLimit`") 
-    Value = property(GetValue,SetValue,doc="See `GetValue` and `SetValue`") 
 _controls_.DatePickerCtrl_swigregister(DatePickerCtrl)
-DatePickerCtrlNameStr = cvar.DatePickerCtrlNameStr
 
 def PreDatePickerCtrl(*args, **kwargs):
     """
@@ -6469,6 +6549,47 @@ def PreDatePickerCtrl(*args, **kwargs):
     Precreate a DatePickerCtrl for use in 2-phase creation.
     """
     val = _controls_.new_PreDatePickerCtrl(*args, **kwargs)
+    return val
+
+class GenericDatePickerCtrl(DatePickerCtrl):
+    """Proxy of C++ GenericDatePickerCtrl class"""
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
+    __repr__ = _swig_repr
+    def __init__(self, *args, **kwargs): 
+        """
+        __init__(self, Window parent, int id=-1, DateTime dt=wxDefaultDateTime, 
+            Point pos=DefaultPosition, Size size=DefaultSize, 
+            long style=wxDP_DEFAULT|wxDP_SHOWCENTURY, 
+            Validator validator=DefaultValidator, 
+            String name=DatePickerCtrlNameStr) -> GenericDatePickerCtrl
+
+        Create a new GenericDatePickerCtrl.
+        """
+        _controls_.GenericDatePickerCtrl_swiginit(self,_controls_.new_GenericDatePickerCtrl(*args, **kwargs))
+        self._setOORInfo(self)
+
+    def Create(*args, **kwargs):
+        """
+        Create(self, Window parent, int id=-1, DateTime dt=wxDefaultDateTime, 
+            Point pos=DefaultPosition, Size size=DefaultSize, 
+            long style=wxDP_DEFAULT|wxDP_SHOWCENTURY, 
+            Validator validator=DefaultValidator, 
+            String name=DatePickerCtrlNameStr) -> bool
+
+        Create the GUI parts of the GenericDatePickerCtrl, for use in 2-phase
+        creation.
+        """
+        return _controls_.GenericDatePickerCtrl_Create(*args, **kwargs)
+
+_controls_.GenericDatePickerCtrl_swigregister(GenericDatePickerCtrl)
+
+def PreGenericDatePickerCtrl(*args, **kwargs):
+    """
+    PreGenericDatePickerCtrl() -> GenericDatePickerCtrl
+
+    Precreate a GenericDatePickerCtrl for use in 2-phase creation.
+    """
+    val = _controls_.new_PreGenericDatePickerCtrl(*args, **kwargs)
     return val
 
 HL_CONTEXTMENU = _controls_.HL_CONTEXTMENU
@@ -6612,7 +6733,7 @@ class PickerBase(_core.Control):
     """
     Base abstract class for all pickers which support an auxiliary text
     control. This class handles all positioning and sizing of the text
-    control like a an horizontal `wx.BoxSizer` would do, with the text
+    control like a horizontal `wx.BoxSizer` would do, with the text
     control on the left of the picker button and the proportion of the
     picker fixed to value 1.
     """
@@ -6735,6 +6856,59 @@ class PickerBase(_core.Control):
     PickerCtrlGrowable = property(IsPickerCtrlGrowable,SetPickerCtrlGrowable,doc="See `IsPickerCtrlGrowable` and `SetPickerCtrlGrowable`") 
 _controls_.PickerBase_swigregister(PickerBase)
 
+class PyPickerBase(PickerBase):
+    """Proxy of C++ PyPickerBase class"""
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
+    __repr__ = _swig_repr
+    def __init__(self, *args, **kwargs): 
+        """
+        __init__(self, Window parent, int id=-1, String text=wxEmptyString, 
+            Point pos=DefaultPosition, Size size=DefaultSize, 
+            long style=0, Validator validator=DefaultValidator, 
+            String name=wxButtonNameStr) -> PyPickerBase
+        """
+        _controls_.PyPickerBase_swiginit(self,_controls_.new_PyPickerBase(*args, **kwargs))
+        self._setOORInfo(self);PyPickerBase._setCallbackInfo(self, self, PyPickerBase)
+
+    def _setCallbackInfo(*args, **kwargs):
+        """_setCallbackInfo(self, PyObject self, PyObject _class)"""
+        return _controls_.PyPickerBase__setCallbackInfo(*args, **kwargs)
+
+    def UpdatePickerFromTextCtrl(*args, **kwargs):
+        """UpdatePickerFromTextCtrl(self)"""
+        return _controls_.PyPickerBase_UpdatePickerFromTextCtrl(*args, **kwargs)
+
+    def UpdateTextCtrlFromPicker(*args, **kwargs):
+        """UpdateTextCtrlFromPicker(self)"""
+        return _controls_.PyPickerBase_UpdateTextCtrlFromPicker(*args, **kwargs)
+
+    def GetTextCtrlStyle(*args, **kwargs):
+        """GetTextCtrlStyle(self, long style) -> long"""
+        return _controls_.PyPickerBase_GetTextCtrlStyle(*args, **kwargs)
+
+    def GetPickerStyle(*args, **kwargs):
+        """GetPickerStyle(self, long style) -> long"""
+        return _controls_.PyPickerBase_GetPickerStyle(*args, **kwargs)
+
+    def SetTextCtrl(*args, **kwargs):
+        """SetTextCtrl(self, TextCtrl text)"""
+        return _controls_.PyPickerBase_SetTextCtrl(*args, **kwargs)
+
+    def SetPickerCtrl(*args, **kwargs):
+        """SetPickerCtrl(self, Control picker)"""
+        return _controls_.PyPickerBase_SetPickerCtrl(*args, **kwargs)
+
+    def PostCreation(*args, **kwargs):
+        """PostCreation(self)"""
+        return _controls_.PyPickerBase_PostCreation(*args, **kwargs)
+
+_controls_.PyPickerBase_swigregister(PyPickerBase)
+
+def PrePyPickerBase(*args, **kwargs):
+    """PrePyPickerBase() -> PyPickerBase"""
+    val = _controls_.new_PrePyPickerBase(*args, **kwargs)
+    return val
+
 #---------------------------------------------------------------------------
 
 CLRP_SHOW_LABEL = _controls_.CLRP_SHOW_LABEL
@@ -6742,10 +6916,9 @@ CLRP_USE_TEXTCTRL = _controls_.CLRP_USE_TEXTCTRL
 CLRP_DEFAULT_STYLE = _controls_.CLRP_DEFAULT_STYLE
 class ColourPickerCtrl(PickerBase):
     """
-    This control allows the user to select a colour. The generic
-    implementation is a button which brings up a `wx.ColourDialog` when
-    clicked. Native implementations may differ but this is usually a
-    (small) widget which give access to the colour-chooser dialog.
+    This control allows the user to select a colour. The implementation
+    varies by platform but is usually a button which brings up a
+    `wx.ColourDialog` when clicked.
     """
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
     __repr__ = _swig_repr
@@ -6756,10 +6929,9 @@ class ColourPickerCtrl(PickerBase):
             long style=CLRP_DEFAULT_STYLE, Validator validator=DefaultValidator, 
             String name=ColourPickerCtrlNameStr) -> ColourPickerCtrl
 
-        This control allows the user to select a colour. The generic
-        implementation is a button which brings up a `wx.ColourDialog` when
-        clicked. Native implementations may differ but this is usually a
-        (small) widget which give access to the colour-chooser dialog.
+        This control allows the user to select a colour. The implementation
+        varies by platform but is usually a button which brings up a
+        `wx.ColourDialog` when clicked.
         """
         _controls_.ColourPickerCtrl_swiginit(self,_controls_.new_ColourPickerCtrl(*args, **kwargs))
         self._setOORInfo(self)
@@ -6797,10 +6969,9 @@ def PreColourPickerCtrl(*args, **kwargs):
     """
     PreColourPickerCtrl() -> ColourPickerCtrl
 
-    This control allows the user to select a colour. The generic
-    implementation is a button which brings up a `wx.ColourDialog` when
-    clicked. Native implementations may differ but this is usually a
-    (small) widget which give access to the colour-chooser dialog.
+    This control allows the user to select a colour. The implementation
+    varies by platform but is usually a button which brings up a
+    `wx.ColourDialog` when clicked.
     """
     val = _controls_.new_PreColourPickerCtrl(*args, **kwargs)
     return val
@@ -7362,5 +7533,38 @@ wxEVT_COMMAND_SEARCHCTRL_SEARCH_BTN = _controls_.wxEVT_COMMAND_SEARCHCTRL_SEARCH
 EVT_SEARCHCTRL_CANCEL_BTN = wx.PyEventBinder( wxEVT_COMMAND_SEARCHCTRL_CANCEL_BTN, 1)
 EVT_SEARCHCTRL_SEARCH_BTN = wx.PyEventBinder( wxEVT_COMMAND_SEARCHCTRL_SEARCH_BTN, 1)
 
+#---------------------------------------------------------------------------
+
+class PyAxBaseWindow(_core.Window):
+    """Proxy of C++ PyAxBaseWindow class"""
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
+    __repr__ = _swig_repr
+    def __init__(self, *args, **kwargs): 
+        """
+        __init__(self, Window parent, int id=-1, Point pos=DefaultPosition, 
+            Size size=DefaultSize, long style=0, String name=PanelNameStr) -> PyAxBaseWindow
+        """
+        _controls_.PyAxBaseWindow_swiginit(self,_controls_.new_PyAxBaseWindow(*args, **kwargs))
+        self._setOORInfo(self);PyAxBaseWindow._setCallbackInfo(self, self, PyAxBaseWindow)
+
+    def _setCallbackInfo(*args, **kwargs):
+        """_setCallbackInfo(self, PyObject self, PyObject _class)"""
+        return _controls_.PyAxBaseWindow__setCallbackInfo(*args, **kwargs)
+
+    def MSWTranslateMessage(*args, **kwargs):
+        """MSWTranslateMessage(self, long msg) -> bool"""
+        return _controls_.PyAxBaseWindow_MSWTranslateMessage(*args, **kwargs)
+
+_controls_.PyAxBaseWindow_swigregister(PyAxBaseWindow)
+
+def PrePyAxBaseWindow(*args, **kwargs):
+    """PrePyAxBaseWindow() -> PyAxBaseWindow"""
+    val = _controls_.new_PrePyAxBaseWindow(*args, **kwargs)
+    return val
+
+
+def PyAxBaseWindow_FromHWND(*args, **kwargs):
+  """PyAxBaseWindow_FromHWND(Window parent, unsigned long _hWnd) -> PyAxBaseWindow"""
+  return _controls_.PyAxBaseWindow_FromHWND(*args, **kwargs)
 
 

@@ -5,7 +5,7 @@
 # Author:       Peter Yared
 #
 # Created:      5/15/03
-# CVS-ID:       $Id: docview.py,v 1.17.4.1 2007/03/20 21:22:41 RD Exp $
+# CVS-ID:       $Id: docview.py 54767 2008-07-23 02:06:40Z RD $
 # Copyright:    (c) 2003-2006 ActiveGrid, Inc. (Port of wxWindows classes by Julian Smart et al)
 # License:      wxWindows license
 #----------------------------------------------------------------------------
@@ -2549,10 +2549,10 @@ class DocChildFrame(wx.Frame):
         """
         Activates the current view.
         """
-        # wx.Frame.OnActivate(event)  This is in the wxWindows docview demo but there is no such method in wxPython, so do a Raise() instead
+        event.Skip()
         if self._childView:
             self._childView.Activate(event.GetActive())
-
+        
 
     def OnCloseWindow(self, event):
         """
@@ -2803,6 +2803,7 @@ class DocMDIChildFrame(wx.MDIChildFrame):
         override (but still call) this function in order to set the keyboard
         focus for your subwindow.
         """
+        event.Skip()
         if self._activated != 0:
             return True
         self._activated += 1
@@ -3128,16 +3129,6 @@ class CommandProcessor(wx.Object):
         Sets the string that will be appended to the Redo menu item.
         """
         self._redoAccelerator = accel
-
-
-    def SetEditMenu(self, menu):
-        """
-        Tells the command processor to update the Undo and Redo items on this
-        menu as appropriate. Set this to NULL if the menu is about to be
-        destroyed and command operations may still be performed, or the
-        command processor may try to access an invalid pointer.
-        """
-        self._editMenu = menu
 
 
     def SetMenuStrings(self):

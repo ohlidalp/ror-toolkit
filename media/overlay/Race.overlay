@@ -1,0 +1,17 @@
+// Ogre overlay scripts
+POCore/RaceMode
+{
+	zorder 500
+	// Stats block
+	container BorderPanel(POCore/RacePanel)
+	{
+		metrics_mode relative
+		horz_align right
+		vert_align top
+		left -0.065
+		top 0.01
+		width 0.06
+		height 0.04
+		material POCore/RaceMaterial
+	}
+}

@@ -5,7 +5,7 @@ from ror.rorcommon import *
 from subprocess import Popen
 
 from ror.logger import log
-from ror.settingsManager import getSettingsManager
+from ror.settingsManager import rorSettings
 
 # these functions are deprecated
 

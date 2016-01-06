@@ -104,3 +104,41 @@ material TruckEditor/ShockInvisible
         } 
     }
 }
+
+material TruckEditor/commands
+{
+    technique
+    {
+        pass
+        {
+			lighting off
+			depth_check on
+            scene_blend alpha_blend
+            depth_write off
+            texture_unit
+            {
+                colour_op_ex source1 src_manual src_current 0.3 0.9 0.9
+                alpha_op_ex source1 src_manual src_current 1
+            }
+        } 
+    }
+}
+
+material TruckEditor/BeamHydros
+{
+    technique
+    {
+        pass
+        {
+			lighting off
+			depth_check on
+            scene_blend alpha_blend
+            depth_write off
+            texture_unit
+            {
+                colour_op_ex source1 src_manual src_current 0.9 0.9 0.9
+                alpha_op_ex source1 src_manual src_current 1
+            }
+        } 
+    }
+}

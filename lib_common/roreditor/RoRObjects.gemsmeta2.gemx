@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="ASCII"?>
+<metamodel:Metamodel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:metamodel="http://www.sf.net/projects/gems/metamodel2" Name="name" Id="ffffffffc0a80121_86">
+  <Entity Name="object" Id="ffffffffc0a80121_87" X="481" Y="26" Width="73" Height="72" ExpandedWidth="50" ExpandedHeight="35" DerivedFrom="//@Inheritance.0"/>
+  <Entity Name="simpleEntryClass" Id="ffffffffc0a80121_290" X="459" Y="263" Width="169" Height="110" ExpandedWidth="0" ExpandedHeight="0" Expanded="true" DerivedFrom="//@Inheritance.0 //@Inheritance.1">
+    <Attribute Name="uuid" Id="ffffffffc0a80121_624"/>
+    <Attribute Name="node -> ogre.Node" Id="ffffffffc0a80121_625"/>
+    <Attribute Name="entity -> ogre.entity" Id="ffffffffc0a80121_626"/>
+  </Entity>
+  <Entity Name="odefClass" Id="ffffffffc0a80121_291" X="739" Y="271" Width="164" Height="58" ExpandedWidth="0" ExpandedHeight="0" Expanded="true" Derived="//@Inheritance.0">
+    <Attribute Name="boxes[] -> odefbox" Id="ffffffffc0a80121_751"/>
+  </Entity>
+  <Entity Name="terrainEntryClass" Id="ffffffffc0a80121_407" X="390" Y="479" Width="141" Height="58" ExpandedWidth="0" ExpandedHeight="0" Expanded="true" Derived="//@Inheritance.1">
+    <Attribute Name="data -> Object" Id="ffffffffc0a80121_579"/>
+  </Entity>
+  <Entity Name="Object" Id="ffffffffc0a80121_408" X="163" Y="267" Width="73" Height="72" ExpandedWidth="50" ExpandedHeight="35" DerivedFrom="//@Inheritance.0"/>
+  <Entity Name="odefEntryClass" Id="ffffffffc0a80121_580" X="579" Y="476" Width="156" Height="58" ExpandedWidth="0" ExpandedHeight="0" Expanded="true" DerivedFrom="//@Inheritance.1">
+    <Attribute Name="box -> odefbox" Id="ffffffffc0a80121_581"/>
+  </Entity>
+  <Entity Name="odefbox" Id="ffffffffc0a80121_649" X="331" Y="267" Width="73" Height="72" ExpandedWidth="50" ExpandedHeight="35" DerivedFrom="//@Inheritance.0"/>
+  <Inheritance Name="name" Id="ffffffffc0a80121_326" X="497" Y="164" Width="36" Height="24" Base="//@Entity.2" Derived="//@Entity.0 //@Entity.1 //@Entity.4 //@Entity.6"/>
+  <Inheritance Name="name" Id="ffffffffc0a80121_459" X="529" Y="409" Width="36" Height="24" Base="//@Entity.3" Derived="//@Entity.1 //@Entity.5"/>
+</metamodel:Metamodel>

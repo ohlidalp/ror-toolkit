@@ -3,118 +3,141 @@ import wx
 import ogre.renderer.OGRE as ogre 
 from wxogre.OgreManager import *
 
-# Standard python imports
-import ctypes as __ctypes
-import os.path as __path
-
-# Library Imports
-import wx as __wx
-
-if getPlatform() == 'linux':
-    # import gethandle workaround:
-    from wxogre_util import get_window_handle_str
-
 class wxOgreWindow(wx.PyWindow): 
-    def __init__(self, parent, ID, size = wx.Size(200,200), **kwargs): 
-        """
-        @param parent: The parent wx Window
-        @param size: the minimal window size
-        @param kwargs: any other wx arguments
-        @return: none
-        """
-        wx.PyWindow.__init__(self, parent, ID, size = size, **kwargs) 
-        self.parent = parent 
+	def __init__(self, parent, ID, name, size=wx.Size(200, 200), **kwargs): 
+		"""
+		@param parent: The parent wx Window
+		@param size: the minimal window size
+		@param kwargs: any other wx arguments
+		@return: none
+		"""
+		wx.PyWindow.__init__(self, parent, ID, size=size, **kwargs) 
+		self.parent = parent 
+ 
+		#Event bindings 
+		self.Bind(wx.EVT_CLOSE, 			self._OnCloseWindow) 
+		self.Bind(wx.EVT_ERASE_BACKGROUND, self._OnEraseBackground) 
+		self.Bind(wx.EVT_SIZE, 			 self._OnSize) 
 
+		#Ogre Initialisation 
+		#self.ogreRoot = getOgreManager().getRoot()
 
-        #Event bindings 
-        self.Bind(wx.EVT_CLOSE,            self._OnCloseWindow) 
-        self.Bind(wx.EVT_ERASE_BACKGROUND, self._OnEraseBackground) 
-        self.Bind(wx.EVT_SIZE,             self._OnSize) 
+		# create a new RenderWindow
+		self.renderWindowName, self.renderWindow = getOgreManager().createRenderWindow(self, name , size[0], size[1], False, self.GetHandle())
+		self.renderWindow.active = True
+		
+		try:
+			if not self.sceneManager is None:
+				pass
+		except:
+			self.sceneManager = None
+		
+		self.SceneInitialisation() 
+		self.SetFocus()
+	
+	def _OnSize(self, event):
+		"""
+		Is called when the ogre Window is getting resized
+		@param event: the sizing event
+		@return: none
+		"""
+		try:
+			if getattr(self, 'ogreRoot', None): 
+				self.renderWindow.windowMovedOrResized() 
+			event.Skip() 
+		except:
+			pass
 
-        #Ogre Initialisation 
-        self.ogreRoot = getOgreManager().getRoot()
+	def _OnEraseBackground(self, event): 
+		"""
+		overwrite standart background drawing routing with empty one
+		@param event: the draw event
+		@return: none
+		"""
+		# Do nothing, to avoid flashing on MSW. 
+		pass 
 
-        # create a new RenderWindow
-        handle = ""
-        if getPlatform() == 'linux':
-            handle = get_window_handle_str(self)
-        else:
-            handle = str(self.GetHandle())
-        #print "> window handle: " + handle
-        
-        self.renderWindow = getOgreManager().createRenderWindow(self, "wxPythonWxOgreRenderWindow", size[0], size[1], False, handle)
-        self.renderWindow.active = True 
-        
-        try:
-            if not self.sceneManager is None:
-                pass
-        except:
-            self.sceneManager = None
-        
-        self.SceneInitialisation() 
-        self.SetFocus()
-    
-    def __del__(self):
-        self.close()
-        
-    def close(self):
-        getOgreManager().removeRenderWindow(self)
-        if not self.sceneManager is None:
-            getOgreManager().destroySceneManager(self.sceneManager)
+	def _OnCloseWindow(self, event): 
+		"""
+		called when the ogre window gets closed
+		@param event: the closing event
+		@return: none
+		"""
+		self.Destroy() 
 
-    def _OnSize(self, event):
-        """
-        Is called when the ogre Window is getting resized
-        @param event: the sizing event
-        @return: none
-        """
-        try:
-            if getattr(self, 'ogreRoot', None): 
-                self.renderWindow.windowMovedOrResized() 
-            event.Skip() 
-        except:
-            pass
+	def AcceptsFocus(self): 
+		"""
+		this window may accept keyboard focus
+		"""
+		return True 
+	
+	def SceneInitialisation(self): 
+		"""
+		default, base function, that has to be overwritten in the inherited class. It gets called after create the window, and should select a scenemanger.
+		@return: none
+		"""
+		pass
 
-    def _OnEraseBackground(self, event): 
-        """
-        overwrite standart background drawing routing with empty one
-        @param event: the draw event
-        @return: none
-        """
-        # Do nothing, to avoid flashing on MSW. 
-        pass 
+	def OnFrameStarted(self): 
+		"""
+		default, base function, that has to be overwritten in the inherited class. gets called before rendering a frame.
+		@return: none
+		"""
+		return 
+	
+	def OnFrameEnded(self): 
+		"""
+		default, base function, that has to be overwritten in the inherited class. gets called after rendering a frame.
+		@return: none
+		"""
+		return 
 
-    def _OnCloseWindow(self, event): 
-        """
-        called when the ogre window gets closed
-        @param event: the closing event
-        @return: none
-        """
-        self.Destroy() 
+	def showOverlay(self, name, bshow=True, forceUpdate=False):
+		""" show or hide an overlay defined in .overlay file 
+		name - string, overlay name 
+		bshow - boolean, True for showing, False for hidding.
+		forceUpdate - boolean, force RenderWindow to update inmediatly
+		"""
+		om = ogre.OverlayManager
+		singl = om.getSingleton()
+		
+		overlay = ogre.OverlayManager.getSingleton().getByName(name)
+		if not overlay is None:
+			if bshow:
+				overlay.show()
+			else:
+				overlay.hide()
+		else: log().debug('overlay with name "%s" not found on OverlayManager' % name)
+		if forceUpdate:
+			self.renderWindow.update()
+		return (overlay is not None)
 
-    def AcceptsFocus(self): 
-        """
-        this window may accept keyboard focus
-        """
-        return True 
-    
-    def SceneInitialisation(self): 
-        """
-        default, base function, that has to be overwritten in the inherited class. It gets called after create the window, and should select a scenemanger.
-        @return: none
-        """
-        pass
+	def createFrameListener(self):
+		"""Creates the FrameListener."""
+		self.frameListener = RoRFrameListener(self.renderWindow, self.camera, OnFrameStarted=self.OnFrameStarted)
+#		self.frameListener.showDebugOverlay(True)
+		getOgreManager().getRoot().addFrameListener(self.frameListener)
 
-    def OnFrameStarted(self): 
-        """
-        default, base function, that has to be overwritten in the inherited class. gets called before rendering a frame.
-        @return: none
-        """
-        return 
-    
-    def OnFrameEnded(self): 
-        """
-        default, base function, that has to be overwritten in the inherited class. gets called after rendering a frame.
-        @return: none
-        """
-        return 
+	def Destroy(self):
+#		del self.frameListener
+#		getOgreManager().removeRenderWindow(self)
+		if hasattr(self, "sceneManager"):
+		 	if self.sceneManager is not None:
+					self.sceneManager.clearScene()
+					self.renderWindow.removeAllViewports()
+					self.sceneManager.destroyAllCameras()
+					getOgreManager().destroySceneManager(self.sceneManager)
+	
+class wxOgre3D(wxOgreWindow):
+	""" wxOgreWindow with some utilities routines
+	    to easy create nodes, entities, boxes, etc
+	"""
+	def __init__(self, parent, ID, name, size=wx.Size(200, 200), **kwargs):		
+		wxOgreWindow.__init__(self, parent, ID, name, size, **kwargs)
+
+	def smNewNode(self, strName,
+					doc=""" Scene Manager New Node:
+					Create a new SceneNode with given Name """):
+		n = self.sceneManager.getRootSceneNode().createChildSceneNode(strName)
+		return n
+		

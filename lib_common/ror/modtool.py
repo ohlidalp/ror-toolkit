@@ -2,7 +2,7 @@
 import sys, os, os.path, shutil, urllib, re
 
 from logger import log
-from settingsManager import getSettingsManager
+from settingsManager import *
 
 REPOSITORY_URL = "http://repository.rigsofrods.com/files/%(file)s"
 TEMPDIR = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "temp"))
@@ -121,12 +121,12 @@ class ModTool:
 			if len(targets) > 0:
 				log().info("### Found Mods:")
 				for target in targets:
-					log().info("  "+target)
+					log().info("  " + target)
 			else:
 				log().info("### No Mods found!")
 				
 		if mode in ["uninstall"]:
-			rorpath = getSettingsManager().getSetting("RigsOfRods", "BasePath")
+			rorpath = rorSettings().rorFolder
 			log().info("### validating target ...")
 			import ror.depchecker
 			dc = ror.depchecker.RoRDepChecker(rorpath, "dtree", targetfile, verbose)
@@ -151,7 +151,7 @@ class ModTool:
 					if filemd5.strip() != md5s[filename].strip():
 						newtargets.append(filename)
 
-			log().info("### removed %d files from dependency tree." % (len(dc.dstree)-len(newtargets)))
+			log().info("### removed %d files from dependency tree." % (len(dc.dstree) - len(newtargets)))
 
 			if len(newtargets) == 0:
 				log().error("Cannot uninstall original Files!")
@@ -170,7 +170,7 @@ class ModTool:
 				self.unInstallfile(filenamefound, dryrun)
 
 		if mode in ['createmod']:
-			rorpath = getSettingsManager().getSetting("RigsOfRods", "BasePath")
+			rorpath = rorSettings().rorFolder
 			log().info("### validating target ...")
 			import ror.depchecker
 			dc = ror.depchecker.RoRDepChecker(os.path.join(rorpath, 'data'), "dtree", targetfile, verbose)
@@ -184,18 +184,18 @@ class ModTool:
 			#print dc.dstree
 			newtargets = dc.dstree
 
-			uniqueid='UNIQUEID'
+			uniqueid = 'UNIQUEID'
 			if dryrun:
 				log().info("### would download a unique identification number from the repository")
 				log().info("### would create %d file(s)." % len(newtargets))
 			else:
-				uniqueid=self.getUniqueID()
+				uniqueid = self.getUniqueID()
 				log().info("### generating %d file(s):" % len(newtargets))
 				purefile, extension = os.path.splitext(targetfile)
 				packsdir = os.path.join(rorpath, "packs")
 				if not os.path.isdir(packsdir):
 					os.mkdir(packsdir)
-				packdirname = os.path.join(packsdir, uniqueid+"-"+purefile)
+				packdirname = os.path.join(packsdir, uniqueid + "-" + purefile)
 				
 				os.mkdir(packdirname)
 				for target in newtargets:
@@ -204,7 +204,7 @@ class ModTool:
 					if filenamefound is None:
 						log().error("### File not found: %s" % target)
 						continue
-					dstname = os.path.join(packdirname, uniqueid+"-"+target)
+					dstname = os.path.join(packdirname, uniqueid + "-" + target)
 					log().info(dstname)
 					shutil.copyfile(filenamefound, dstname)
 				log().info("### pack successfully created in path: %s" % packdirname)
@@ -215,7 +215,7 @@ class ModTool:
 		return None
 		
 	def wgetreporthook(self, *arg):
-		percentdone = int(((arg[0] * arg[1]) / float(arg[2]))*100)
+		percentdone = int(((arg[0] * arg[1]) / float(arg[2])) * 100)
 		if percentdone % 10 == 0:
 			log().info("Downloading, % 4d%% done..." % percentdone)
 	
@@ -231,7 +231,7 @@ class ModTool:
 			os.mkdir(DOWNLOADDIR)
 		try:
 			log().info("trying to download the file %s form the repository..." % repofilename)
-			src = REPOSITORY_URL %{"file":repofilename}
+			src = REPOSITORY_URL % {"file":repofilename}
 			dst = os.path.join(DOWNLOADDIR, repofilename)
 			#print src, dst
 			return self.wget(src, dst)
@@ -291,7 +291,7 @@ class ModTool:
 			UnZIP.unzip(filename, TEMPDIR)
 			return True
 		else:
-			log().info("copying "+filename+" to "+os.path.join(TEMPDIR, os.path.basename(filename)))
+			log().info("copying " + filename + " to " + os.path.join(TEMPDIR, os.path.basename(filename)))
 			shutil.copyfile(filename, os.path.join(TEMPDIR, os.path.basename(filename)))
 		return False
 
@@ -329,7 +329,7 @@ class ModTool:
 		
 	def installfile(self, maintarget, srcfile, dryrun):
 		file, extension = os.path.splitext(maintarget)
-		rorpath = getSettingsManager().getSetting("RigsOfRods", "BasePath")
+		rorpath = rorSettings().rorFolder
 		
 		if extension in ['.truck', '.load']:
 			path = os.path.join(rorpath, "data", "trucks")
@@ -394,7 +394,7 @@ class ModTool:
 
 	def getRoRMods(self, verbose):
 		import ror.depchecker
-		rorpath = getSettingsManager().getSetting("RigsOfRods", "BasePath")
+		rorpath = rorSettings().concatToRorFolder(['streams'], False)
 		dc = ror.depchecker.RoRDepChecker(rorpath, "getfiles", "", False)
 		targets = []
 		for file in dc.files:

@@ -1,0 +1,1 @@
+start /w dxdiag /t specs.txt

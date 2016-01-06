@@ -1,7 +1,7 @@
 import sys, os, os.path
 
 from ror.logger import log
-from ror.settingsManager import getSettingsManager
+from ror.settingsManager import rorSettings
 
 import wx
 import wx.grid

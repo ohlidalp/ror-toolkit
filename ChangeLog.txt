@@ -1,0 +1,70 @@
+RoR Toolkit Editor ChangeLog
+
+Changes Made By Max98 31/05/2011
+
+- Compitable with 0.38.X
+
+Changes made by Lepes
+
+- preload system with rotation
+
+
+before release nov 2009:
+- hide paste button / find object
+- fixed truckshop 7.2 section
+- fixed bookmark camera that aren't show until you move them
+- fixed rotation axis colour and behaviour
+- fixed file loggin.ini encoding as ANSI file since it could contain non-ascii characters in windows username or paths
+- fix above on all toolkit files !!!! argggg!!!
+- fix starter dimension window
+
+
+Thanks to all invited members, they help me a lot suppling ideas and meshes (Sneer, dieselfuelonly, Lifter...)
+
+2008-09-07
+- Terrain Editor:
+	+ Start Character Position, camera Start Position: just move red meshes to the desired position
+	
+	+ Object Inspector that allow user to type coords and rotation angles. 
+	  You can also add a comment to every object (useful to describe the first and last road objects, for example: "begin road to castle city")
+	  Comments may be multilinea but if you use "/" character, it will be deleted.
+	  ENTER key must be the last key to press, because it is when text and comments are saved.
+	
+	+ Contigous Block Mode: The first block is added like you did it before, that is: click on terrain ground, then use right button click on Object Tree
+	  to add the object to the terrain and now, click the object just added, while it is highlighted press SPACE BAR key, you would see another piece 
+	  automatically added updating X, Y, Z coords and copying RotX, RotY, RotZ.
+	  
+	  Keep in mind that SPACE BAR will add the selected item in Object Tree next to the selected one on 3D-Window.
+	  3D-Window must be focused (just right click in the window) before pressing SPACE.
+	
+	+ alphabetically Ordered Object Tree for each category (names are changed to lowercase to maintain a consistent ordered items)
+	
+	+ Support Multiple SpawnZones on Terrain.
+	+ keys UIO rotate to create ascend/descend ramp. keys JKL  rotate to create corners keys M<comma><dot> rotate on X axis (banked curves??)
+	+ Skins support for Object Tree, Object Inspector, Object Preview and Map Options
+	+ Control Key while selecting a piece and dragging = freedom movement (the piece should be unselected, then keep CTRL pressed while selecting)
+	+ Q key attach camera to selected object so, you can rotate camera with AWSDFV keys around the selected object.
+	+ avoid to select deleted/invisible objects.
+	+ Improved singleton pattern
+	+ If no Camera/Character/Truck Start Position are supplied on the .terrn file or its coordenates are (0,0,0) 
+		they are setup on the middle of the map at terrain Height or water Level (max value)
+		 
+- Odef Editor
+	- fixed bug at initialization
+	- change camera position
+	- Q key allow rotate the object at centered view (just as terrain editor)
+
+
+- Truck Editor	
+	- fixed bug at initialization  
+	- fixed multiples optional values in beams sections and nodes section, for example "ri" beams
+	- Truck file parser updated to wiki 2009-01-21
+	- Added new bugs ;-)
+
+- Object Preview, Map Preview
+    - Support MouseWheel
+
+- Main configuration:
+	- starter.py - checkRoRDir:(minor change) some new strings to show the user that RoR binary executable had not been found and the cause.  	  
+
+	   

@@ -62,7 +62,7 @@ class RoROgreWindow(wxOgreWindow):
         self.MainLight.setPosition (ogre.Vector3(20, 80, 130))
 
         # add some fog 
-        self.sceneManager.setFog(ogre.FOG_EXP, ogre.ColourValue.White, 0.0002) 
+#        self.sceneManager.setFog(ogre.FOG_EXP, ogre.ColourValue.White, 0.0002) 
 
         # create a floor Mesh
         plane = ogre.Plane() 
@@ -112,4 +112,4 @@ class RoROgreWindow(wxOgreWindow):
             self.camera.yaw(ogre.Degree(dx/3.0)) 
             self.camera.pitch(ogre.Degree(dy/3.0)) 
         event.Skip()
-            
+

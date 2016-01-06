@@ -429,6 +429,14 @@ class TopLevelWindow(_core.Window):
         """MacGetMetalAppearance(self) -> bool"""
         return _windows_.TopLevelWindow_MacGetMetalAppearance(*args, **kwargs)
 
+    def MacGetUnifiedAppearance(*args, **kwargs):
+        """MacGetUnifiedAppearance(self) -> bool"""
+        return _windows_.TopLevelWindow_MacGetUnifiedAppearance(*args, **kwargs)
+
+    def MacGetTopLevelWindowRef(*args, **kwargs):
+        """MacGetTopLevelWindowRef(self) -> long"""
+        return _windows_.TopLevelWindow_MacGetTopLevelWindowRef(*args, **kwargs)
+
     def CenterOnScreen(*args, **kwargs):
         """
         CenterOnScreen(self, int dir=BOTH)
@@ -724,6 +732,11 @@ class Dialog(TopLevelWindow):
         return _windows_.Dialog_GetClassDefaultAttributes(*args, **kwargs)
 
     GetClassDefaultAttributes = staticmethod(GetClassDefaultAttributes)
+    def __enter__(self):
+        return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.Destroy()
+
     AffirmativeId = property(GetAffirmativeId,SetAffirmativeId,doc="See `GetAffirmativeId` and `SetAffirmativeId`") 
     EscapeId = property(GetEscapeId,SetEscapeId,doc="See `GetEscapeId` and `SetEscapeId`") 
     ReturnCode = property(GetReturnCode,SetReturnCode,doc="See `GetReturnCode` and `SetReturnCode`") 
@@ -787,6 +800,9 @@ def PreMiniFrame(*args, **kwargs):
 SPLASH_CENTRE_ON_PARENT = _windows_.SPLASH_CENTRE_ON_PARENT
 SPLASH_CENTRE_ON_SCREEN = _windows_.SPLASH_CENTRE_ON_SCREEN
 SPLASH_NO_CENTRE = _windows_.SPLASH_NO_CENTRE
+SPLASH_CENTER_ON_PARENT = _windows_.SPLASH_CENTER_ON_PARENT
+SPLASH_CENTER_ON_SCREEN = _windows_.SPLASH_CENTER_ON_SCREEN
+SPLASH_NO_CENTER = _windows_.SPLASH_NO_CENTER
 SPLASH_TIMEOUT = _windows_.SPLASH_TIMEOUT
 SPLASH_NO_TIMEOUT = _windows_.SPLASH_NO_TIMEOUT
 class SplashScreenWindow(_core.Window):
@@ -1430,10 +1446,12 @@ class SashWindow(_core.Window):
         """SetSashBorder(self, int edge, bool border)"""
         return _windows_.SashWindow_SetSashBorder(*args, **kwargs)
 
+    SetSashBorder = wx._deprecated(SetSashBorder) 
     def HasBorder(*args, **kwargs):
         """HasBorder(self, int edge) -> bool"""
         return _windows_.SashWindow_HasBorder(*args, **kwargs)
 
+    HasBorder = wx._deprecated(HasBorder) 
     def GetEdgeMargin(*args, **kwargs):
         """GetEdgeMargin(self, int edge) -> int"""
         return _windows_.SashWindow_GetEdgeMargin(*args, **kwargs)
@@ -2111,6 +2129,11 @@ class SimpleHtmlListBox(HtmlListBox,_core.ItemContainer):
         """
         return _windows_.SimpleHtmlListBox_Create(*args, **kwargs)
 
+    def _Clear(*args, **kwargs):
+        """_Clear(self)"""
+        return _windows_.SimpleHtmlListBox__Clear(*args, **kwargs)
+
+    Clear = _Clear 
 _windows_.SimpleHtmlListBox_swigregister(SimpleHtmlListBox)
 SimpleHtmlListBoxNameStr = cvar.SimpleHtmlListBoxNameStr
 
@@ -2128,7 +2151,7 @@ class TaskBarIcon(_core.EvtHandler):
     def __init__(self, *args, **kwargs): 
         """__init__(self) -> TaskBarIcon"""
         _windows_.TaskBarIcon_swiginit(self,_windows_.new_TaskBarIcon(*args, **kwargs))
-        TaskBarIcon._setCallbackInfo(self, self, TaskBarIcon)
+        self._setOORInfo(self);TaskBarIcon._setCallbackInfo(self, self, TaskBarIcon)
 
     __swig_destroy__ = _windows_.delete_TaskBarIcon
     __del__ = lambda self : None;
@@ -2299,7 +2322,7 @@ class ColourDialog(Dialog):
         """
         GetColourData(self) -> ColourData
 
-        Returns a reference to the `wx.ColourData` used by the dialog.
+        Returns a copy of the `wx.ColourData` used by the dialog.
         """
         return _windows_.ColourDialog_GetColourData(*args, **kwargs)
 
@@ -2909,7 +2932,7 @@ PD_ESTIMATED_TIME = _windows_.PD_ESTIMATED_TIME
 PD_REMAINING_TIME = _windows_.PD_REMAINING_TIME
 PD_SMOOTH = _windows_.PD_SMOOTH
 PD_CAN_SKIP = _windows_.PD_CAN_SKIP
-class ProgressDialog(Frame):
+class ProgressDialog(Dialog):
     """
     A dialog that shows a short message and a progress bar. Optionally, it
     can display an ABORT button.
@@ -3472,6 +3495,11 @@ class PyWindow(_core.Window):
     base_GetMaxSize = wx._deprecated(base_GetMaxSize,
                                    "Please use PyWindow.GetMaxSize instead.")
 
+    def base_Enable(*args, **kw):
+        return PyWindow.Enable(*args, **kw)
+    base_Enable = wx._deprecated(base_Enable,
+                                   "Please use PyWindow.Enable instead.")
+
     def base_AddChild(*args, **kw):
         return PyWindow.AddChild(*args, **kw)
     base_AddChild = wx._deprecated(base_AddChild,
@@ -3511,7 +3539,8 @@ class PyPanel(Panel):
     def __init__(self, *args, **kwargs): 
         """
         __init__(self, Window parent, int id=-1, Point pos=DefaultPosition, 
-            Size size=DefaultSize, long style=0, String name=PanelNameStr) -> PyPanel
+            Size size=DefaultSize, long style=wxTAB_TRAVERSAL|wxNO_BORDER, 
+            String name=PanelNameStr) -> PyPanel
         """
         _windows_.PyPanel_swiginit(self,_windows_.new_PyPanel(*args, **kwargs))
         self._setOORInfo(self);PyPanel._setCallbackInfo(self, self, PyPanel)
@@ -3649,6 +3678,11 @@ class PyPanel(Panel):
     base_GetMaxSize = wx._deprecated(base_GetMaxSize,
                                    "Please use PyPanel.GetMaxSize instead.")
 
+    def base_Enable(*args, **kw):
+        return PyPanel.Enable(*args, **kw)
+    base_Enable = wx._deprecated(base_Enable,
+                                   "Please use PyPanel.Enable instead.")
+
     def base_AddChild(*args, **kw):
         return PyPanel.AddChild(*args, **kw)
     base_AddChild = wx._deprecated(base_AddChild,
@@ -3688,7 +3722,8 @@ class PyScrolledWindow(ScrolledWindow):
     def __init__(self, *args, **kwargs): 
         """
         __init__(self, Window parent, int id=-1, Point pos=DefaultPosition, 
-            Size size=DefaultSize, long style=0, String name=PanelNameStr) -> PyScrolledWindow
+            Size size=DefaultSize, long style=wxHSCROLL|wxVSCROLL, 
+            String name=PanelNameStr) -> PyScrolledWindow
         """
         _windows_.PyScrolledWindow_swiginit(self,_windows_.new_PyScrolledWindow(*args, **kwargs))
         self._setOORInfo(self);PyScrolledWindow._setCallbackInfo(self, self, PyScrolledWindow)
@@ -3825,6 +3860,11 @@ class PyScrolledWindow(ScrolledWindow):
         return PyScrolledWindow.GetMaxSize(*args, **kw)
     base_GetMaxSize = wx._deprecated(base_GetMaxSize,
                                    "Please use PyScrolledWindow.GetMaxSize instead.")
+
+    def base_Enable(*args, **kw):
+        return PyScrolledWindow.Enable(*args, **kw)
+    base_Enable = wx._deprecated(base_Enable,
+                                   "Please use PyScrolledWindow.Enable instead.")
 
     def base_AddChild(*args, **kw):
         return PyScrolledWindow.AddChild(*args, **kw)

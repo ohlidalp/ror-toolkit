@@ -97,6 +97,8 @@ class HtmlLinkInfo(_core.Object):
     def __init__(self, *args, **kwargs): 
         """__init__(self, String href, String target=EmptyString) -> HtmlLinkInfo"""
         _html.HtmlLinkInfo_swiginit(self,_html.new_HtmlLinkInfo(*args, **kwargs))
+    __swig_destroy__ = _html.delete_HtmlLinkInfo
+    __del__ = lambda self : None;
     def GetHref(*args, **kwargs):
         """GetHref(self) -> String"""
         return _html.HtmlLinkInfo_GetHref(*args, **kwargs)
@@ -1385,6 +1387,14 @@ class HtmlEasyPrinting(_core.Object):
         """GetPageSetupData(self) -> PageSetupDialogData"""
         return _html.HtmlEasyPrinting_GetPageSetupData(*args, **kwargs)
 
+    def GetParentWindow(*args, **kwargs):
+        """GetParentWindow(self) -> Window"""
+        return _html.HtmlEasyPrinting_GetParentWindow(*args, **kwargs)
+
+    def SetParentWindow(*args, **kwargs):
+        """SetParentWindow(self, Window window)"""
+        return _html.HtmlEasyPrinting_SetParentWindow(*args, **kwargs)
+
     PageSetupData = property(GetPageSetupData,doc="See `GetPageSetupData`") 
     PrintData = property(GetPrintData,doc="See `GetPrintData`") 
 _html.HtmlEasyPrinting_swigregister(HtmlEasyPrinting)
@@ -1892,10 +1902,6 @@ class HelpControllerBase(_core.Object):
             bool newFrameEachTime=False)
         """
         return _html.HelpControllerBase_SetFrameParameters(*args, **kwargs)
-
-    def GetFrameParameters(*args, **kwargs):
-        """GetFrameParameters(self, Size size=None, Point pos=None, bool newFrameEachTime=None) -> Frame"""
-        return _html.HelpControllerBase_GetFrameParameters(*args, **kwargs)
 
     def Quit(*args, **kwargs):
         """Quit(self) -> bool"""

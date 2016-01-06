@@ -7,7 +7,7 @@
 # Author:      Robin Dunn
 #
 # Created:     8-July-2002
-# RCS-ID:      $Id: stattext.py,v 1.15 2007/01/12 18:40:30 RD Exp $
+# RCS-ID:      $Id: stattext.py 49762 2007-11-09 17:50:59Z AG $
 # Copyright:   (c) 2002 by Total Control Software
 # Licence:     wxWindows license
 #----------------------------------------------------------------------
@@ -98,6 +98,20 @@ class GenStaticText(wx.PyControl):
         return best
 
 
+    def Enable(self, enable=True):
+        """Overridden Enable() method to properly refresh the widget. """
+
+        wx.PyControl.Enable(self, enable)
+        self.Refresh()
+
+
+    def Disable(self):
+        """Overridden Disable() method to properly refresh the widget. """
+
+        wx.PyControl.Disable(self)
+        self.Refresh()
+
+           
     def AcceptsFocus(self):
         """Overridden base class virtual."""
         return False

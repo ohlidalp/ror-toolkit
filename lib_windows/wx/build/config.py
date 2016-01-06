@@ -15,13 +15,24 @@
 # Author:      Robin Dunn
 #
 # Created:     23-March-2004
-# RCS-ID:      $Id: config.py,v 1.110.2.3 2007/03/19 16:03:52 RD Exp $
+# RCS-ID:      $Id: config.py 64284 2010-05-10 23:57:53Z RD $
 # Copyright:   (c) 2004 by Total Control Software
 # Licence:     wxWindows license
 #----------------------------------------------------------------------
 
 import sys, os, glob, fnmatch, tempfile
-from distutils.core      import setup, Extension
+
+EGGing = 'bdist_egg' in sys.argv or 'egg_info' in sys.argv
+if not EGGing:
+    from distutils.core import setup, Extension
+else:
+    # EXPERIMENTAL Egg support...
+    try:
+        from setuptools import setup, Extension
+    except ImportError:
+        print "Setuptools must be installed to build an egg"
+        sys.exit(1)
+
 from distutils.file_util import copy_file
 from distutils.dir_util  import mkpath
 from distutils.dep_util  import newer
@@ -38,7 +49,7 @@ import distutils.command.clean
 
 VER_MAJOR        = 2      # The first three must match wxWidgets
 VER_MINOR        = 8
-VER_RELEASE      = 3
+VER_RELEASE      = 11
 VER_SUBREL       = 0      # wxPython release num for x.y.z release of wxWidgets
 VER_FLAGS        = ""     # release flags, such as prerelease or RC num, etc.
 
@@ -49,7 +60,7 @@ URL              = "http://wxPython.org/"
 DOWNLOAD_URL     = "http://wxPython.org/download.php"
 LICENSE          = "wxWidgets Library License (LGPL derivative)"
 PLATFORMS        = "WIN32,OSX,POSIX"
-KEYWORDS         = "GUI,wx,wxWindows,wxWidgets,cross-platform"
+KEYWORDS         = "GUI,wx,wxWindows,wxWidgets,cross-platform,awesome"
 
 LONG_DESCRIPTION = """\
 wxPython is a GUI toolkit for Python that is a wrapper around the
@@ -67,7 +78,7 @@ Environment :: X11 Applications :: GTK
 Intended Audience :: Developers
 License :: OSI Approved
 Operating System :: MacOS :: MacOS X
-Operating System :: Microsoft :: Windows :: Windows 95/98/2000
+Operating System :: Microsoft :: Windows :: Windows 98/2000/XP/Vista
 Operating System :: POSIX
 Programming Language :: Python
 Topic :: Software Development :: User Interfaces
@@ -86,7 +97,7 @@ BUILD_DLLWIDGET = 0# Build a module that enables unknown wx widgets
                    # to be loaded from a DLL and to be used from Python.
 
                    # Internet Explorer wrapper (experimental)
-BUILD_ACTIVEX = (os.name == 'nt')  # new version of IEWIN and more
+BUILD_ACTIVEX = (os.name == 'nt') # and os.environ.get('CPU',None) != 'AMD64') 
 
 
 CORE_ONLY = 0      # if true, don't build any of the above
@@ -164,7 +175,7 @@ SYS_WX_CONFIG = None # When installing an in tree build, setup.py uses wx-config
 WXPORT = 'gtk2'    # On Linux/Unix there are several ports of wxWidgets available.
                    # Setting this value lets you select which will be used for
                    # the wxPython build.  Possibilites are 'gtk', 'gtk2' and
-                   # 'x11'.  Curently only gtk and gtk2 works.
+                   # 'x11'.  Currently only gtk and gtk2 works.
 
 BUILD_BASE = "build" # Directory to use for temporary build files.
                      # This name will be appended to if the WXPORT or
@@ -192,13 +203,23 @@ HYBRID = 1         # Will use the "hybrid" version of the wxWidgets
                    # assertions in the library.  When any of these is
                    # triggered it is turned into a Python exception so
                    # this is a very useful feature to have turned on.
-
-
+                   
                    # Version part of wxWidgets LIB/DLL names
 WXDLLVER = '%d%d' % (VER_MAJOR, VER_MINOR)
 
+
+COMPILER = 'msvc'  # Used to select which compiler will be used on
+                   # Windows.  This not only affects distutils, but
+                   # also some of the default flags and other
+                   # assumptions in this script.  Current supported
+                   # values are 'msvc' and 'mingw32'
+
 WXPY_SRC = '.'  # Assume we're in the source tree already, but allow the
                 # user to change it, particularly for extension building.
+
+ARCH = ''       # If this is set, add an -arch XXX flag to cflags
+                # Only tested (and presumably, needed) for OS X universal
+                # binary builds created using lipo.
 
 
 #----------------------------------------------------------------------
@@ -271,7 +292,7 @@ for flag in [ 'BUILD_ACTIVEX', 'BUILD_DLLWIDGET',
 # String options
 for option in ['WX_CONFIG', 'SYS_WX_CONFIG', 'WXDLLVER', 'BUILD_BASE',
                'WXPORT', 'SWIG', 'CONTRIBS_INC', 'WXPY_SRC', 'FLAVOUR',
-               'VER_FLAGS',
+               'VER_FLAGS', 'ARCH', 'COMPILER',
                ]:
     for x in range(len(sys.argv)):
         if sys.argv[x].find(option) == 0:
@@ -392,16 +413,18 @@ def run_swig(files, dir, gendir, package, USE_SWIG, force, swig_args,
 
     return sources
 
+import subprocess as sp
 
 def swig_version():
     # It may come on either stdout or stderr, depending on the
     # version, so read both.
-    i, o, e = os.popen3(SWIG + ' -version', 't')
-    stext = o.read() + e.read()
+    p = sp.Popen(SWIG + ' -version', shell=True, universal_newlines=True,
+                 stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE)
+    stext = p.stdout.read() + p.stderr.read()
     import re
     match = re.search(r'[0-9]+\.[0-9]+\.[0-9]+$', stext, re.MULTILINE)
     if not match:
-        raise 'NotFound'
+        raise RuntimeError('SWIG version not found')
     SVER = match.group(0)
     return SVER
 
@@ -453,6 +476,21 @@ class wx_extra_clean(distutils.command.clean.clean):
 
 
 
+# The Ubuntu Python adds a --install-layout option to distutils that
+# is used in our package build.  If we detect that the current
+# distutils does not have it then make sure that it is removed from
+# the command-line options, otherwise the build will fail.
+for item in distutils.command.install.install.user_options:
+    if item[0] == 'install-layout=':
+        break
+else:
+    for arg in sys.argv:
+        if arg.startswith('--install-layout'):
+            sys.argv.remove(arg)
+            break
+
+
+
 class wx_install(distutils.command.install.install):
     """
     Turns off install_path_file
@@ -460,7 +498,7 @@ class wx_install(distutils.command.install.install):
     def initialize_options(self):
         distutils.command.install.install.initialize_options(self)
         self.install_path_file = 0
-        
+
 
 class wx_install_headers(distutils.command.install_headers.install_headers):
     """
@@ -483,7 +521,10 @@ class wx_install_headers(distutils.command.install_headers.install_headers):
             return
 
         root = self.root
-        if root is None or WXPREFIX.startswith(root):
+        #print "WXPREFIX is %s, root is %s" % (WXPREFIX, root)
+        # hack for universal builds, which append i386/ppc
+        # to the root
+        if root is None or WXPREFIX.startswith(os.path.dirname(root)):
             root = ''
         for header, location in headers:
             install_dir = os.path.normpath(root +
@@ -493,7 +534,6 @@ class wx_install_headers(distutils.command.install_headers.install_headers):
             self.mkpath(install_dir)
             (out, _) = self.copy_file(header, install_dir)
             self.outfiles.append(out)
-
 
 
 
@@ -522,28 +562,38 @@ def build_locale_list(srcdir):
     return file_list
 
 
-def find_data_files(srcdir, *wildcards):
+def find_data_files(srcdir, *wildcards, **kw):
     # get a list of all files under the srcdir matching wildcards,
     # returned in a format to be used for install_data
-
+    
     def walk_helper(arg, dirname, files):
+        if '.svn' in dirname:
+            return
         names = []
         lst, wildcards = arg
         for wc in wildcards:
+            wc_name = opj(dirname, wc)
             for f in files:
                 filename = opj(dirname, f)
-                if fnmatch.fnmatch(filename, wc) and not os.path.isdir(filename):
+                
+                if fnmatch.fnmatch(filename, wc_name) and not os.path.isdir(filename):
                     names.append(filename)
         if names:
             lst.append( (dirname, names ) )
 
     file_list = []
-    os.path.walk(srcdir, walk_helper, (file_list, wildcards))
+    recursive = kw.get('recursive', True)
+    if recursive:
+        os.path.walk(srcdir, walk_helper, (file_list, wildcards))
+    else:
+        walk_helper((file_list, wildcards),
+                    srcdir,
+                    [os.path.basename(f) for f in glob.glob(opj(srcdir, '*'))])
     return file_list
 
 
 def makeLibName(name):
-    if os.name == 'posix':
+    if os.name == 'posix' or COMPILER == 'mingw32':
         libname = '%s_%s-%s' % (WXBASENAME, name, WXRELEASE)
     elif name:
         libname = 'wxmsw%s%s_%s' % (WXDLLVER, libFlag(), name)
@@ -554,8 +604,18 @@ def makeLibName(name):
 
 def findLib(name, libdirs):
     name = makeLibName(name)[0]
-    if os.name == 'posix':
-        dirs = libdirs + ['/usr/lib', '/usr/local/lib']
+    if os.name == 'posix' or COMPILER == 'mingw32':
+        lflags = os.popen(WX_CONFIG + ' --libs', 'r').read()[:-1]
+        lflags = lflags.split()
+        
+        # if wx-config --libs output does not start with -L, wx is
+        # installed with a standard prefix and wx-config does not
+        # output these libdirs because they are already searched by
+        # default by the compiler and linker.
+        if lflags[0][:2] != '-L':  
+           dirs = libdirs + ['/usr/lib', '/usr/local/lib']
+        else:
+           dirs = libdirs
         name = 'lib'+name
     else:
         dirs = libdirs[:]
@@ -564,6 +624,20 @@ def findLib(name, libdirs):
         if glob.glob(p+'*') != []:
             return True
     return False
+
+
+def removeDuplicates(seq):
+    # This code causes problems on OS X as we do need some duplicates
+    # there...  TODO: are there actually times when having duplicates hurts us?
+##     seen = {}
+##     result = []
+##     for item in seq:
+##         if item in seen:
+##             continue
+##         seen[item] = 1
+##         result.append(item)
+##     return result
+    return seq
 
 
 def adjustCFLAGS(cflags, defines, includes):
@@ -583,7 +657,7 @@ def adjustCFLAGS(cflags, defines, includes):
             defines.append( (flag[2:], ) )
         else:
             newCFLAGS.append(flag)
-    return newCFLAGS
+    return removeDuplicates(newCFLAGS)
 
 
 
@@ -597,12 +671,7 @@ def adjustLFLAGS(lflags, libdirs, libs):
             libs.append(flag[2:])
         else:
             newLFLAGS.append(flag)
-
-    # remove any flags for universal binaries, we'll get those from
-    # distutils instead
-    return [flag for flag in newLFLAGS
-            if flag not in ['-isysroot', '-arch', 'ppc', 'i386'] and
-            not flag.startswith('/Developer') ]
+    return removeDuplicates(newLFLAGS) 
 
 
 
@@ -634,6 +703,140 @@ def getExtraPath(shortVer=True, addOpts=False):
     return ep
 
 #----------------------------------------------------------------------
+# These functions and class are copied from distutils in Python 2.5
+# and then grafted back into the distutils modules so we can change
+# how the -arch and -isysroot compiler args are handled.  Basically if
+# -arch is specified in our compiler args then we need to strip all of
+# the -arch and -isysroot args provided by Python.
+
+import distutils.unixccompiler
+import distutils.sysconfig
+from distutils.errors import DistutilsExecError, CompileError
+
+def _darwin_compiler_fixup(compiler_so, cc_args):
+    """
+    This function will strip '-isysroot PATH' and '-arch ARCH' from the
+    compile flags if the user has specified one them in extra_compile_flags.
+
+    This is needed because '-arch ARCH' adds another architecture to the
+    build, without a way to remove an architecture. Furthermore GCC will
+    barf if multiple '-isysroot' arguments are present.
+    """
+    stripArch = stripSysroot = 0
+
+    compiler_so = list(compiler_so)
+    kernel_version = os.uname()[2] # 8.4.3
+    major_version = int(kernel_version.split('.')[0])
+
+    if major_version < 8:
+        # OSX before 10.4.0, these don't support -arch and -isysroot at
+        # all.
+        stripArch = stripSysroot = True
+    else:
+        stripArch = '-arch' in cc_args
+        stripSysroot = '-isysroot' in cc_args or stripArch  # <== This line changed
+
+    if stripArch:
+        while 1:
+            try:
+                index = compiler_so.index('-arch')
+                # Strip this argument and the next one:
+                del compiler_so[index:index+2]
+            except ValueError:
+                break
+
+    if stripSysroot:
+        try:
+            index = compiler_so.index('-isysroot')
+            # Strip this argument and the next one:
+            del compiler_so[index:index+2]
+        except ValueError:
+            pass
+
+    # Check if the SDK that is used during compilation actually exists, 
+    # the universal build requires the usage of a universal SDK and not all
+    # users have that installed by default.
+    sysroot = None
+    if '-isysroot' in cc_args:
+        idx = cc_args.index('-isysroot')
+        sysroot = cc_args[idx+1]
+    elif '-isysroot' in compiler_so:
+        idx = compiler_so.index('-isysroot')
+        sysroot = compiler_so[idx+1]
+
+    if sysroot and not os.path.isdir(sysroot):
+        log.warn("Compiling with an SDK that doesn't seem to exist: %s",
+                sysroot)
+        log.warn("Please check your Xcode installation")
+
+    return compiler_so
+
+
+def _darwin_compiler_fixup_24(compiler_so, cc_args):
+    compiler_so = _darwin_compiler_fixup(compiler_so, cc_args)
+    return compiler_so, cc_args
+
+
+class MyUnixCCompiler(distutils.unixccompiler.UnixCCompiler):
+    def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
+        compiler_so = self.compiler_so
+        if sys.platform == 'darwin':
+            compiler_so = _darwin_compiler_fixup(compiler_so, cc_args + extra_postargs)
+        try:
+            self.spawn(compiler_so + cc_args + [src, '-o', obj] +
+                       extra_postargs)
+        except DistutilsExecError, msg:
+            raise CompileError, msg
+
+
+_orig_parse_makefile = distutils.sysconfig.parse_makefile
+def _parse_makefile(filename, g=None):
+    rv = _orig_parse_makefile(filename, g)
+
+    # If a different deployment target is specified in the
+    # environment then make sure it is put in the global
+    # config dict.
+    if os.getenv('MACOSX_DEPLOYMENT_TARGET'):
+        val = os.getenv('MACOSX_DEPLOYMENT_TARGET')
+        rv['MACOSX_DEPLOYMENT_TARGET'] = val
+        rv['CONFIGURE_MACOSX_DEPLOYMENT_TARGET'] = val
+
+    return rv
+
+
+distutils.unixccompiler.UnixCCompiler = MyUnixCCompiler
+distutils.unixccompiler._darwin_compiler_fixup = _darwin_compiler_fixup
+distutils.unixccompiler._darwin_compiler = _darwin_compiler_fixup_24
+distutils.sysconfig.parse_makefile = _parse_makefile
+
+
+#----------------------------------------------------------------------
+# Another hack-job for the CygwinCCompiler class, this time replacing
+# the _compile function with one that will pass the -I flags to windres.
+
+import distutils.cygwinccompiler
+from distutils.errors import DistutilsExecError, CompileError
+
+def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
+    if ext == '.rc' or ext == '.res':
+        # gcc needs '.res' and '.rc' compiled to object files !!!
+        try:
+            #self.spawn(["windres", "-i", src, "-o", obj])
+            self.spawn(["windres", "-i", src, "-o", obj] +
+                       [arg for arg in cc_args if arg.startswith("-I")] )
+        except DistutilsExecError, msg:
+            raise CompileError, msg
+    else: # for other files use the C-compiler
+        try:
+            self.spawn(self.compiler_so + cc_args + [src, '-o', obj] +
+                       extra_postargs)
+        except DistutilsExecError, msg:
+            raise CompileError, msg
+
+distutils.cygwinccompiler.CygwinCCompiler._compile = _compile
+
+
+#----------------------------------------------------------------------
 # sanity checks
 
 if CORE_ONLY:
@@ -660,25 +863,37 @@ if CONTRIBS_INC:
 else:
     CONTRIBS_INC = []
 
+if WXPORT != 'msw':
+    # make sure we only use the compiler value on MSW builds
+    COMPILER=None
+
 
 #----------------------------------------------------------------------
 # Setup some platform specific stuff
 #----------------------------------------------------------------------
 
-if os.name == 'nt':
+if os.name == 'nt' and  COMPILER == 'msvc':
     # Set compile flags and such for MSVC.  These values are derived
     # from the wxWidgets makefiles for MSVC, other compilers settings
     # will probably vary...
     if os.environ.has_key('WXWIN'):
         WXDIR = os.environ['WXWIN']
     else:
-        msg("WARNING: WXWIN not set in environment.")
-        WXDIR = '..'  # assumes in CVS tree
+        if os.path.exists('..\\wxWidgets'):
+            WXDIR = '..\\wxWidgets'  # assumes in parallel SVN tree
+        else:
+            WXDIR = '..'  # assumes wxPython is subdir
+        msg("WARNING: WXWIN not set in environment. Assuming '%s'" % WXDIR)
     WXPLAT = '__WXMSW__'
     GENDIR = 'msw'
 
+    if os.environ.get('CPU', None) == 'AMD64':
+        VCDLL = 'vc_amd64_dll'
+    else:
+        VCDLL = 'vc_dll'
+        
     includes = ['include', 'src',
-                opj(WXDIR, 'lib', 'vc_dll', 'msw'  + libFlag()),
+                opj(WXDIR, 'lib', VCDLL, 'msw'  + libFlag()),
                 opj(WXDIR, 'include'),
                 opj(WXDIR, 'contrib', 'include'),
                 ]
@@ -692,6 +907,7 @@ if os.name == 'nt':
                 ('SWIG_TYPE_TABLE', WXPYTHON_TYPE_TABLE),
                 ('SWIG_PYTHON_OUTPUT_TUPLE', None),
                 ('WXP_USE_THREAD', '1'),
+                ('ISOLATION_AWARE_ENABLED', None),
                 ]
 
     if UNDEF_NDEBUG:
@@ -706,11 +922,13 @@ if os.name == 'nt':
     if UNICODE:
         defines.append( ('wxUSE_UNICODE', 1) )
 
-    libdirs = [ opj(WXDIR, 'lib', 'vc_dll') ]
+
+    libs = []
+    libdirs = [ opj(WXDIR, 'lib', VCDLL) ]
     if MONOLITHIC:
-        libs = makeLibName('')
+        libs += makeLibName('')
     else:
-        libs = [ 'wxbase' + WXDLLVER + libFlag(), 
+        libs += [ 'wxbase' + WXDLLVER + libFlag(), 
                  'wxbase' + WXDLLVER + libFlag() + '_net',
                  'wxbase' + WXDLLVER + libFlag() + '_xml',
                  makeLibName('core')[0],
@@ -718,33 +936,34 @@ if os.name == 'nt':
                  makeLibName('html')[0],
                  ]
 
-    libs = libs + ['kernel32', 'user32', 'gdi32', 'comdlg32',
-            'winspool', 'winmm', 'shell32', 'oldnames', 'comctl32',
-            'odbc32', 'ole32', 'oleaut32', 'uuid', 'rpcrt4',
-            'advapi32', 'wsock32']
-
+    libs += ['kernel32', 'user32', 'gdi32', 'comdlg32',
+             'winspool', 'winmm', 'shell32', 'oldnames', 'comctl32',
+             'odbc32', 'ole32', 'oleaut32', 'uuid', 'rpcrt4',
+             'advapi32', 'wsock32']
 
     cflags = [ '/Gy',
-             # '/GX-'  # workaround for internal compiler error in MSVC on some machines
-             ]
+               '/EHsc',
+               # '/GX-'  # workaround for internal compiler error in MSVC on some machines
+               ]
     lflags = None
 
     # Other MSVC flags...
-    # Too bad I don't remember why I was playing with these, can they be removed?
-    if FINAL:
-        pass #cflags = cflags + ['/O1']
-    elif HYBRID :
-        pass #cflags = cflags + ['/Ox']
-    else:
-        pass # cflags = cflags + ['/Od', '/Z7']
-             # lflags = ['/DEBUG', ]
-
+    # Uncomment these to have debug info for all kinds of builds
+    #cflags += ['/Od', '/Z7']
+    #lflags = ['/DEBUG', ]
 
 
 #----------------------------------------------------------------------
 
-elif os.name == 'posix':
-    WXDIR = '..'
+elif os.name == 'posix' or COMPILER == 'mingw32':
+    if os.environ.has_key('WXWIN'):
+        WXDIR = os.environ['WXWIN']
+    else:
+        if os.path.exists('../wxWidgets'):
+            WXDIR = '../wxWidgets'  # assumes in parallel SVN tree
+        else:
+            WXDIR = '..'  # assumes wxPython is subdir
+        msg("WARNING: WXWIN not set in environment. Assuming '%s'" % WXDIR)
     includes = ['include', 'src']
     defines = [('SWIG_TYPE_TABLE', WXPYTHON_TYPE_TABLE),
                ('SWIG_PYTHON_OUTPUT_TUPLE', None),
@@ -789,7 +1008,19 @@ elif os.name == 'posix':
         GENDIR = 'mac'
         libs = ['stdc++']
         NO_SCRIPTS = 1
+        if not ARCH == "":
+            cflags.append("-arch")
+            cflags.append(ARCH)
+            lflags.append("-arch")
+            lflags.append(ARCH)
+            #if ARCH == "ppc":
+            #    cflags.append("-isysroot")
+            #    cflags.append("/Developer/SDKs/MacOSX10.3.9.sdk")
 
+        # should this be conditional?
+        os.environ["CXX"] = "g++-4.0"
+        os.environ["CC"]  = "gcc-4.0"
+        os.environ["CPP"] = "cpp-4.0"
 
     else:
         # Set flags for other Unix type platforms
@@ -807,6 +1038,10 @@ elif os.name == 'posix':
             WXPLAT = '__WXX11__'
             portcfg = ''
             BUILD_BASE = BUILD_BASE + '-' + WXPORT
+        elif WXPORT == 'msw':
+            WXPLAT = '__WXMSW__'
+            GENDIR = 'msw'
+            portcfg = ''
         else:
             raise SystemExit, "Unknown WXPORT value: " + WXPORT
 
@@ -816,7 +1051,8 @@ elif os.name == 'posix':
         # wx-config doesn't output that for some reason.  For now, just
         # add it unconditionally but we should really check if the lib is
         # really found there or wx-config should be fixed.
-        libdirs.append("/usr/X11R6/lib")
+        if WXPORT != 'msw':
+            libdirs.append("/usr/X11R6/lib")
 
 
     # Move the various -I, -D, etc. flags we got from the *config scripts
@@ -824,10 +1060,23 @@ elif os.name == 'posix':
     cflags = adjustCFLAGS(cflags, defines, includes)
     lflags = adjustLFLAGS(lflags, libdirs, libs)
 
-
+    if debug and WXPORT == 'msw' and COMPILER != 'mingw32':
+        defines.append( ('_DEBUG', None) )
+        
+##     from pprint import pprint
+##     print 'cflags:',; pprint(cflags)
+##     print 'defines:',; pprint(defines)
+##     print 'includes:',; pprint(includes)
+##     print
+##     print 'lflags:',; pprint(lflags)
+##     print 'libdirs:',; pprint(libdirs)
+##     print 'libs:',; pprint(libs)
+##     print
+##     sys.exit()
+    
 #----------------------------------------------------------------------
 else:
-    raise 'Sorry, platform not supported...'
+    raise Exception('Sorry, platform not supported...')
 
 
 #----------------------------------------------------------------------
@@ -873,7 +1122,7 @@ if UNICODE:
     BUILD_BASE = BUILD_BASE + '.unicode'
 
 if os.path.exists('DAILY_BUILD'):
-    VER_FLAGS += '.' + open('DAILY_BUILD').read().strip()
+    VER_FLAGS += '.pre' + open('DAILY_BUILD').read().strip()
 
 VERSION = "%s.%s.%s.%s%s" % (VER_MAJOR, VER_MINOR, VER_RELEASE,
                              VER_SUBREL, VER_FLAGS)

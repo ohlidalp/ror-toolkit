@@ -6,7 +6,7 @@
 # Author:       Pierre Hjälm (from C++ original by Julian Smart)
 #
 # Created:      2004-08-25
-# RCS-ID:       $Id: _drawn.py,v 1.3 2006/02/03 06:51:34 RD Exp $
+# RCS-ID:       $Id: _drawn.py 37267 2006-02-03 06:51:34Z RD $
 # Copyright:    (c) 2004 Pierre Hjälm - 1998 Julian Smart
 # License:      wxWindows license
 #----------------------------------------------------------------------------

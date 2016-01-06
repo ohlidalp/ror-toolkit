@@ -78,6 +78,7 @@ GRID_LABEL_EDGE_ZONE = _grid.GRID_LABEL_EDGE_ZONE
 GRID_MIN_ROW_HEIGHT = _grid.GRID_MIN_ROW_HEIGHT
 GRID_MIN_COL_WIDTH = _grid.GRID_MIN_COL_WIDTH
 GRID_DEFAULT_SCROLLBAR_WIDTH = _grid.GRID_DEFAULT_SCROLLBAR_WIDTH
+GRID_AUTOSIZE = _grid.GRID_AUTOSIZE
 class GridCellWorker(object):
     """Proxy of C++ GridCellWorker class"""
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
@@ -1195,6 +1196,18 @@ class Grid(_windows.ScrolledWindow):
         """GetNumberCols(self) -> int"""
         return _grid.Grid_GetNumberCols(*args, **kwargs)
 
+    def CalcRowLabelsExposed(*args, **kwargs):
+        """CalcRowLabelsExposed(self, Region reg) -> wxArrayInt"""
+        return _grid.Grid_CalcRowLabelsExposed(*args, **kwargs)
+
+    def CalcColLabelsExposed(*args, **kwargs):
+        """CalcColLabelsExposed(self, Region reg) -> wxArrayInt"""
+        return _grid.Grid_CalcColLabelsExposed(*args, **kwargs)
+
+    def CalcCellsExposed(*args, **kwargs):
+        """CalcCellsExposed(self, Region reg) -> wxGridCellCoordsArray"""
+        return _grid.Grid_CalcCellsExposed(*args, **kwargs)
+
     def ProcessTableMessage(*args, **kwargs):
         """ProcessTableMessage(self, GridTableMessage ?) -> bool"""
         return _grid.Grid_ProcessTableMessage(*args, **kwargs)
@@ -1245,6 +1258,22 @@ class Grid(_windows.ScrolledWindow):
             int verticalAlignment=TOP, int textOrientation=HORIZONTAL)
         """
         return _grid.Grid_DrawTextRectangle(*args, **kwargs)
+
+    def DrawRowLabels(*args, **kwargs):
+        """DrawRowLabels(self, DC dc, wxArrayInt rows)"""
+        return _grid.Grid_DrawRowLabels(*args, **kwargs)
+
+    def DrawRowLabel(*args, **kwargs):
+        """DrawRowLabel(self, DC dc, int row)"""
+        return _grid.Grid_DrawRowLabel(*args, **kwargs)
+
+    def DrawColLabels(*args, **kwargs):
+        """DrawColLabels(self, DC dc, wxArrayInt cols)"""
+        return _grid.Grid_DrawColLabels(*args, **kwargs)
+
+    def DrawColLabel(*args, **kwargs):
+        """DrawColLabel(self, DC dc, int col)"""
+        return _grid.Grid_DrawColLabel(*args, **kwargs)
 
     def GetTextBoxSize(*args, **kwargs):
         """GetTextBoxSize(DC dc, list lines) -> (width, height)"""
@@ -2314,6 +2343,7 @@ wxEVT_GRID_EDITOR_SHOWN = _grid.wxEVT_GRID_EDITOR_SHOWN
 wxEVT_GRID_EDITOR_HIDDEN = _grid.wxEVT_GRID_EDITOR_HIDDEN
 wxEVT_GRID_EDITOR_CREATED = _grid.wxEVT_GRID_EDITOR_CREATED
 wxEVT_GRID_CELL_BEGIN_DRAG = _grid.wxEVT_GRID_CELL_BEGIN_DRAG
+wxEVT_GRID_COL_MOVE = _grid.wxEVT_GRID_COL_MOVE
 EVT_GRID_CELL_LEFT_CLICK = wx.PyEventBinder( wxEVT_GRID_CELL_LEFT_CLICK )
 EVT_GRID_CELL_RIGHT_CLICK = wx.PyEventBinder( wxEVT_GRID_CELL_RIGHT_CLICK )
 EVT_GRID_CELL_LEFT_DCLICK = wx.PyEventBinder( wxEVT_GRID_CELL_LEFT_DCLICK )
@@ -2331,7 +2361,7 @@ EVT_GRID_EDITOR_SHOWN = wx.PyEventBinder( wxEVT_GRID_EDITOR_SHOWN )
 EVT_GRID_EDITOR_HIDDEN = wx.PyEventBinder( wxEVT_GRID_EDITOR_HIDDEN )
 EVT_GRID_EDITOR_CREATED = wx.PyEventBinder( wxEVT_GRID_EDITOR_CREATED )
 EVT_GRID_CELL_BEGIN_DRAG = wx.PyEventBinder( wxEVT_GRID_CELL_BEGIN_DRAG )
-
+EVT_GRID_COL_MOVE = wx.PyEventBinder( wxEVT_GRID_COL_MOVE )
 
 # The same as above but with the ability to specify an identifier
 EVT_GRID_CMD_CELL_LEFT_CLICK =     wx.PyEventBinder( wxEVT_GRID_CELL_LEFT_CLICK,    1 )
@@ -2351,6 +2381,7 @@ EVT_GRID_CMD_EDITOR_SHOWN =        wx.PyEventBinder( wxEVT_GRID_EDITOR_SHOWN,   
 EVT_GRID_CMD_EDITOR_HIDDEN =       wx.PyEventBinder( wxEVT_GRID_EDITOR_HIDDEN,      1 )
 EVT_GRID_CMD_EDITOR_CREATED =      wx.PyEventBinder( wxEVT_GRID_EDITOR_CREATED,     1 )
 EVT_GRID_CMD_CELL_BEGIN_DRAG =     wx.PyEventBinder( wxEVT_GRID_CELL_BEGIN_DRAG,    1 )
+EVT_GRID_CMD_COL_MOVE =            wx.PyEventBinder( wxEVT_GRID_COL_MOVE,           1 )
     
 
 

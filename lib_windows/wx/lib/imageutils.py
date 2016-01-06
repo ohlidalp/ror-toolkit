@@ -1,11 +1,11 @@
 #----------------------------------------------------------------------
-# Name:        wxPython.lib.imageutils
+# Name:        wx.lib.imageutils
 # Purpose:     A collection of functions for simple image manipulations
 #
 # Author:      Robb Shecter
 #
 # Created:     7-Nov-2002
-# RCS-ID:      $Id: imageutils.py,v 1.5 2007/01/19 19:51:05 RD Exp $
+# RCS-ID:      $Id: imageutils.py 57750 2009-01-02 04:39:38Z RD $
 # Copyright:   (c) 2002 by
 # Licence:     wxWindows license
 #----------------------------------------------------------------------
@@ -22,6 +22,11 @@ def grayOut(anImage):
         maskColor = (anImage.GetMaskRed(), anImage.GetMaskGreen(), anImage.GetMaskBlue())
     else:
         maskColor = None
+    if anImage.HasAlpha():
+        alpha = anImage.GetAlphaData()
+    else:
+        alpha = None
+        
     data = map(ord, list(anImage.GetData()))
 
     for i in range(0, len(data), 3):
@@ -30,7 +35,9 @@ def grayOut(anImage):
         for x in range(3):
             data[i+x] = pixel[x]
     anImage.SetData(''.join(map(chr, data)))
-
+    if alpha:
+        anImage.SetAlphaData(alpha)
+        
 
 def makeGray((r,g,b), factor, maskColor):
     """

@@ -6,7 +6,7 @@
 # Author:      Robin Dunn
 #
 # Created:     21-Nov-2006
-# RCS-ID:      $Id: inspection.py,v 1.1.2.1 2007/03/08 19:24:01 RD Exp $
+# RCS-ID:      $Id: inspection.py 44696 2007-03-08 19:24:13Z RD $
 # Copyright:   (c) 2006 by Total Control Software
 # Licence:     wxWindows license
 #----------------------------------------------------------------------------

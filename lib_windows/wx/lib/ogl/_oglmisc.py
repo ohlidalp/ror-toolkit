@@ -6,7 +6,7 @@
 # Author:       Pierre Hjälm (from C++ original by Julian Smart)
 #
 # Created:      2004-05-08
-# RCS-ID:       $Id: _oglmisc.py,v 1.5 2004/09/23 00:43:47 RD Exp $
+# RCS-ID:       $Id: _oglmisc.py 29265 2004-09-23 00:43:47Z RD $
 # Copyright:    (c) 2004 Pierre Hjälm - 1998 Julian Smart
 # Licence:      wxWindows license
 #----------------------------------------------------------------------------

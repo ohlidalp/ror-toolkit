@@ -6,7 +6,7 @@
 # Author:       Pierre Hjälm (from C++ original by Julian Smart)
 #
 # Created:      2004-05-08
-# RCS-ID:       $Id: _basic.py,v 1.18.4.1 2007/02/16 23:32:37 RD Exp $
+# RCS-ID:       $Id: _basic.py 54677 2008-07-18 03:26:50Z RD $
 # Copyright:    (c) 2004 Pierre Hjälm - 1998 Julian Smart
 # Licence:      wxWindows license
 #----------------------------------------------------------------------------
@@ -518,7 +518,7 @@ class Shape(ShapeEvtHandler):
         if not self._regions:
             return
 
-        if i > len(self._regions):
+        if i >= len(self._regions):
             return
 
         region = self._regions[i]

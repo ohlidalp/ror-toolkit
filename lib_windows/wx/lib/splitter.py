@@ -6,7 +6,7 @@
 # Author:      Robin Dunn
 #
 # Created:     9-June-2005
-# RCS-ID:      $Id: splitter.py,v 1.9 2006/10/31 08:49:23 RD Exp $
+# RCS-ID:      $Id: splitter.py 53375 2008-04-27 03:59:28Z RD $
 # Copyright:   (c) 2005 by Total Control Software
 # Licence:     wxWindows license
 #----------------------------------------------------------------------
@@ -538,6 +538,7 @@ class MultiSplitterWindow(wx.PyPanel):
 
 
     def _GetWindowMin(self, window):
+        # NOTE:  Should this use GetEffectiveMinSize?
         if self._orient == wx.HORIZONTAL:
             return window.GetMinWidth()
         else:

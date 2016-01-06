@@ -6,7 +6,7 @@
 # Author:       Pierre Hjälm (from C++ original by Julian Smart)
 #
 # Created:      2004-05-08
-# RCS-ID:       $Id: _lines.py,v 1.18.2.1 2007/02/16 23:32:37 RD Exp $
+# RCS-ID:       $Id: _lines.py 57919 2009-01-09 04:15:49Z RD $
 # Copyright:    (c) 2004 Pierre Hjälm - 1998 Julian Smart
 # Licence:      wxWindows license
 #----------------------------------------------------------------------------
@@ -488,6 +488,11 @@ class LineShape(Shape):
                 self._labelObjects[i].RemoveFromCanvas(self._canvas)
         self.ClearArrowsAtPosition(-1)
 
+    # Override Delete to unlink before deleting 
+    def Delete(self): 
+        self.Unlink() 
+        Shape.Delete(self)
+        
     def SetEnds(self, x1, y1, x2, y2):
         """Set the end positions of the line."""
         self._lineControlPoints[0] = wx.RealPoint(x1, y1)
