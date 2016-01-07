@@ -170,7 +170,10 @@ class rorSettings(Singleton):
 		self._toolkitHomeFolder = self.getConcatPath(sp.GetDocumentsDir(), [toolkit])
 		self._rorHomeFolder = os.path.join(sp.GetDocumentsDir(), ror)
 		if not os.path.isdir(self._rorHomeFolder):
-			print "RoR Home folder not found in OS home dir. Do you have RoR 0.38 or up installed?"
+			from toolkit_exceptions import ToolkitError
+			msg = "Cannot find directory [Documents/Rigs of Rods 0.38]"
+			msg += "\nRoRToolkit requires this exact directory to operate"
+			raise ToolkitError(msg)
 	
 		self._configFile = self.concatToToolkitHomeFolder(["config", CONFIGFILE], True)
 		

@@ -1,0 +1,3 @@
+
+class ToolkitError(Exception):
+	pass
