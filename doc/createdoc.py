@@ -8,15 +8,6 @@ def main():
     
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..","lib"))
 
-    # Import Psyco if available
-    try:
-        import psyco
-        psyco.full()
-        #psyco.log()
-        #psyco.profile()
-    except ImportError:
-        pass
-
     import epydoc.cli
     epydoc.cli.cli()
 

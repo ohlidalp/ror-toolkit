@@ -104,16 +104,13 @@ class Application(object):
         "Starts the rendering loop."
         if not self._setUp():
             return
-        if self._isPsycoEnabled():
-            self._activatePsyco()
+
         self.root.startRendering()
         
     def goOneFrame(self):
       "Starts the rendering loop. Show how to use the renderOneFrame Method"
       if not self._setUp():
           return
-      if self._isPsycoEnabled():
-          self._activatePsyco()
     
       self.root.getRenderSystem()._initRenderTargets()
       while True:
@@ -239,18 +236,6 @@ class Application(object):
         self.frameListener.unittest = self.unittest
         self.frameListener.showDebugOverlay(True)
         self.root.addFrameListener(self.frameListener)
-
-    def _isPsycoEnabled(self):
-        """Override this function and return True to turn on Psyco"""
-        return False
-
-    def _activatePsyco(self):        
-       """Import Psyco if available"""
-       try:
-           import psyco
-           psyco.full()
-       except ImportError:
-           pass
 
 
 class FrameListener(ogre.FrameListener, ogre.WindowEventListener):

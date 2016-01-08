@@ -29,13 +29,6 @@ def main():
 		import ror.starter
 		ror.starter.startApp()
 
-	# Import Psyco if available
-	try:
-		import psyco
-		psyco.full()
-	except ImportError:
-		pass
-
 	if len(sys.argv) < 3:
 		usage()
 	path = sys.argv[1]

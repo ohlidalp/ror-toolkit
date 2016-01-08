@@ -85,13 +85,6 @@ def main():
 		if option == "--dryrun":
 			dryrun = True
 
-	# Import Psyco if available
-	try:
-		import psyco
-		psyco.full()
-	except ImportError:
-		pass
-
 	if len(sys.argv) == 4:
 		installtarget = sys.argv[3]
 	else:
