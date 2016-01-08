@@ -291,12 +291,12 @@ class SettingsDialog(wx.Dialog):
 		self.SetTitle(rorSettings().title)
 
 def startApp(MainApp):
-# Lepes: No new application needed, just a ShowModal() Frame
-#	MainApp = wx.PySimpleApp()
-#	wx.InitAllImageHandlers() #you may or may not need this
+	# Lepes: No new application needed, just a ShowModal() Frame
+	#	MainApp = wx.PySimpleApp()
+	#	wx.InitAllImageHandlers() #you may or may not need this
 	myFrame = SettingsDialog(MainApp, -1, "")
 
 	# add icon to the window
-	icon = wx.Icon("ror.ico",wx.BITMAP_TYPE_ICO)
+	icon = wx.Icon("rortoolkit.ico",wx.BITMAP_TYPE_ICO)
 	myFrame.SetIcon(icon)
 	return myFrame

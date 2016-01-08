@@ -256,7 +256,7 @@ Section -AdditionalIcons
   CreateDirectory "$SMPROGRAMS\Rigs of Rods 0.34 Toolkit"
   CreateShortCut "$SMPROGRAMS\Rigs of Rods 0.34 Toolkit\Website.lnk" "$INSTDIR\${PRODUCT_NAME}.url"
   CreateShortCut "$SMPROGRAMS\Rigs of Rods 0.34 Toolkit\Uninstall.lnk" "$INSTDIR\uninst.exe"
-  CreateShortCut '$SMPROGRAMS\Rigs of Rods 0.34 Toolkit\Start Toolkit.lnk' '$INSTDIR\start.bat' '' '$INSTDIR\ror.ico'
+  CreateShortCut '$SMPROGRAMS\Rigs of Rods 0.34 Toolkit\Start Toolkit.lnk' '$INSTDIR\start.bat' '' '$INSTDIR\rortoolkit.ico'
 SectionEnd
 
 Section -Post

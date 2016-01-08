@@ -99,7 +99,7 @@ class MainFrame(wx.Frame):
 				# tell FrameManager to manage this frame		
 				self._mgr = wx.aui.AuiManager()
 				self._mgr.SetManagedWindow(self)
-				self.SetIcon(wx.Icon('ror.ico', wx.BITMAP_TYPE_ICO))
+				self.SetIcon(wx.Icon('rortoolkit.ico', wx.BITMAP_TYPE_ICO))
 				rorSettings().mainApp = self
 				self._perspectives = []
 				self.n = 0
