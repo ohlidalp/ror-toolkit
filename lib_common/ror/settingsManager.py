@@ -6,7 +6,7 @@ from TrueSingleton import Singleton
 #from logger import log
 #Max98 fix 0.38
 
-CONFIGFILE = "editor.ini"
+CONFIGFILE = "rortoolkit.ini"
 
 #===============================================================================
 # SECTIONS USED IN EDITOR.INI
@@ -16,7 +16,7 @@ TOOLKIT = 'TOOLKIT'
 TRUCKEDITOR = 'Truck Editor'
 
 #===============================================================================
-# keys USED IN EDITOR.INI
+# keys USED IN rortoolkit.INI
 #===============================================================================
 usePopupToSelect = "use_popup_to_select"
 cameraVelocity = "camera_Velocity"

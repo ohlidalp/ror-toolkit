@@ -4,7 +4,7 @@ from ror.logger import log
 from ror.settingsManager import rorSettings
 
 BUGREPORT_FILENAME = "hwinfo.txt"
-ATTACHEDLOGFILES = ['editorlog.log', 'Ogre.log', 'ogre.cfg', 'editor.ini']
+ATTACHEDLOGFILES = ['editorlog.log', 'Ogre.log', 'ogre.cfg', 'rortoolkit.ini']
 
 class BugReportFrame(wx.Frame): 
     def __init__(self, *args, **kwds): 
