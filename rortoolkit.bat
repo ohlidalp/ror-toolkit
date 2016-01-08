@@ -1,5 +1,7 @@
 @echo off
-echo Rigs of Rods - Toolkit
-echo ======================
+echo.
+echo. Rigs of Rods - Toolkit
+echo. ======================
+echo.
 
-.\python26\python.exe .\main.py
+.\windows\python26\python.exe .\main.py
