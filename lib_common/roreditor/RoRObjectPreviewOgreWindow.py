@@ -93,7 +93,7 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
 
 		#create objects
 		self.populateScene()
-		
+
 	def populateScene(self):
 		log().debug("populating Scene")
 		self.sceneManager.AmbientLight = ogre.ColourValue(0.7, 0.7, 0.7)
@@ -126,20 +126,20 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
 			uuid = str(randomID())
 			self.logowheelnode = self.sceneManager.getRootSceneNode().createChildSceneNode(uuid + "logonode")
 			self.logowheelentity = self.sceneManager.createEntity(uuid + 'logoentity', "logowheel.mesh")
-			self.logowheelentity.setMaterialName('mysimple/terrainselect')
+			self.logowheelentity.setMaterialName('ToolKit/wheel')
 			self.logowheelnode.attachObject(self.logowheelentity)
 			self.logowheelnode.rotate(ogre.Vector3(1, 0, 0), ogre.Degree(-90), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
 			self.logowheelnode.rotate(ogre.Vector3(0, 1, 0), ogre.Degree(90), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
-			self.logowheelnode.setScale(0.025, 0.025, 0.025)
+			self.logowheelnode.setScale(4, 4, 4)
 
 			uuid = str(randomID())
 			self.logotextnode = self.sceneManager.getRootSceneNode().createChildSceneNode(uuid + "logonode")
 			self.logotextentity = self.sceneManager.createEntity(uuid + 'logoentity', "logotext.mesh")
-			self.logotextentity.setMaterialName('mysimple/transblue')
+			self.logotextentity.setMaterialName('ToolKit/rorlogo')
 			self.logotextnode.attachObject(self.logotextentity)
 			self.logotextnode.rotate(ogre.Vector3(1, 0, 0), ogre.Degree(-90), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
 			self.logotextnode.rotate(ogre.Vector3(0, 1, 0), ogre.Degree(90), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
-			self.logotextnode.setScale(0.025, 0.025, 0.025)
+			self.logotextnode.setScale(4, 4, 4)
 
 		else:
 			pass
@@ -154,7 +154,7 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
 
 		#hide logo
 		self.logovisible = False
-		self.wheelRadius = 0 
+		self.wheelRadius = 0
 		try:
 			if extension.lower() in VALIDSTRUCKS:
 				self.free()
@@ -184,8 +184,8 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
 				del terrain
 		except:
 			self.free()
-			raise 
-		
+			raise
+
 	def getTerrainSize(self, filename):
 		lines = loadResourceFile(filename)
 		x = 1500
@@ -196,7 +196,7 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
 			if line.lower().strip()[:11] == 'pageworldz=':
 				z = int(line.lower().strip()[11:])
 		return (x, z)
-		
+
 	def _loadOdef(self, filename, uuid):
 		try:
 			odef = odefClass(filename)
@@ -225,7 +225,7 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
 		# Lepes:
 		#   clearScene: Empties the entire scene, inluding all SceneNodes, Entities, Lights, BillboardSets etc.
 		#   Cameras are not deleted at this stage since they are still referenced by viewports,
-		#   which are not destroyed during this process. 		
+		#   which are not destroyed during this process.
 		if not (self.sceneManager is None):
 			self.sceneManager.clearScene()
 			self.renderWindow.removeAllViewports()
@@ -237,7 +237,7 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
 		self.mode = None
 		self.objentity = None
 		self.objnode = None
-	
+
 
 # Lepes: is it really needed??
 #		try:
@@ -272,7 +272,7 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
 #
 #		self.renderWindow.removeAllViewports()
 #		getOgreManager().destroySceneManager(self.sceneManager)
-		
+
 
 
 	def updateCamera(self):
@@ -326,7 +326,7 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
 			if self.objnode is not None:
 				self.objnode.yaw(ogre.Degree(90))
 		event.Skip()
-																				
+
 	def onMouseEvent(self, event):
 		# don't give focus on mouse move
 		if event.RightDown() or event.LeftDown():
@@ -344,17 +344,14 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
 			self.dragging = True
 		else:
 			self.dragging = False
-		
+
 		if event.GetWheelRotation() != 0:
 			if event.GetWheelRotation() > 0:
 				self.wheelRadius -= 1.5   # move backwards
 			else:
 				self.wheelRadius += 1.5
-			
+
 		event.Skip()
 	def Destroy(self):
 		#super clase will clear
 		pass
-
-		
-				
