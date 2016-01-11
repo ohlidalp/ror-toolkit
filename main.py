@@ -77,7 +77,7 @@ def main():
 			binaryRoR = 'RoR.exe'
 			
 		os.chdir(os.path.dirname(__file__))
-		from toolkit_exceptions import ToolkitError
+		import rortoolkit.exceptions
 		
 		# Import WxPython GUI library
 		import wx
@@ -91,7 +91,7 @@ def main():
 		ror.settingsManager.rorSettings().onlyParseTrucks = False
 		import roreditor.MainFrame
 	
-	except ToolkitError as err:
+	except rortoolkit.exceptions.ToolkitError as err:
 		show_dialog_non_wx(err, "Failed to start RoRToolkit")
 		write_crash_log_file()
 		has_error_occured = True
@@ -103,7 +103,7 @@ def main():
 	if has_error_occured == False:	
 		try:
 			roreditor.MainFrame.startApp(MainApp)
-		except ToolkitError:
+		except rortoolkit.exceptions.ToolkitError:
 			show_dialog_non_wx(str(sys.exc_info()[1]), "RoRToolkit stopped on error")
 			write_crash_log_file()
 		except:

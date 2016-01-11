@@ -1,16 +1,20 @@
-#Thomas Fischer 31/05/2007, thomas@thomasfischer.biz
-from wxogre.OgreManager import *
-from ror.RoROgreWindow import *
-from ror.rorcommon import *
+# Thomas Fischer 31/05/2007, thomas@thomasfischer.biz
+
+# System imports
+import wx, os, os.path
 from subprocess import Popen
 import subprocess
 
+# External libs
+from wxogre.OgreManager import *
+
+# Internal libs
+from ror.RoROgreWindow import *
+from ror.rorcommon import *
 from ror.logger import log
 from ror.settingsManager import *
 import roreditor.MainFrame
 import roreditor.ShapedControls 
-
-import wx, os, os.path
 
 RENDERSYSTEMS = ['OpenGL', 'DirectX9']
 
@@ -18,22 +22,11 @@ DIRECTXLINE = "Plugin=RenderSystem_Direct3D9.dll"
 OPENGLLINE = "Plugin=RenderSystem_GL.dll"
 SPLASHIMAGE = rorSettings().getConcatPath(rorSettings().toolkitMainFolder, ["media","gui", "splash.bmp"],True)
 
-
-class ImagePanel(wx.Panel):
-	""" class Panel1 creates a panel with an image on it, inherits wx.Panel """
-	def __init__(self, parent, id, imageFile):
-		wx.Panel.__init__(self, parent, id)
-		try:
-			jpg1 = wx.Image(imageFile, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-			wx.StaticBitmap(self, wx.ID_ANY, jpg1, (0, 0), (jpg1.GetWidth(), jpg1.GetHeight()))
-		except IOError:
-			log().error("Image file %s not found" % imageFile)
-			raise SystemExit
-
-
 class SettingsDialog(wx.Dialog):
 	rordir = None
 	def __init__(self, *args, **kwds):
+		import rortoolkit.gui_widgets
+	
 		log().debug("starter is being created")
 		kwds["style"] = wx.SYSTEM_MENU | wx.CAPTION | wx.CLIP_CHILDREN | wx.CLOSE_BOX
 		wx.Dialog.__init__(self, *args, **kwds)
@@ -43,7 +36,7 @@ class SettingsDialog(wx.Dialog):
 		r = 0
 		c = 0
 
-		self.image = ImagePanel(self, wx.ID_ANY, SPLASHIMAGE)
+		self.image = rortoolkit.gui_widgets.ImagePanelWidget(self, wx.ID_ANY, SPLASHIMAGE)
 		grid.Add(self.image, pos = wx.GBPosition(r,c), span = wx.GBSpan(3, 5))
 
 		r += 4
