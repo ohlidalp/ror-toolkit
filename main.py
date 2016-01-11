@@ -43,7 +43,7 @@ def main():
 		elif sys.platform in ['win32', 'win64']:
 			#Lepes: use our wx version instead system installed one (avoid user to install it).
 			sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib_common"))
-			sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib_windows"))
+			sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "windows"))
 			binaryRoR = 'RoR.exe'
 			
 		os.chdir(os.path.dirname(__file__))
