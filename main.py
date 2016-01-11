@@ -5,8 +5,9 @@ import platform
 
 def show_error_dialog_non_wx(text, title):
 	txt = "Please report this crash to developers and attach the following files:\n"
-	txt += "\n\t[Documents/Rigs of Rods Toolkit 0.38/logs/Ogre.log]"
-	txt += "\n\t[Documents/Rigs of Rods Toolkit 0.38/logs/editor.log]"
+	txt += "\n\t[Documents/Rigs of Rods Toolkit 0.38/logs/Crash.log]"
+	txt += "\n\t[Documents/Rigs of Rods Toolkit 0.38/logs/Ogre.log] (if present)"
+	txt += "\n\t[Documents/Rigs of Rods Toolkit 0.38/logs/editor.log] (if present)"
 	txt += "\n\n ------------------------------------------------------------------------"
 	txt += "\n\nError message: \n"
 	txt += str(text)
@@ -29,6 +30,35 @@ def show_dialog_non_wx(text, title):
 		except:
 			print("Failed to show Win32 error dialog via <ctypes>. Message:", sys.exc_info()[1])       
     
+
+def write_crash_log_file():
+	import sys, traceback
+	
+	err = traceback.format_exc()
+	separator = "========================================"
+	separator += separator
+	separator =  "\n" + separator + "\n"
+	text = separator + err + separator
+	sys.stderr.write(text)
+	
+	if sys.platform in ['win32', 'win64']:
+		# Quick hack to get at least SOME crash-reporting.
+		try:
+			
+			homedir = os.path.expanduser("~/Documents/Rigs of Rods toolkit 0.38") # This is currently hardcoded anyway...
+			if not os.path.exists(homedir):
+				os.mkdir(homedir)
+			logs_dir = homedir + "/logs"
+			if not os.path.exists(logs_dir):
+				os.mkdir(logs_dir)
+		
+			crashlog_path = logs_dir + "/Crash.log"
+			f = open(crashlog_path, mode='w')
+			f.write(text)
+			f.close()
+		except:
+			pass
+
 
 def main():
 	"""
@@ -63,9 +93,11 @@ def main():
 	
 	except ToolkitError as err:
 		show_dialog_non_wx(err, "Failed to start RoRToolkit")
+		write_crash_log_file()
 		has_error_occured = True
 	except:
 		show_error_dialog_non_wx(sys.exc_info()[1], "Failed to start RoRToolkit")
+		write_crash_log_file()
 		has_error_occured = True
 	
 	if has_error_occured == False:	
@@ -73,8 +105,10 @@ def main():
 			roreditor.MainFrame.startApp(MainApp)
 		except ToolkitError:
 			show_dialog_non_wx(str(sys.exc_info()[1]), "RoRToolkit stopped on error")
+			write_crash_log_file()
 		except:
-			show_error_dialog_non_wx(sys.exc_info()[1], "RoRToolkit crashed :(")		
+			show_error_dialog_non_wx(sys.exc_info()[1], "RoRToolkit crashed :(")
+			write_crash_log_file()		
 
 
 if __name__ == "__main__": 
