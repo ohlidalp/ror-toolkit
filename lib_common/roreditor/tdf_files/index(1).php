@@ -1,2 +1,0 @@
- 
-/* CSS placed here will affect the print output */
