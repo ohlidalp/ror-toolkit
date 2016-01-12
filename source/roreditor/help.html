@@ -1,0 +1,115 @@
+<h1>Short Introduction / Help</h1>
+<table border="1">
+<tr><td>A</td><td>move left</td></tr>
+<tr><td>D</td><td>move right</td></tr>
+<tr><td>W</td><td>move foreward</td></tr>
+<tr><td>S</td><td>move backward</td></tr>
+<tr><td>F</td><td>move up</td></tr>
+<tr><td>V</td><td>move down</td></tr>
+<tr><td>SHIFT + above keys</td><td>faster movement</td></tr>
+<tr><td>INS</td><td>Insert selected object in Object Tree at current position</td></tr>
+<tr><td>DEL</td><td>delete selected object (it is comment out in the terrn file)</td></tr>
+
+<tr><td>Q</td><td>De/Attatch camera to the selected object, AWSDFV keys will rotate camera around the selected object</td></tr>
+<tr><td>SPACE</td><td>Block Mode used to build a road</td></tr>
+<tr><td>C</td><td>dis/allow camera to go trhought terrain</td></tr>
+<tr><td>X</td><td>rotate actual selection 90 degree on X axis </td></tr>
+<tr><td>Y</td><td>rotate actual selection 90 degree on Y axis</td></tr>
+<tr><td>Z</td><td>rotate actual selection 90 degree on Z axis</td></tr>
+
+<tr><td>U</td><td>rotate Up the selected object</td></tr>
+<tr><td>I</td><td>Reset partial rotation of the selected object</td></tr>
+<tr><td>O</td><td>rotate Down the selected object</td></tr>
+
+<tr><td>J</td><td>rotate left (around blue pivot) the selected object</td></tr>
+<tr><td>K</td><td>Reset partial rotation of the selected object</td></tr>
+<tr><td>L</td><td>rotate right (around blue pivot) the selected object</td></tr>
+
+<tr><td>M</td><td>rotate left (around red pivot) the selected object</td></tr>
+<tr><td>COMMA</td><td>Reset partial rotation of the selected object</td></tr>
+<tr><td>DOT</td><td>rotate right (around red pivot) the selected object</td></tr>
+<tr><td>REPAG</td><td>undo last movement/rotation</td></tr>
+<tr><td>AVPAG</td><td>redo last undo</td></tr>
+
+
+<tr><td>P</td><td>Print position and rotation of the selected object to the console</td></tr>
+<tr><td>F4</td><td>Get dimension and vertices coordenates of the selected object</td></tr>
+
+<tr><td>T</td><td>switch between bilinear and trilinear filtering</td></tr>
+<tr><td>R</td><td>switch between solid, wireframe and point mode</td></tr>
+
+<tr><td>Mousewheel in Main Viewport</td><td>zoom in/out (like forward/backward)</td></tr>
+<tr><td>rightclick and drag</td><td>look around</td></tr>
+<tr><td>control + rightclick</td><td>move to the side and up and down</td></tr>
+<tr><td> control + leftclick (when selected an object)</td><td>free movement of the object, just drag and drop</td></tr>
+</table>
+
+<h1>How To Add Things</h1>
+<h2>Classic method</h2>
+<hr>
+- Click on terrain empty zone, a red cylinder will appear on the ground(that's the point where you will add the object)<br>
+- Rightclick on an item in the Object Tree and use Add to Terrain<br>
+<br>
+<br>
+<h2>Mouse method</h2>
+<hr>
+- Open Object Tree<br>
+- select the object you desire to add<br>
+- Mark the checkbox "Place objects with Middle Mouse Button" (MMB).<br>
+- Each click with your MMB on 3D window will add a new object to the position you are pointed with your mouse.<br>
+<br>
+Some objects goes sunk, so, move your camera down until you get sink and then leftclick on the object to select it, Now you can drag blue pivot or just use Object Inspector to change its "Height from Ground" property.
+<br>
+
+<br>
+Because this technique is standard for all objects, some objects may be placed in middle air or sunken in terrain. To prevent this, click on an object to select it, then press F1 key (a message will be shown on screen to help you), move your object from underground to the ground until the object is in fine position, press F2 to save this offset. Now everytime you add this object to the terrain it will be on the ground instead sunked. This option is saved to disk, if you want to reset this setup, press F3 key while your object is still selected.<br>
+<br>
+<br>
+<h2>Block Mode method</h2>
+<hr>
+Tipically used to build a road, it also can be used to create a big parking zone, some buildings next to the previous one, etc.<br>
+<br>
+- Add the first piece of road using a previous First or Second method<br>
+- select the recent added object by Left click on it<br>
+- press SPACE key and the selected object in "Object Tree" will appear next to the selected object in 3D Window.<br>
+
+
+
+<h1> Free movement of objects</h1>
+Although you can drag and drop each red/green/blue pivot for moving an object in the desired direction, we provided this feature that the object will follow your mouse pointed position:<br>
+<br>
+- LeftClick to select an object in 3D window (maybe a context popup appear to help you to select the object you want,  Leftclick in object of this popup menu)<br>
+- Keep CTRL key pressed while you leftDown again over the selected object and drag your mouse.<br>
+(if you release CTRL key or Left Mouse Button, the object will stop moving at the latest position)<br>
+
+
+<h1>Tips and Tricks</h1>
+<h2>Focus, always be in of focus</h2>
+<hr>
+Please, keep in mind that 3D windows is needed to be focused to process any key, so, before pressing a key you should rightclick on 3D window to focus it.<br>
+<br>
+<h2>When precise selecting is important</h2>
+<hr>
+If you leftclick on an object, maybe that a popup menu appears, that means that are various objects overlapped between the camera position and the point of the terrain that you are pointing at. Objects on top of the popup menu is near to the camera position (your point of view), meanwhile objects in lower part of the popup menu is near the point you are clicking on, or eventhough behind the point you are specting.<br>
+<br>
+If there are only 2 objects, just left-click twice on the foreground object to select the background one.<br>
+<br>
+<h2>Return key, the master key</h2>
+<hr>
+You should press Enter key on any Text control to confirm your changes, for example, in the window Map Options, once you change the "Ingame menu map name" you must press Enter key. On Object Inspector there is a trick, you can modify X, Y, Z coordenates and then, press Enter key Once on any of the three text control box, it will update X, Y, Z coordenates in a single Step. The same happens with Rot X, Rot Y  and Rot Z text Controls.
+
+On Object Comment you are allowed to press enter key to create a new line, once more time, your last key should be Enter key to update values.
+
+<h2>Calculator</h2>
+<hr>
+You can do some calcs on numeric text controls, for example if you have a coordenate on "1325.22" you can type something like "1325.22 + 1.58" and then press enter to evaluate that expression.  
+
+<h1>Known issues</h1>
+If an object is not shown on Object Preview Toolwindow then, it has errors and Toolkit can not add this object to the terrain. Please note that the error maybe:<br><br>
+- File you are trying to load is newer than Toolkit File interpreter.<br>
+- Error in truck section. When RoR Toolkit detect this kind of errors, a red label will be displayed in Object Preview toolwindow, you can check console for further help.<br>
+- Toolkit errors when it interpretes files.<br>
+<br>
+<br>
+<br>
+Cheers from RoR Toolkit development Team ;-)<br>
