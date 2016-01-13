@@ -20,13 +20,17 @@ class StartupSettingsDialog(wx.Dialog):
 		self.is_ror_installdir_selected = False
 		self.is_ror_homedir_selected = False
 	
-	def setup_content(self, window_title, banner_image_path, rendersystem_list, selected_rendersys_index, ror_homedirs):
+	def setup_content(self, icon_path, window_title, banner_image_path, rendersystem_list, selected_rendersys_index, ror_homedirs):
 		"""
 		:param list[str] rendersystem_list: Rrendersystem names
 		:param int selected_rendersys_index: Starts from 0.
 		:param list[tuple(dirname, path)] ror_homedirs: Directories
 		:returns: nothing
 	    """
+	    
+		# Window icon
+		icon = wx.Icon(icon_path, wx.BITMAP_TYPE_ICO)
+		self.SetIcon(icon)
 	    
 		# Layout conf
 		help_text_width = 240

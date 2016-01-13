@@ -1,20 +1,7 @@
 # Thomas Fischer 31/05/2007, thomas@thomasfischer.biz
+# Petr Ohlidal   2016
 
-# System imports
-import wx, os, os.path
-from subprocess import Popen
-import subprocess
-
-# External libs
-from wxogre.OgreManager import *
-
-# Internal libs
-from ror.RoROgreWindow import *
-from ror.rorcommon import *
-from ror.logger import log
 from ror.settingsManager import *
-import roreditor.MainFrame
-import roreditor.ShapedControls 
 
 RENDERSYSTEMS = ['OpenGL', 'DirectX9']
 DIRECTXLINE = "Plugin=RenderSystem_Direct3D9.dll"
@@ -22,6 +9,7 @@ OPENGLLINE = "Plugin=RenderSystem_GL.dll"
 SPLASHIMAGE = rorSettings().getConcatPath(rorSettings().toolkitMainFolder, ["media","gui", "splash.bmp"],True)
 
 def startApp(MainApp):
+	from ror.logger import log
 
 	### Callbacks and utils for the startup settings dialog
 	
@@ -53,7 +41,8 @@ def startApp(MainApp):
 		f.close()
 		
 	def callback_installdir_updated(new_installdir):
-		if not checkRoRDirectory(new_installdir): # rorcommon.checkRoRDirectory()
+		import ror.rorcommon
+		if not ror.rorcommon.checkRoRDirectory(new_installdir):
 			return False
 	
 		rorSettings().setSetting("RigsOfRods", "BasePath", new_installdir)
@@ -90,10 +79,6 @@ def startApp(MainApp):
 		raise rortoolkit.exceptions.ToolkitError(msg)
 		
 	# Setup the settings dialog
-	conf_dialog.setup_content(rorSettings().title, SPLASHIMAGE, RENDERSYSTEMS, 1, homedir_list)
-
-	# add icon to the window
-	icon = wx.Icon("rortoolkit.ico", wx.BITMAP_TYPE_ICO)
-	conf_dialog.SetIcon(icon)
+	conf_dialog.setup_content("rortoolkit.ico", rorSettings().title, SPLASHIMAGE, RENDERSYSTEMS, 1, homedir_list)
 	
 	return conf_dialog
