@@ -24,6 +24,10 @@ SPLASHIMAGE = rorSettings().getConcatPath(rorSettings().toolkitMainFolder, ["med
 def startApp(MainApp):
 
 	### Callbacks and utils for the startup settings dialog
+	
+	def callback_homedir_selected(homedir_index, homedirs_list):
+		if homedir_index < len(homedirs_list):
+			rorSettings().rorHomeFolder = homedirs_list[homedir_index][1]
 
 	def update_renderer_configfile(rend_index, rend_list):
 		log().debug("update_renderer_configfile(): retrieving plugins_windows.cfg")
@@ -65,15 +69,28 @@ def startApp(MainApp):
 		
 	### The startup settings dialog
 	
-	# Lepes: No new application needed, just a ShowModal() Frame
-	#	MainApp = wx.PySimpleApp()
-	#	wx.InitAllImageHandlers() #you may or may not need this
+	# Create dialog, setup callbacks
 	import rortoolkit.gui_panels
 	conf_dialog = rortoolkit.gui_panels.StartupSettingsDialog(MainApp, -1, "")
 	conf_dialog.set_callback_installdir_updated(callback_installdir_updated)
 	conf_dialog.set_callback_renderer_selected(callback_renderer_selected)
+	conf_dialog.set_callback_homedir_selected(callback_homedir_selected)
 	conf_dialog.set_callback_abort(callback_abort)
-	conf_dialog.setup_content(rorSettings().title, SPLASHIMAGE, RENDERSYSTEMS, 1)
+	
+	# List and check RoR's home directories (raise error if none found)
+	import rortoolkit.sys_utils
+	homedir_list = rortoolkit.sys_utils.list_ror_home_directories();
+	if len(homedir_list) == 0:
+		import rortoolkit.exceptions
+		msg = "Rigs of Rods was not found on your system."
+		if rortoolkit.sys_utils.is_system_windows():
+			msg += "\nNo directory [Documents/Rigs of Rods*] found"
+		else:
+			msg += "\nNo RoR directory found in your user directory"
+		raise rortoolkit.exceptions.ToolkitError(msg)
+		
+	# Setup the settings dialog
+	conf_dialog.setup_content(rorSettings().title, SPLASHIMAGE, RENDERSYSTEMS, 1, homedir_list)
 
 	# add icon to the window
 	icon = wx.Icon("rortoolkit.ico", wx.BITMAP_TYPE_ICO)

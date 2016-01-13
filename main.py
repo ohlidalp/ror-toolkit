@@ -19,7 +19,7 @@ def show_dialog_non_wx(text, title):
     Shows error popup without using any dependencies, if any method is available
     """
     # TODO: Other platforms
-    if sys.platform in ['win32', 'win64']:
+    if sys.platform == "win32": # Windows 32/64 => always 'win32'
 		try:
 			import ctypes  # Built-in library
 		except:

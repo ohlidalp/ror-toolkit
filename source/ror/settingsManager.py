@@ -87,6 +87,7 @@ class rorSettings(Singleton):
 		   
 	def _setRorHomeFolder(self, value):
 		self._rorHomeFolder = value
+		self.setSetting(ROR, "homedir_path", value)
 	
 	def _gettitle(self):
 		return self._title
@@ -125,7 +126,7 @@ class rorSettings(Singleton):
 					 doc="""RoR folder where the binary file is""")
 
 	rorHomeFolder = property(_getRorHomeFolder, _setRorHomeFolder,
-					 doc=""" My Documents\Rigs of Rods 0.38 """)
+					 doc="""On windows: My Documents\Rigs of Rods ### """)
 	
 	rorExecutable = property(_getRorExecutable, _setRorExecutable,
 					 doc="""only filename of the executable RoR.bin / RoR.exe
@@ -161,19 +162,12 @@ class rorSettings(Singleton):
 		"""
 		self._toolkitMainFolder = self.getConcatPath(os.path.dirname(os.path.abspath(__file__)), ["..", ".."])
 		sp = wx.StandardPaths.Get()
-		ror = "Rigs of Rods 0.38"
 		toolkit = "Rigs of Rods Toolkit 0.38"
 		if self.getPlatform() == 'linux':
-			ror = ror.replace(" ", "")
 			toolkit = toolkit.replace(" ", "")
 			
 		self._toolkitHomeFolder = self.getConcatPath(sp.GetDocumentsDir(), [toolkit])
-		self._rorHomeFolder = os.path.join(sp.GetDocumentsDir(), ror)
-		if not os.path.isdir(self._rorHomeFolder):
-			from toolkit_exceptions import ToolkitError
-			msg = "Cannot find directory [Documents/Rigs of Rods 0.38]"
-			msg += "\nRoRToolkit requires this exact directory to operate"
-			raise ToolkitError(msg)
+		self._rorHomeFolder = None # Filled later by startup settings dialog
 	
 		self._configFile = self.concatToToolkitHomeFolder(["config", CONFIGFILE], True)
 		
@@ -204,6 +198,7 @@ class rorSettings(Singleton):
 			self.myConfig = ConfigParser.ConfigParser()
 			self.myConfig.read(self._configFile)
 			self._rorFolder = self.getSetting(ROR, 'BasePath')
+			self._rorHomeFolder = self.getSetting(ROR, 'homedir_path')
 			print "Settings loaded"
 		except Exception, e:
 			print str(e)
