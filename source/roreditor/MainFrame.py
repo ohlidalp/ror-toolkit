@@ -70,8 +70,6 @@ ID_Quit = wx.NewId()
 
 ID_ViewHelp = wx.NewId()
 
-ID_CreateOgre = wx.NewId()
-
 ID_CreatePerspective = wx.NewId()
 ID_CopyPerspective = wx.NewId()
 
@@ -131,7 +129,6 @@ class MainFrame(wx.Frame):
 				#file_menu.Append(ID_OpenTerrain, "Open Terrain")
 				file_menu.AppendItem(FM.FlatMenuItem(file_menu, wx.ID_EXIT, "Exit", "", wx.ITEM_NORMAL))
 				#view_menu = wx.Menu()
-				#view_menu.Append(ID_CreateOgre, "Create new 3D View")
 
 				self.managerInit()
 				options_menu = FM.FlatMenu()
@@ -437,7 +434,6 @@ class MainFrame(wx.Frame):
 				self.Bind(wx.EVT_TOOL, self.OnStickTo02Click, id=ID_StickTo02)
 				self.Bind(wx.EVT_TOOL, self.OnStartRoRClick, id=ID_StartRoR)
 				self.Bind(wx.EVT_TOOL, self.OnfindObject, id=ID_FindObject)
-				self.Bind(wx.EVT_MENU, self.OnCreateOgre, id=ID_CreateOgre)
 				
 				self.Bind(wx.EVT_MENU, self.OnCreatePerspective, id=ID_CreatePerspective)
 				self.Bind(wx.EVT_MENU, self.OnCopyPerspective, id=ID_CopyPerspective)
@@ -774,16 +770,6 @@ class MainFrame(wx.Frame):
 				pt = self.ClientToScreen(wx.Point(0, 0))
 				
 				return wx.Point(pt.x + x, pt.y + x)
-
-		def OnCreateOgre(self, event):
-				self._mgr.AddPane(self.CreateOgreCtrl(), wx.aui.AuiPaneInfo().
-												  Caption("Ogre Window").
-												  Float().FloatingPosition(self.GetStartPosition()).
-												  CloseButton(True).MaximizeButton(False))
-				self._mgr.Update()
-		
-		def CreateOgreCtrl(self):
-				return RoRTerrainOgreWindow(self, wx.ID_ANY, maininstance=self.terrainOgreWin)
 
 		def MessageBox(self, type='info', text="",
 					   doc=""" Show a MessageBox to the user with the Text  
