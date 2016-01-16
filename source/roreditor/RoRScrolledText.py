@@ -11,13 +11,13 @@ from ror.logger import log
 
 
 class scrolledText(ShapedWindow):
-	
+
 	def __init__(self, parent, title, msg, **kwargs):
 		ShapedWindow.__init__(self, rorSettings().mainApp, skinOnlyFilename="scrolledtext.png", title=title, **kwargs)
-	   
+
 		self.parent = parent
-		
-			
+
+
 		grid = self.grid
 		grid.SetEmptyCellSize(wx.Size(110, 3))
 		r = 1
@@ -26,16 +26,16 @@ class scrolledText(ShapedWindow):
 		self.mainLabel.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD))
 		grid.Add(self.mainLabel, pos=wx.GBPosition(r, c), span=wx.GBSpan(1, 1))
 
-		
+
 		r = 2
-		c = 1		 
+		c = 1
 		self.text = wx.TextCtrl(self, -1, msg, size=wx.Size(360, 320),
 									   style=wx.TE_MULTILINE | wx.HSCROLL | wx.TE_READONLY)
 		f = self.text.GetFont()
 		f.SetFamily(wx.FONTFAMILY_MODERN)
 		f.SetFaceName("Courier New")
 		self.text.SetFont(f)
-		grid.Add(self.text, pos=wx.GBPosition(r, c), span=wx.GBSpan(1, 1))		
+		grid.Add(self.text, pos=wx.GBPosition(r, c), span=wx.GBSpan(1, 1))
 
 
 
@@ -50,5 +50,3 @@ class scrolledText(ShapedWindow):
 
 	def Onclose(self, event):
 		self.Destroy()
-
- 

@@ -1,5 +1,5 @@
 # Lepes modification
- 
+
 import sys, os, os.path
 
 from ror.logger import log
@@ -33,7 +33,7 @@ class ObjectInspector(ShapedWindow):
 		grid.Add(self.nameObject,
 				 pos=wx.GBPosition(r, c),
 				 span=wx.GBSpan(1, 2))
-		
+
 		l = wx.StaticText(self, -1, "   X", style=wx.TRANSPARENT_WINDOW)
 		l.SetForegroundColour(wx.RED)
 		r += 1
@@ -41,7 +41,7 @@ class ObjectInspector(ShapedWindow):
 		grid.Add(l,
 				 pos=wx.GBPosition(r, c),
 				 span=wx.GBSpan(1, 1))
-		
+
 		self.X = wx.TextCtrl(self, -1, "", style=wx.TE_PROCESS_ENTER)
 		c += 1
 		grid.Add(self.X,
@@ -54,8 +54,8 @@ class ObjectInspector(ShapedWindow):
 		grid.Add(pan,
 				 pos=wx.GBPosition(r, c),
 				 span=wx.GBSpan(1, 1))
-				
-		pan = CopyPasteClass(self) 
+
+		pan = CopyPasteClass(self)
 		l = wx.StaticText(pan, -1, "   Y")
 		l.SetForegroundColour(wx.BLUE)
 		pan.addButtons(self.OnCopy, self.OnPastePos, None, 40)
@@ -84,7 +84,7 @@ class ObjectInspector(ShapedWindow):
 		grid.Add(l,
 				 pos=wx.GBPosition(r, c),
 				 span=wx.GBSpan(1, 1))
-				 
+
 		self.Z = wx.TextCtrl(self, -1, "", wx.DefaultPosition, wx.Size(100, 20), style=wx.TE_PROCESS_ENTER)
 		c += 1
 		grid.Add(self.Z,
@@ -104,7 +104,7 @@ class ObjectInspector(ShapedWindow):
 		grid.Add(l,
 				 pos=wx.GBPosition(r, c),
 				 span=wx.GBSpan(1, 1))
-				 
+
 		self.rotX = wx.TextCtrl(self, -1, "", wx.DefaultPosition, wx.Size(100, 20), style=wx.TE_PROCESS_ENTER)
 		c += 1
 		grid.Add(self.rotX,
@@ -116,7 +116,7 @@ class ObjectInspector(ShapedWindow):
 		grid.Add(pan,
 				 pos=wx.GBPosition(r, c),
 				 span=wx.GBSpan(1, 1))
-				 
+
 		pan = CopyPasteClass(self)
  		l = wx.StaticText(pan, -1, "   Rot Y")
 		l.SetForegroundColour(wx.BLUE)
@@ -126,7 +126,7 @@ class ObjectInspector(ShapedWindow):
 		grid.Add(pan,
 				 pos=wx.GBPosition(r, c),
 				 span=wx.GBSpan(1, 1))
-				 
+
 		self.rotY = wx.TextCtrl(self, -1, "", wx.DefaultPosition, wx.Size(100, 20), style=wx.TE_PROCESS_ENTER)
 		c += 1
 		grid.Add(self.rotY,
@@ -138,7 +138,7 @@ class ObjectInspector(ShapedWindow):
 		grid.Add(pan,
 				 pos=wx.GBPosition(r, c),
 				 span=wx.GBSpan(1, 1))
-				 
+
 		l = wx.StaticText(self, -1, "   Rot Z")
 		l.SetForegroundColour(wx.GREEN)
 		r += 1
@@ -146,7 +146,7 @@ class ObjectInspector(ShapedWindow):
 		grid.Add(l,
 				 pos=wx.GBPosition(r, c),
 				 span=wx.GBSpan(1, 1))
-				 
+
 		self.rotZ = wx.TextCtrl(self, -1, "", wx.DefaultPosition, wx.Size(100, 20), style=wx.TE_PROCESS_ENTER)
 		c += 1
 		grid.Add(self.rotZ,
@@ -169,14 +169,14 @@ class ObjectInspector(ShapedWindow):
 		c += 1
 		grid.Add(self.heightFromGround,
 				 pos=wx.GBPosition(r, c),
-				 span=wx.GBSpan(1, 1)) 
+				 span=wx.GBSpan(1, 1))
 		c += 1
 		pan = CopyPasteClass(self)
 		pan.addButtons(None, self.OnPasteHeight, self.OnResetHeight)
 		grid.Add(pan,
 				 pos=wx.GBPosition(r, c),
 				 span=wx.GBSpan(1, 1))
-		
+
 		r += 1
 		c = 1
 		self.places = wx.ComboBox(self, -1, choices=hardcoded['ingamemap'], style=wx.CB_READONLY)
@@ -184,21 +184,21 @@ class ObjectInspector(ShapedWindow):
 		grid.Add(self.places,
 				 pos=wx.GBPosition(r, c),
 				 span=wx.GBSpan(1, 1))
-		
+
 		c += 1
-		self.placeName = wx.TextCtrl(self, -1, "", size=wx.Size(100, 20), style=wx.TE_PROCESS_ENTER)	
+		self.placeName = wx.TextCtrl(self, -1, "", size=wx.Size(100, 20), style=wx.TE_PROCESS_ENTER)
 		self.placeName.Bind(wx.EVT_TEXT_ENTER, self.OnplaceName)
 		grid.Add(self.placeName,
 				 pos=wx.GBPosition(r, c),
 				 span=wx.GBSpan(1, 1))
 		r += 1
-		c = 1		 
+		c = 1
 		l = wx.StaticText(self, -1, "   Object Comment:")
 		grid.Add(l,
 				 pos=wx.GBPosition(r, c),
 				 span=wx.GBSpan(1, 1))
 		# a memo for comments will span throw 6 rows and 2 columns of the sizer.
-		self.comments = wx.TextCtrl(self, -1, "", size=wx.Size(200, 80), style=wx.TE_MULTILINE | wx.TE_PROCESS_ENTER)	
+		self.comments = wx.TextCtrl(self, -1, "", size=wx.Size(200, 80), style=wx.TE_MULTILINE | wx.TE_PROCESS_ENTER)
 		r += 1
 		c = 1
 		grid.Add(self.comments,
@@ -226,11 +226,11 @@ class ObjectInspector(ShapedWindow):
 
 #		grid.SetFlexibleDirection(wx.BOTH)
 #		grid.SetNonFlexibleGrowMode(wx.FLEX_GROWMODE_NONE)
-		
+
 		self.Bind(wx.EVT_TEXT_ENTER, self.OnEditChanged, self.X)
 		self.Bind(wx.EVT_TEXT_ENTER, self.OnEditChanged, self.Y)
 		self.Bind(wx.EVT_TEXT_ENTER, self.OnEditChanged, self.Z)
-		self.Bind(wx.EVT_TEXT_ENTER, self.OnEditHeightChanged, self.heightFromGround)		
+		self.Bind(wx.EVT_TEXT_ENTER, self.OnEditHeightChanged, self.heightFromGround)
 		self.Bind(wx.EVT_TEXT_ENTER, self.OnEditrotChanged, self.rotX)
 		self.Bind(wx.EVT_TEXT_ENTER, self.OnEditrotChanged, self.rotY)
 		self.Bind(wx.EVT_TEXT_ENTER, self.OnEditrotChanged, self.rotZ)
@@ -238,7 +238,7 @@ class ObjectInspector(ShapedWindow):
 
 
 		self.SetSizerAndFit(grid)
-		
+
 		# no need to use wx.Clipboard to copy/paste feature.
 		self.clipboard = []
 		self.updateSkin()
@@ -246,12 +246,12 @@ class ObjectInspector(ShapedWindow):
 		if self.parent.terrainOgreWin.selected.entry:
 			self.parent.terrainOgreWin.ObjectDetails()
 		evt.Skip()
-		
+
 	def OnnameObjectDown(self, evt):
 		self.parent.terrainOgreWin.ObjectDetails()
 		evt.Skip()
 
-	def OnCopy(self, evt):		
+	def OnCopy(self, evt):
 		self.clipboard = []
 		self.clipboard.append(self.X.GetValue())
 		self.clipboard.append(self.Y.GetValue())
@@ -261,7 +261,7 @@ class ObjectInspector(ShapedWindow):
 		self.clipboard.append(self.rotZ.GetValue())
 		self.clipboard.append(self.heightFromGround.GetValue())
 		evt.Skip()
-	
+
 	def OnPastePos(self, evt):
 		if len(self.clipboard) == 7:
 			self.X.SetValue(self.clipboard[0])
@@ -269,13 +269,13 @@ class ObjectInspector(ShapedWindow):
 			self.Z.SetValue(self.clipboard[2])
 			self.updateEntry()
 		evt.Skip()
-			
+
 	def OnPasteX(self, evt):
 		if len(self.clipboard) == 7:
 			self.X.SetValue(self.clipboard[0])
 			self.updateEntry()
 		evt.Skip()
-			
+
 	def OnPasteY(self, evt):
 		if len(self.clipboard) == 7:
 			self.Y.SetValue(self.clipboard[1])
@@ -306,47 +306,47 @@ class ObjectInspector(ShapedWindow):
 		if len(self.clipboard) == 7:
 			self.rotY.SetValue(self.clipboard[4])
 			self.updaterot()
-		evt.Skip()			
+		evt.Skip()
 
 	def OnPasterotZ(self, evt):
 		if len(self.clipboard) == 7:
 			self.rotZ.SetValue(self.clipboard[5])
 			self.updaterot()
-		evt.Skip()		
-	
+		evt.Skip()
+
 	def OnResetrotX(self, evt):
 		self.rotX.SetValue("0.0")
 		self.updaterot()
-		evt.Skip()	
+		evt.Skip()
 
 	def OnResetrotY(self, evt):
 		self.rotY.SetValue("0.0")
 		self.updaterot()
-		evt.Skip()	
+		evt.Skip()
 
 	def OnResetrotZ(self, evt):
 		self.rotZ.SetValue("0.0")
 		self.updaterot()
-		evt.Skip()	
+		evt.Skip()
 
 	def OnResetrot(self, evt):
 		self.rotX.SetValue("0.0")
 		self.rotY.SetValue("0.0")
 		self.rotZ.SetValue("0.0")
 		self.updaterot()
-		evt.Skip()	
+		evt.Skip()
 
 	def OnResetHeight(self, evt):
 		self.heightFromGround.SetValue("0.2")
 		self.parent.terrainOgreWin.selected.entry.heightFromGround = 0.2
-		evt.Skip()	
-	
+		evt.Skip()
+
 	def OnPasteHeight(self, evt):
 		if len(self.clipboard) == 7:
 			self.heightFromGround.SetValue(self.clipboard[6])
 			f = self.checkValidChars(self.clipboard[6])
 			self.parent.terrainOgreWin.selected.entry.heightFromGround = f
-		evt.Skip()	
+		evt.Skip()
 
 	def OnplaceName(self, evt):
 		""" user used qualifier """
@@ -362,7 +362,7 @@ class ObjectInspector(ShapedWindow):
 		f = self.checkValidChars(event.GetString())
 		self.updateEntry()
 		event.Skip()
-	
+
 	def updateEntry(self):
 		if self.parent.terrainOgreWin.selected.entry:
 			self.parent.terrainOgreWin.selected.entry.position = (eval(self.X.GetValue()), eval(self.Y.GetValue()), eval(self.Z.GetValue()))
@@ -374,15 +374,15 @@ class ObjectInspector(ShapedWindow):
 			f = self.checkValidChars(event.GetString())
 			self.parent.terrainOgreWin.selected.entry.heightFromGround = f
 		event.Skip()
-		
-		
+
+
 	def OnEditrotChanged(self, event):
 		f = 0.0
 		f = self.checkValidChars(event.GetString())
 		self.updaterot()
 		event.Skip()
 		return
-	
+
 	def updaterot(self):
 		if self.parent.terrainOgreWin.selected.entry:
 			self.parent.terrainOgreWin.selected.entry.rotation = (eval(self.rotX.GetValue()), eval(self.rotY.GetValue()), eval(self.rotZ.GetValue()))
@@ -392,9 +392,9 @@ class ObjectInspector(ShapedWindow):
 			self.parent.terrainOgreWin.selected.entry.visible = self.chkVisible.GetValue()
 		if not self.chkVisible.GetValue():
 			self.parent.terrainOgreWin.selectTerrain()
-	
-	def OnmakeVisible(self, event):		
-		
+
+	def OnmakeVisible(self, event):
+
 		for e in self.parent.terrainOgreWin.entries.keys():
 			if not self.parent.terrainOgreWin.entries[e].visible:
 				self.parent.terrainOgreWin.entries[e].visible = True
@@ -402,21 +402,21 @@ class ObjectInspector(ShapedWindow):
 	def OnEditcommentChanged(self, event):
 		#user may include "//" chars for the comment but may not!!
 		# I assert doing myself
-		# Although TextCtrl process enter key, user may press twice to get a blank line 
+		# Although TextCtrl process enter key, user may press twice to get a blank line
 		line = event.GetString().replace("/", "")
 		lines = line.split("\n")
-		
+
 		for i in range(0, len(lines)):
-			lines[i] = "// " + lines[i] 
-		if self.parent.terrainOgreWin.selected.entry:		
-			self.parent.terrainOgreWin.selected.entry.data.comments = lines		 
+			lines[i] = "// " + lines[i]
+		if self.parent.terrainOgreWin.selected.entry:
+			self.parent.terrainOgreWin.selected.entry.data.comments = lines
 		event.Skip()
-		return					
+		return
 
 	def updateData(self, entry=None ,
 				   doc=""" entry is terrain.selected.entry and
 							may be None to disable Object Inspector"""):
-		
+
 		rotRes = False
 		commRes = False
 		res = not entry is None
@@ -429,7 +429,7 @@ class ObjectInspector(ShapedWindow):
 
 			x, y , z = entry.position
 			rx, ry, rz = entry.rotation
-			
+
 			self.nameObject.SetLabel(entry.data.name)
 			self.X.ChangeValue('%.6f' % x)
 			self.Y.ChangeValue('%.6f' % y)
@@ -453,7 +453,7 @@ class ObjectInspector(ShapedWindow):
 					else:
 						self.places.SetSelection(0)
 						self.placeName.ChangeValue("")
-						
+
 		else:
 			# look terrain Pos
 			x, y, z = self.parent.terrainOgreWin.selected.coords.asTuple
@@ -468,5 +468,4 @@ class ObjectInspector(ShapedWindow):
 			self.rotY.ChangeValue('')
 			self.rotZ.ChangeValue('')
 			self.comments.SetValue("")
-			self.nameObject.SetLabel("< nothing selected >")			
-   
+			self.nameObject.SetLabel("< nothing selected >")

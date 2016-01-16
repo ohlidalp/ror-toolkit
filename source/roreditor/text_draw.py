@@ -27,7 +27,7 @@ def tempName():
 import ogre.renderer.OGRE as ogre
 from wxogre.OgreManager import *
 
-#   ERROR 
+#   ERROR
 #21:15:42: OverlayElementFactory for type Panel registered.
 #21:15:42: OverlayElementFactory for type BorderPanel registered.
 #21:15:42: OverlayElementFactory for type TextArea registered.
@@ -66,7 +66,7 @@ class OgreText(object):
 		t.setParameter('horz_align', 'center')
 		t.setColour(ogre.ColourValue(1.0, 1.0, 1.0))
 		c.addChild(t)
-		
+
 		self.update()
 		ov.show()
 
@@ -132,4 +132,3 @@ class OgreText(object):
 		self.container.setPosition(1-max_x, min_y);
 		# 0.1, just "because"
 		self.container.setDimensions(max_x - min_x, 0.1);
-

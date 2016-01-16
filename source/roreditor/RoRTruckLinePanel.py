@@ -33,7 +33,7 @@ class TruckLinePanel(wx.Panel):
 		self.ids = []
 		self._section = ''
 		self.list = None # list of dictionary of the selected section
-		grid = wx.GridBagSizer(2, 2) 
+		grid = wx.GridBagSizer(2, 2)
 		r = 0
 		c = 0
 		chooseSection = wx.Button(self, -1, "section")
@@ -48,7 +48,7 @@ class TruckLinePanel(wx.Panel):
 				 span=wx.GBSpan(1, 1))
 		c += 1
 		self.lblHelp = wx.TextCtrl(self, -1, " <help text>", size=wx.Size(600, 40), style=wx.TE_MULTILINE | wx.TE_READONLY)
-	
+
 		grid.Add(self.lblHelp,
 				 pos=wx.GBPosition(r, c),
 				 span=wx.GBSpan(1, 6))
@@ -60,7 +60,7 @@ class TruckLinePanel(wx.Panel):
 			grid.Add(self.labels[i],
 					 pos=wx.GBPosition(r, c),
 					 span=wx.GBSpan(1, 1))
-			
+
 			c += 1
 			nid = wx.NewId()
 			self.ids.append(nid)
@@ -68,18 +68,18 @@ class TruckLinePanel(wx.Panel):
 			t.Bind(wx.wx.EVT_ENTER_WINDOW, self.OnTextCtrlFocus)
 			t.Bind(wx.EVT_TEXT_ENTER, self.OnUpdateText)
 			self.ctrls.append(t)
-			
+
 			grid.Add(self.ctrls[i],
 					 pos=wx.GBPosition(r, c),
 					 span=wx.GBSpan(1, 1))
 			c += 1
 			if (i + 1) % 5 == 0:
 				c = 0
-				r += 1 
-		
-		self.SetAutoLayout(True) 
+				r += 1
+
+		self.SetAutoLayout(True)
 		self.SetSizer(grid)
-		
+
 	def OnChooseSection(self, evt):
 		menu = wx.Menu()
 		self.menuitems = {}
@@ -93,10 +93,10 @@ class TruckLinePanel(wx.Panel):
 #				print " %d item is %s " %(item.GetId(), self.getRoRName(r.movable))
 	def sectionChoosen(self, evt):
 		self.section = self.menuitems[evt.GetId()]
-		
+
 	def _getsection(self):
 		return self._section
-		
+
 	def _setsection(self, value):
 		self._section = value
 		if self.parser.commands.has_key(value):
@@ -105,29 +105,29 @@ class TruckLinePanel(wx.Panel):
 			self.list = self.parser.sections[value]
 		else:
 			raise Exception("section %s is unknown" % value)
-		
+
 		i = 0
 		self.translator = {}
 		for dic in self.list:
 			self.labels[i].SetLabel(dic['name'])
 			self.translator[dic['name']] = i
-			
+
 			i += 1
 			if i > len(self.labels): raise Exception(" section %s is greater than labels availables on RoRTruckLinePanel" % value)
-		for x in range(0, MAXCONTROLS):								
+		for x in range(0, MAXCONTROLS):
 			if x >= i :
 				self.labels[x].Hide()
 				self.ctrls[x].Hide()
 			else:
 				self.labels[x].Show()
 				self.ctrls[x].Show()
-				
-			
-		
-		
+
+
+
+
 	def _delsection(self):
 		del self._section
-	
+
 	section = property(_getsection, _setsection, _delsection)
 	""" guide section name
 	"""
@@ -138,7 +138,7 @@ class TruckLinePanel(wx.Panel):
 		if id in self.ids:
 			idx = self.ids.index(id)
 			lbl = self.labels[idx].GetLabel().replace("_", " ")
-			
+
 			if self.section != '':
 				if self.parser.sections[self.section][idx].has_key("help"):
 					self.lblHelp.SetValue(self.parser.sections[self.section][idx]['help'])
@@ -148,11 +148,11 @@ class TruckLinePanel(wx.Panel):
 	def OnUpdateText(self, evt):
 		print "event updatetext"
 		evt.Skip()
-	
+
 	def OnTextCtrlLostFocus(self, evt):
-	
+
 		evt.Skip()
-		
+
 	def updateTextBoxesFrom(self, los):
 		""" receive a LineOfSection object and update texboxes data
 		"""
@@ -169,6 +169,3 @@ class TruckLinePanel(wx.Panel):
 class TextBox(wx.TextCtrl):
 	def __init__(self, parent, **args):
 		wx.TextCtrl.__init__(self, -1, "", style=wx.TE_PROCESS_ENTER)
-		
-	
-		

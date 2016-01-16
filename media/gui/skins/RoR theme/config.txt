@@ -1,3 +1,3 @@
 [skin]
-SkinBackgroundColor = 254, 184, 0
+SkinBackgroundColor = 255, 127, 0
 SkinTransparentColor = 0, 0, 0

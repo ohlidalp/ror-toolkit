@@ -2,17 +2,17 @@
 import sys
 import wx
 import math
-import ogre.renderer.OGRE as ogre 
+import ogre.renderer.OGRE as ogre
 from wxogre.OgreManager import *
 from wxogre.wxOgreWindow import *
 from random import random
 
-class RoRTerrainSelectedObjectTopOgreWindow(wxOgreWindow): 
+class RoRTerrainSelectedObjectTopOgreWindow(wxOgreWindow):
     def __init__(self, parent, ID, RoRTerrainOgreWindow, size = wx.Size(200,200), **kwargs):
         self.sceneManager = RoRTerrainOgreWindow.sceneManager
         self.mainWindow = RoRTerrainOgreWindow
         self.rand = str(random())
-        wxOgreWindow.__init__(self, parent, ID,"terrainSelectedObjectTop", size = size, **kwargs) 
+        wxOgreWindow.__init__(self, parent, ID,"terrainSelectedObjectTop", size = size, **kwargs)
         self.parent = parent
         self.distance = 50
 
@@ -27,13 +27,13 @@ class RoRTerrainSelectedObjectTopOgreWindow(wxOgreWindow):
                 return result[0].worldFragment.singleIntersection.y
         except:
             pass
-                    
+
     def cameraCollision(self):
         camPos = self.camera.getPosition()
         terrainHeight = self.getTerrainHeight(camPos)
         if terrainHeight + 1 > camPos.y:
             self.camera.setPosition(camPos.x, terrainHeight + 1, camPos.z)
-        
+
     def OnFrameStarted(self):
         # sync with main
         if not self.mainWindow.mSelected is None:
@@ -49,17 +49,17 @@ class RoRTerrainSelectedObjectTopOgreWindow(wxOgreWindow):
 
     def SceneInitialisation(self):
         # create a camera
-        self.camera = self.sceneManager.createCamera('SharedCamera' + self.rand) 
-        
+        self.camera = self.sceneManager.createCamera('SharedCamera' + self.rand)
+
         self.camera.setProjectionType(ogre.ProjectionType.PT_ORTHOGRAPHIC)
         self.camera.setNearClipDistance(5)
         self.camera.setPosition(ogre.Vector3(0.1,-100,0))
         self.camera.lookAt(ogre.Vector3(0,0,0))
-        #self.camera.setAutoAspectRatio(True) 
+        #self.camera.setAutoAspectRatio(True)
 
         # create the Viewport"
-        self.viewport = self.renderWindow.addViewport(self.camera, 0, 0.0, 0.0, 1.0, 1.0) 
-        self.viewport.backgroundColour = ogre.ColourValue(0, 0, 0) 
+        self.viewport = self.renderWindow.addViewport(self.camera, 0, 0.0, 0.0, 1.0, 1.0)
+        self.viewport.backgroundColour = ogre.ColourValue(0, 0, 0)
         self.terrainRaySceneQuery = self.sceneManager.createRayQuery(ogre.Ray());
 
         #activate mouse events
@@ -74,5 +74,3 @@ class RoRTerrainSelectedObjectTopOgreWindow(wxOgreWindow):
             if self.distance < 0.2:
                 self.distance = 0.2
         event.Skip()
-        
-            

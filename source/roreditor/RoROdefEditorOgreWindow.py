@@ -18,14 +18,14 @@ NONE = 0
 DOT = 1
 BOX = 2
 
-#------------------------------------------------------------------------------ 
+#------------------------------------------------------------------------------
 # TODO: list:
-# Ground points 
+# Ground points
 # docking surface
 # attach points
 # event Box
 # collision Box
-#------------------------------------------------------------------------------ 
+#------------------------------------------------------------------------------
 
 mat = {
 	'hook'		: "TruckEditor/NodeNormal",
@@ -71,26 +71,26 @@ class ODefEditorOgreWindow(wxOgreWindow):
 
 	def getautoTracking(self):
 		return self._autoTracking
-	   
+
 	def setautoTracking(self, value):
 		self._autoTracking = value
 		self.camera.setAutoTracking(value, self.objnode)
-		
-	
+
+
 	def _getmode(self):
 		return self._mode
-		   
+
 	def _setmode(self, value):
 		if value in [DOT, BOX, NONE]:
 			self._mode = value
-				
-		
-	   
+
+
+
 	mode = property(_getmode, _setmode,
 					 doc=""" DOT, BOX, NONE
 					 be aware NONE is a constant""")
 	autoTracking = property(getautoTracking, setautoTracking,
-				 doc=""" center selected object in screen and 
+				 doc=""" center selected object in screen and
 						  WASD keys rotate around the selected object
 						  instead of freedom walking.
 						  It's a toggle option. """)
@@ -101,7 +101,7 @@ class ODefEditorOgreWindow(wxOgreWindow):
 		self.objentity = None
 		self.boundBox = None
 		self.bbresize = None
-		
+
 		self.selected = None
 		self.camalpha = 0
 		self.radius = 40
@@ -118,11 +118,11 @@ class ODefEditorOgreWindow(wxOgreWindow):
 		self.selected = selectionClass(self)
 		self.boundBox = BoundBoxClass(self)
 		self.bbresize = BoundBoxClass(self, CLRED)
-		
-	def newEntry(self, bAssignEvent=False, bAutouuid=False): 
+
+	def newEntry(self, bAssignEvent=False, bAutouuid=False):
 		""" Create an odefEntryClass
 			bAssignEvent -> Assign ogreWindow property
-			bAutouuid -> auto generate uuid to this entry"""		
+			bAutouuid -> auto generate uuid to this entry"""
 		n = odefEntryClass(self)
 #		if bAssignEvent:
 #			n.OnPositionChanging = self.entryChanged
@@ -138,13 +138,13 @@ class ODefEditorOgreWindow(wxOgreWindow):
 				   - attach entity to node
 				   - Assign material and mesh to the entity
 				   - add to self.entries """
-				   
+
 		n = self.newEntry(bAssignEvent, True)
 		if parentNode is None:
 			n.node = self.smNewNode(str(n.uuid) + "node")
 		else:
 			n.node = parentNode.createChildSceneNode(str(n.uuid) + "node")
-		
+
 		n.entity = self.smNewEntity(str(n.uuid) + "Entity", strMeshName)
 		if strMaterialName:
 			n.entity.setMaterialName(strMaterialName)
@@ -152,7 +152,7 @@ class ODefEditorOgreWindow(wxOgreWindow):
 		if bAddToEntries:
 			self.entries[n.uuid] = n
 		return n
-	
+
 	def smNewNode(self, strName,
 					doc=""" Scene Manager New Node:
 					Create a new SceneNode with given Name """):
@@ -161,7 +161,7 @@ class ODefEditorOgreWindow(wxOgreWindow):
 
 	def smNewEntity(self, strName, strMesh, strMaterialName=None,
 					doc=""" Scene Manager New Entity:
-					Create a new entity with: 
+					Create a new entity with:
 					- Entity Name
 					- Mesh Name
 					- Material Name (maybe omitted)"""):
@@ -169,13 +169,13 @@ class ODefEditorOgreWindow(wxOgreWindow):
 		if strMaterialName:
 			e.setMaterialName(strMaterialName)
 		return e
-	
+
 	def createDotAt(self, x, y, z, color=CLBLUE, sufix='', parentNode=None):
 		p = self.newEntryEx("ellipsoid.mesh", color, False, True, parentNode)
 		p.node.setPosition(x, y, z)
 		p.name = sufix
 		return p
-		
+
 	def createDot(self, entry, corner="", color=CLBLUE, sufix=''):
 		""" create a dot on the corner of entry"""
 		p = self.newEntryEx("ellipsoid.mesh", color, False, True, entry.node)
@@ -183,7 +183,7 @@ class ODefEditorOgreWindow(wxOgreWindow):
 		p.name = sufix
 		if not entry.details["aabb"].has_key(corner):
 			log().error("%s is not a valid corner, please see KnownObjects aabb" % corner)
-	   
+
 
 		pos = entry.details["aabb"][corner]
 		p.node.setPosition(pos.x, pos.y, pos.z)
@@ -207,9 +207,9 @@ class ODefEditorOgreWindow(wxOgreWindow):
 		else:
 			entry = self.newEntryEx("beam.mesh", matname, True, True)
 			entry.box = odefbox
-	
-			midPoint = entry.box.coord0.asVector3.midPoint(entry.box.coord1.asVector3) 
-	
+
+			midPoint = entry.box.coord0.asVector3.midPoint(entry.box.coord1.asVector3)
+
 			dist = entry.box.coord1.asVector3 - entry.box.coord0.asVector3
 			entry.node.setScale(dist.x, dist.y, dist.z)
 #			entry.node._updateBounds()
@@ -270,12 +270,12 @@ class ODefEditorOgreWindow(wxOgreWindow):
 				self.objnode, self.objentity, manualobject = createTruckMesh(self.sceneManager, filename, uuid)
 			except:
 				raise showedError("The file %s has error and couldn't be loaded" % filename)
-				
+
 		elif extension.lower() in [".odef"]:
 			self.clear()
 			uuid = randomID()
 			self.loadodef(filename, uuid)
-		
+
 		if self.objnode:
 			self.objnode.showBoundingBox(True)
 			self.objnode._updateBounds()
@@ -283,7 +283,7 @@ class ODefEditorOgreWindow(wxOgreWindow):
 #			self.objnode.resetOrientation()
 #			self.objnode.pitch(ogre.Degree(90))
 
-			self.aabb = { 
+			self.aabb = {
 				 "nearLeftTop"	  	: self.objnode._getWorldAABB().getCorner(ogre.AxisAlignedBox.NEAR_LEFT_TOP),
 				 "nearRightTop"	 	: self.objnode._getWorldAABB().getCorner(ogre.AxisAlignedBox.NEAR_RIGHT_TOP),
 				 "nearLeftBottom"   : self.objnode._getWorldAABB().getCorner(ogre.AxisAlignedBox.NEAR_LEFT_BOTTOM),
@@ -295,12 +295,12 @@ class ODefEditorOgreWindow(wxOgreWindow):
 #				 "nearMiddle"	   : self.objnode._getWorldAABB().getCorner(ogre.AxisAlignedBox.NEAR_LEFT_TOP).midPoint(self.objnode._getWorldAABB().getCorner(ogre.AxisAlignedBox.NEAR_LEFT_BOTTOM)),
 #				 "farMiddle"		: self.objnode._getWorldAABB().getCorner(ogre.AxisAlignedBox.NEAR_RIGHT_TOP).midPoint(self.objnode._getWorldAABB().getCorner(ogre.AxisAlignedBox.NEAR_RIGHT_BOTTOM)),
 				 }
-			self.aabb["dimX"] = self.aabb["nearLeftTop"].distance(self.aabb["farLeftTop"]) 
+			self.aabb["dimX"] = self.aabb["nearLeftTop"].distance(self.aabb["farLeftTop"])
 			self.aabb["dimY"] = self.aabb["nearLeftTop"].distance(self.aabb["nearRightTop"])
-			self.aabb["dimZ"] = self.aabb["nearLeftTop"].distance(self.aabb["nearLeftBottom"])			
+			self.aabb["dimZ"] = self.aabb["nearLeftTop"].distance(self.aabb["nearLeftBottom"])
 #		self.objnode.resetOrientation()
 #		self.objnode.setOrientation(backupRot)
-		
+
 	def loadodef(self, filename, uuid):
 		try:
 			self.mainOdef = odefClass(filename)
@@ -309,17 +309,17 @@ class ODefEditorOgreWindow(wxOgreWindow):
 			log().error("error while processing odef file %s" % filename)
 			log().error(str(err))
 			if rorSettings().stopOnExceptions:
-				raise 
-			
+				raise
+
 			return
 		# create mesh
-		
-		
+
+
 		self.objnode = self.sceneManager.getRootSceneNode().createChildSceneNode(uuid + "objnode")
 		self.objentity = self.sceneManager.createEntity(uuid + 'objentity', self.mainOdef.meshName)
 		self.objnode.attachObject(self.objentity)
 		self.objnode.rotate(ogre.Vector3(1, 0, 0), ogre.Degree(-90), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
-		
+
 		try:
 			self.objOriginalMat = ogre.MaterialManager.getSingleton().getByName(self.objentity.getSubEntity(0).getMaterialName())
 			if self.objmat is None:
@@ -342,7 +342,7 @@ class ODefEditorOgreWindow(wxOgreWindow):
 		log().info("Loaded odef with %d boxes" % len(self.mainOdef.boxes))
 			# box added to self.entries
 #		self.createDOT(ogre.Vector3(0,0,0), mat['ground'])
-			
+
 	def getNewMat(self, basematname):
 		uuid = randomID()
 		matname = uuid + "mat"
@@ -372,10 +372,10 @@ class ODefEditorOgreWindow(wxOgreWindow):
 
 	def setBoxesVisibility(self, type, visible):
 		for e in self.entries:
-			if self.entries[e].box: # if it isn't a dot 
+			if self.entries[e].box: # if it isn't a dot
 				if type == "collision" and self.entries[e].box.virtual == False:
 					self.entries[e].visible = visible
-				
+
 				elif type == "virtual" and self.entries[e].box.virtual:
 					self.entries[e].visible = visible
 #				self.entries[e].node.showBoundingBox(False)
@@ -446,8 +446,8 @@ class ODefEditorOgreWindow(wxOgreWindow):
 		entity = self.sceneManager.createEntity(uuid + 'floor', uuid + 'FloorPlane')
 		entity.setMaterialName('mysimple/terraineditor/previewwindowfloor')
 		self.sceneManager.getRootSceneNode().createChildSceneNode().attachObject(entity)
-		
-		
+
+
 
 	def updateCamera(self):
 		return
@@ -471,11 +471,11 @@ class ODefEditorOgreWindow(wxOgreWindow):
 
 	def OnFrameStarted(self):
 		pass
-	
+
 	def selectnew(self, event):
-		x, y = event.GetPosition() 
+		x, y = event.GetPosition()
 		width = self.renderWindow.getWidth()
-		height = self.renderWindow.getHeight()	   
+		height = self.renderWindow.getHeight()
 		mouseRay = self.camera.getCameraToViewportRay((x / float(width)), (y / float(height)));
 		self.rayQuery.setRay(mouseRay)
 		self.rayQuery.setSortByDistance(True)
@@ -500,7 +500,7 @@ class ODefEditorOgreWindow(wxOgreWindow):
 #					# you cannot select these objects
 #					continue
 				if not self.entries.has_key(realname): #main entity not selectable
-					continue 
+					continue
 				elif not self.entries[realname].visible:
 					continue
 				elif not self.entries[realname].canBeSelected:
@@ -521,7 +521,7 @@ class ODefEditorOgreWindow(wxOgreWindow):
 
 	def changeSelection(self, newnode,
 						doc=" receive an Entity "):
-		
+
 		key = newnode.getName()[:-len("entity")]
 		self.selected.entry = self.entries[key]
 		self.boundBox.dockTo(self.selected.entry)
@@ -531,7 +531,7 @@ class ODefEditorOgreWindow(wxOgreWindow):
 
 	def getPointedPosition(self, event,
 						doc=""" return Vector3 """):
-		x, y = event.GetPosition() 
+		x, y = event.GetPosition()
 		self.log("x , y : ", [x, y])
 		width = self.renderWindow.getWidth()
 		height = self.renderWindow.getHeight()
@@ -542,7 +542,7 @@ class ODefEditorOgreWindow(wxOgreWindow):
 		if len(result) > 0 and not result[0] is None and not result[0].worldFragment is None:
 			return result[0].worldFragment.singleIntersection
 		return None
-	
+
 	def onMouseEvent(self, event):
 		self.SetFocus()
 		width = self.renderWindow.getWidth()
@@ -578,27 +578,27 @@ class ODefEditorOgreWindow(wxOgreWindow):
 
 			self.camera.yaw(ogre.Degree(dx / 3.0))
 			self.camera.pitch(ogre.Degree(dy / 3.0))
-		
+
 		if event.LeftDown():
 			self.selectnew(event)
 			self.StartDragLeftX, self.StartDragLeftY = event.GetPosition() #saves position of initial click
-		
+
 		self.controlArrows(event)
 		event.Skip()
 
 	def log(self, text, param=[]):
-		""" easy log any floating values, for example: 
+		""" easy log any floating values, for example:
 			self.log(" data position is:", [data.x, data.y, data.z]) """
 		log().info(text.ljust(17) + " ".join(["%.6f" % x for x in param]))
 
 	def controlArrows(self, event):
 		if self.selected.axis.arrow is None:
 			return
-		
+
 		forcex = float(0)
 		forcey = float(0)
 		if event.Dragging() and event.LeftIsDown():
-			x, y = event.GetPosition() 
+			x, y = event.GetPosition()
 			forcex = float(self.StartDragLeftX - x)
 			forcey = float(self.StartDragLeftY - y)
 			self.StartDragLeftX, self.StartDragLeftY = event.GetPosition()
@@ -608,10 +608,10 @@ class ODefEditorOgreWindow(wxOgreWindow):
 		if event.ShiftDown():
 			forcex /= 10
 			forcey /= 10
-		
+
 		LockSteps = event.AltDown()
 		forceDegree = ogre.Degree(forcex).valueRadians()
-		
+
 		if not event.Dragging():
 			return
 
@@ -621,7 +621,7 @@ class ODefEditorOgreWindow(wxOgreWindow):
 			self.translateSelected(ogre.Vector3(0, 0, forcex), LockSteps)
 		elif self.selected.axis.arrow.getName() == self.selected.axis.arrowNames[2]:
 			self.translateSelected(ogre.Vector3(0, forcex, 0), LockSteps)
-		
+
 		elif self.selected.axis.arrow.getName() == self.selected.axis.arrowNames[3]:
 			self.rotateSelected(ogre.Vector3(0, 1, 0), forceDegree, LockSteps)
 		elif self.selected.axis.arrow.getName() == self.selected.axis.arrowNames[4]:
@@ -633,7 +633,7 @@ class ODefEditorOgreWindow(wxOgreWindow):
 	def translateSelected(self, vector, steps=True,
 		doc=""" vector is an offset to translate to
 				 steps is something like align to grid"""):
-		
+
 		if not self.selected.entry:
 			return
 		newpos = self.selected.entry.node._getDerivedPosition() + vector
@@ -645,13 +645,13 @@ class ODefEditorOgreWindow(wxOgreWindow):
 		self.selected.axis.attachTo(self.selected.entry.node)
 		self.updateDetails(self.selected.entry)
 #		self.addObjectToHistory(self.selected.entry)
-		
+
 	def rotateSelected(self, axis, amount, steps=True):
 		if not self.selected.entry:
 			return
 		self.selected.entry.node.rotate(axis, amount, relativeTo=ogre.Node.TransformSpace.TS_LOCAL)
 		newrot = self.selected.entry.node.getOrientation()
-		
+
 		# todo: get this working!
 		if False:
 			print amount
@@ -667,14 +667,14 @@ class ODefEditorOgreWindow(wxOgreWindow):
 			self.virtualMoveNode.rotate(ogre.Vector3(0, 0, 1), ogre.Degree(rotz).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
 			self.virtualMoveNode.rotate(ogre.Vector3(0, 1, 0), ogre.Degree(roty).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
 			self.virtualMoveNode.rotate(ogre.Vector3(1, 0, 0), ogre.Degree(rotx).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
-		
+
 			newrot = self.selected.entry.node.getOrientation()
-		
-		self.selected.entry.node.setOrientation(newrot)		
+
+		self.selected.entry.node.setOrientation(newrot)
 		self.selected.entry.ogreRotation = newrot
-		self.selected.axis.rotateNode.setOrientation(newrot)	   
+		self.selected.axis.rotateNode.setOrientation(newrot)
 		self.updateDetails(self.selected.entry)
-		
+
 	def onKeyDown(self, event):
 		#print event.m_keyCode
 		d = 3
@@ -718,7 +718,7 @@ class ODefEditorOgreWindow(wxOgreWindow):
 				if self.entries[s].box:
 					self.entries[s].box.debug("box coordenate")
 					self.boundBox.debug("derived Position")
-	
+
 				else:
 					p = self.entries[s].node._getDerivedPosition()
 					log().info("node at %2.1f, %2.1f, %2.1f" % (p.x, p.y, p.z))
@@ -767,17 +767,17 @@ class ODefEditorOgreWindow(wxOgreWindow):
 			if self.selected:
 				if self.selected.entry:
 					n = self.selected.entry.node
-					n.setScale(n.getScale() - ogre.Vector3(0, 0, scale))					
+					n.setScale(n.getScale() - ogre.Vector3(0, 0, scale))
 					self.updateDetails(self.selected.entry)
-		elif event.m_keyCode == wx.WXK_F12:			
+		elif event.m_keyCode == wx.WXK_F12:
 			ob = odefbox(None)
 			ob.coord0.asVector3 = self.axis.pointer3d.getPosition()
 			ob.coord1.asVector3 = ob.coord0.asVector3 + ogre.Vector3(1, 1, 1)
 			ob.virtual = False
 			e = self.createBox(ob, True)
-			self.selected.entry = e 
-				
-		
+			self.selected.entry = e
+
+
 		event.Skip()
 	def updateDetails(self, entry):
 		"""boxes are size changed, we need to know new bounding box
@@ -789,8 +789,8 @@ class ODefEditorOgreWindow(wxOgreWindow):
 		entry.node._updateBounds()
 		if entry.box:
 		# if it is a DOT, then don't create aab
-			entry.details = { 
-				 "aabb" : { 
+			entry.details = {
+				 "aabb" : {
 						 "nearLeftTop"	  : entry.node._getWorldAABB().getCorner(ogre.AxisAlignedBox.NEAR_LEFT_TOP),
 						 "nearRightTop"	 : entry.node._getWorldAABB().getCorner(ogre.AxisAlignedBox.NEAR_LEFT_BOTTOM),
 						 "nearLeftBottom"   : entry.node._getWorldAABB().getCorner(ogre.AxisAlignedBox.FAR_LEFT_TOP),
@@ -803,9 +803,9 @@ class ODefEditorOgreWindow(wxOgreWindow):
 						 "farMiddle"		: entry.node._getWorldAABB().getCorner(ogre.AxisAlignedBox.NEAR_RIGHT_TOP).midPoint(entry.node._getWorldAABB().getCorner(ogre.AxisAlignedBox.NEAR_RIGHT_BOTTOM)),
 								 }
 						 }
-			entry.details["long"] = entry.details["aabb"]["nearLeftTop"].distance(entry.details["aabb"]["farLeftTop"]) 
+			entry.details["long"] = entry.details["aabb"]["nearLeftTop"].distance(entry.details["aabb"]["farLeftTop"])
 			entry.details["wide"] = entry.details["aabb"]["nearLeftTop"].distance(entry.details["aabb"]["nearRightTop"])
-			entry.details["height"] = entry.details["aabb"]["nearLeftTop"].distance(entry.details["aabb"]["nearLeftBottom"])		
+			entry.details["height"] = entry.details["aabb"]["nearLeftTop"].distance(entry.details["aabb"]["nearLeftBottom"])
 
 			self.bbresize.dicty = {}
 			self.bbresize.dicty["up"] = entry.details["aabb"]["nearLeftTop"].midPoint(entry.details["aabb"]["farRightTop"])
@@ -820,20 +820,20 @@ class ODefEditorOgreWindow(wxOgreWindow):
 		if entry.box:
 			self.boundBox.dockTo(entry)
 			#update odefbox size
-			entry.box.coord0.asVector3 = self.boundBox.getMinimum() #+ entry.node.getPosition()  
+			entry.box.coord0.asVector3 = self.boundBox.getMinimum() #+ entry.node.getPosition()
 			entry.box.coord1.asVector3 = self.boundBox.getMaximum() #+ entry.node.getPosition()
 			entry.box.rotation.asTuple = entry.rotation
-			
+
 			self.bbresize.dockTo(entry, atPos=p, aabb=self.bbresize.dicty)
 #		for c in self.boundBox.dots.keys():
 #			entry.details["aabb"][c] = self.boundBox.dots[c].node._getDerivedPosition()
 			# now details has the global coordenates, the real size of the bounding box
-					
-			
-		
+
+
+
 
 	def setWireframe(self):
-		
+
 		detailsLevel = [ogre.PM_SOLID, ogre.PM_WIREFRAME, ogre.PM_POINTS]
 		self.sceneDetailIndex = (self.sceneDetailIndex + 1) % len(detailsLevel)
 		self.camera.polygonMode = detailsLevel[self.sceneDetailIndex]

@@ -89,7 +89,7 @@ class rorCellEditor(gridlib.PyGridCellEditor):
 		changed = False
 
 		val = self._tc.GetValue()
-		
+
 		if val != self.startValue:
 			changed = True
 			grid.GetTable().SetValue(row, col, val) # update the table
@@ -191,7 +191,7 @@ class rortable(gridlib.PyGridTableBase):
 		"""
 #		print " row %d col %d kind %s" % (row, col, str(kind))
 		ncol = col
-		default = super(rortable, self).GetAttr(row, ncol, kind)		
+		default = super(rortable, self).GetAttr(row, ncol, kind)
 		coldef = self.parent.parser.getColOfSection(self.lines[row].section, ncol)
 		if coldef is None: return default
 
@@ -208,27 +208,27 @@ class rortable(gridlib.PyGridTableBase):
 #			default.SetBackgroundColour(wx.Color(220, 220, 220))
 			coltype = coldef['type']
 			colname = coldef['name']
-			if coltype == "string" : 
+			if coltype == "string" :
 #				default.SetSize(1, 2)
 				default.SetAlignment(wx.ALIGN_LEFT, wx.ALIGN_CENTER)
-				if colname.find('material') <> -1: 
+				if colname.find('material') <> -1:
 					default.SetTextColour(wx.NamedColor('#23ab26'))
 				elif colname.find("mesh") <> -1: default.SetTextColour(wx.Colour(244, 90, 231))
 				else: default.SetTextColour(wx.BLACK)
-			elif coltype == "node": 
+			elif coltype == "node":
 				default.SetAlignment(wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
 				default.SetTextColour(wx.BLUE)
-			elif coltype == "float": 
+			elif coltype == "float":
 				default.SetAlignment(wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
 				default.SetTextColour(wx.BLACK)
-			elif coltype == "int": 
+			elif coltype == "int":
 				default.SetAlignment(wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
 				default.SetTextColour(wx.RED)
-			else: 
+			else:
 				default.SetAlignment(wx.ALIGN_LEFT, wx.ALIGN_CENTER)
 				default.SetTextColour(wx.BLACK)
 		return default
-		
+
 	def GetNumberRows(self):
 		return len(self.lines)
 
@@ -246,17 +246,17 @@ class rortable(gridlib.PyGridTableBase):
 		self.lines[row].parent.getColOfSection(self.lines[row].section, col)['type'] == 'shortcut':
 #			if it is a shortcut we want to show the text "CTRL + ALT + F1" instead of "37"
 #			although this cell is neither selected nor editing
-			if self.lines[row].getColValue(col) is not None: 
-				return str(self.parent.shortcuts[int(self.lines[row].getColValue(col)) - 1]) 
+			if self.lines[row].getColValue(col) is not None:
+				return str(self.parent.shortcuts[int(self.lines[row].getColValue(col)) - 1])
 		elif self.lines[row].getColValue(col) is not None: return str(self.lines[row].getColValue(col))
 		return super(rortable, self).GetValue(row, col)
 
 	def SetValue(self, row, col, value):
 #		offset = self.colSpan(row, col)
-		
-		if row >= len(self.lines) or col > self.lines[row].getMaxCols() + 1 : # inlineComment 
+
+		if row >= len(self.lines) or col > self.lines[row].getMaxCols() + 1 : # inlineComment
 			raise Exception("row is greater than maximum rows")
-		if self.lines[row].isHeader and col == 0: return 
+		if self.lines[row].isHeader and col == 0: return
 		else:
 			#Value is unicode string
 			theValue = None
@@ -265,26 +265,26 @@ class rortable(gridlib.PyGridTableBase):
 			elif coltype == 'float': theValue = float(value)
 			elif coltype == 'string': theValue = str(value)
 			elif coltype == 'shortcut': theValue = self.parent.shortcuts.index(value) + 1
-			else: theValue = value 
+			else: theValue = value
 			toinform3D = theValue != self.lines[row].getColValue(col) and self.lines[row].section == 'nodes' and self.lines[row].entry is not None
 			setattr(self.lines[row], self.lines[row].getColName(col), theValue)
 			if toinform3D:
 				l = self.lines[row]
 				self.lines[row].entry.node.setPosition(l.x, l.y, l.z)
-				self.lines[row].entry.inform() 
-			
+				self.lines[row].entry.inform()
+
 
 	def GetColLabelValue(self, col):
 #		offset = self.colSpan(self.parent.GetGridCursorRow(), col)
 		if col >= self.lines[self.parent.Row].getMaxCols(): return ""
 		else: return self.lines[self.parent.Row].getColName(col).replace("_", " ")
-	
+
 	def GetRowLabelValue(self, row):
 		""" actual section
 		"""
 		return self.lines[row].section
-	
-	def InsertRows(self, pos=0, numRows=1):	
+
+	def InsertRows(self, pos=0, numRows=1):
 		for i in range(0, numRows):
 			self.parent.parser.insertLine(pos)
 		msg = gridlib.GridTableMessage(self, 			# The table
@@ -293,9 +293,9 @@ class rortable(gridlib.PyGridTableBase):
 				)
 
 		self.GetView().ProcessTableMessage(msg)
-		
+
 		return True
-	
+
 	def DeleteRows(self, pos=0, numRows=1):
 		for i in range(0, numRows):
 			self.parent.parent.parent.deleteLine(self.parent.parser.lines[pos])
@@ -308,7 +308,7 @@ class rortable(gridlib.PyGridTableBase):
 
 		return True
 
-	
+
 #	 Called to determine the kind of editor/renderer to use by
 #	 default, doesn't necessarily have to be the same type used
 #	 natively by the editor/renderer if they know how to convert.
@@ -329,20 +329,20 @@ class rortable(gridlib.PyGridTableBase):
 	# in the grid.
 #	def CanGetValueAs(self, row, col, typeName):
 #		coldef = self.parent.parser.getColOfSection(self.lines[row].section, col)['name']
-#		return coldef.find('material') != -1 
+#		return coldef.find('material') != -1
 #
 #	def CanSetValueAs(self, row, col, typeName):
-#		return self.CanGetValueAs(row, col, typeName)	
-	
+#		return self.CanGetValueAs(row, col, typeName)
+
 #-----------------------end override methods----------------------------------------------------
 	def colSpan(self, row, col):
 		""" string columns are span 2 columns, so return the real grid column
 		"""
-		
+
 		return 0
-		
-		
-		cont = 0 
+
+
+		cont = 0
 		realCol = 0
 		while cont <= col:
 			coldef = self.parent.parser.getColOfSection(self.lines[row].section, cont)
@@ -351,9 +351,9 @@ class rortable(gridlib.PyGridTableBase):
 					realCol += 1
 			cont += 1
 		return realCol
-	
+
 	def sameSection(self, Row1, Row2):
 		return self.lines[Row1].section == self.lines[Row2].section
-	
+
 	def FromLinesOfSection(self, LinesOfSection):
 		self.lines = LinesOfSection

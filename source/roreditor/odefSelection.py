@@ -8,6 +8,3 @@ from ror.rorcommon import *
 from ror.settingsManager import rorSettings
 from roreditor import RoRConstants, RoRVirtualKeys
 from RoRTerrainSelection import simpleEntryClass
-
-
-       

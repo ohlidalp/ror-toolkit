@@ -19,7 +19,7 @@ class HelpPanel(wx.Panel):
         wx.Panel.__init__(self, parent, wx.ID_ANY, wx.DefaultPosition,
                           wx.DefaultSize)
         self._frame = frame
-        
+
         vert = wx.BoxSizer(wx.VERTICAL)
         self.htmlctrl = wx.html.HtmlWindow(self, wx.ID_ANY, wx.DefaultPosition, wx.Size(800, 600))
         if "gtk2" in wx.PlatformInfo:
@@ -32,7 +32,7 @@ class HelpPanel(wx.Panel):
         vert.Add(self.htmlctrl, 2, wx.EXPAND, 0)
         self.SetSizer(vert)
         self.GetSizer().SetSizeHints(self)
-    
+
     def loadReadme(self):
         if os.path.isfile(HELPFILENAME):
             try:
@@ -60,16 +60,16 @@ ID_ActiveCaptionGradientColor = ID_PaneBorderSize + 9
 ID_ActiveCaptionTextColor = ID_PaneBorderSize + 10
 ID_BorderColor = ID_PaneBorderSize + 11
 ID_GripperColor = ID_PaneBorderSize + 12
-    
+
 class SettingsPanel(wx.Panel):
-    
+
     def __init__(self, parent, frame):
 
         wx.Panel.__init__(self, parent, wx.ID_ANY, wx.DefaultPosition,
                           wx.DefaultSize)
 
         self._frame = frame
-        
+
         vert = wx.BoxSizer(wx.VERTICAL)
 
         s1 = wx.BoxSizer(wx.HORIZONTAL)
@@ -190,7 +190,7 @@ class SettingsPanel(wx.Panel):
         s13.Add(self._gripper_color)
         s13.Add((1, 1), 1, wx.EXPAND)
         s13.SetItemMinSize(1, (180, 20))
-        
+
         grid_sizer = wx.GridSizer(0, 2)
         grid_sizer.SetHGap(5)
         grid_sizer.Add(s1)
@@ -207,7 +207,7 @@ class SettingsPanel(wx.Panel):
         grid_sizer.Add(s10)
         grid_sizer.Add(s8)
         grid_sizer.Add(s11)
-         
+
         cont_sizer = wx.BoxSizer(wx.VERTICAL)
         cont_sizer.Add(grid_sizer, 1, wx.EXPAND | wx.ALL, 5)
         self.SetSizer(cont_sizer)
@@ -216,7 +216,7 @@ class SettingsPanel(wx.Panel):
         self._border_size.SetValue(frame.GetDockArt().GetMetric(wx.aui.AUI_DOCKART_PANE_BORDER_SIZE))
         self._sash_size.SetValue(frame.GetDockArt().GetMetric(wx.aui.AUI_DOCKART_SASH_SIZE))
         self._caption_size.SetValue(frame.GetDockArt().GetMetric(wx.aui.AUI_DOCKART_CAPTION_SIZE))
-        
+
         self.UpdateColors()
 
         self.Bind(wx.EVT_SPINCTRL, self.OnPaneBorderSize, id=ID_PaneBorderSize)
@@ -232,57 +232,57 @@ class SettingsPanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON, self.OnSetColor, id=ID_ActiveCaptionTextColor)
         self.Bind(wx.EVT_BUTTON, self.OnSetColor, id=ID_BorderColor)
         self.Bind(wx.EVT_BUTTON, self.OnSetColor, id=ID_GripperColor)
-    
-    
+
+
     def CreateColorBitmap(self, c):
         image = wx.EmptyImage(25, 14)
-        
+
         for x in xrange(25):
             for y in xrange(14):
                 pixcol = c
                 if x == 0 or x == 24 or y == 0 or y == 13:
                     pixcol = wx.BLACK
-                    
+
                 image.SetRGB(x, y, pixcol.Red(), pixcol.Green(), pixcol.Blue())
-            
+
         return image.ConvertToBitmap()
-    
-    
+
+
     def UpdateColors(self):
-    
+
         bk = self._frame.GetDockArt().GetColour(wx.aui.AUI_DOCKART_BACKGROUND_COLOUR)
         self._background_color.SetBitmapLabel(self.CreateColorBitmap(bk))
-        
+
         cap = self._frame.GetDockArt().GetColour(wx.aui.AUI_DOCKART_INACTIVE_CAPTION_COLOUR)
         self._inactive_caption_color.SetBitmapLabel(self.CreateColorBitmap(cap))
-        
+
         capgrad = self._frame.GetDockArt().GetColour(wx.aui.AUI_DOCKART_INACTIVE_CAPTION_GRADIENT_COLOUR)
         self._inactive_caption_gradient_color.SetBitmapLabel(self.CreateColorBitmap(capgrad))
-        
+
         captxt = self._frame.GetDockArt().GetColour(wx.aui.AUI_DOCKART_INACTIVE_CAPTION_TEXT_COLOUR)
         self._inactive_caption_text_color.SetBitmapLabel(self.CreateColorBitmap(captxt))
-        
+
         acap = self._frame.GetDockArt().GetColour(wx.aui.AUI_DOCKART_ACTIVE_CAPTION_COLOUR)
         self._active_caption_color.SetBitmapLabel(self.CreateColorBitmap(acap))
-        
+
         acapgrad = self._frame.GetDockArt().GetColour(wx.aui.AUI_DOCKART_ACTIVE_CAPTION_GRADIENT_COLOUR)
         self._active_caption_gradient_color.SetBitmapLabel(self.CreateColorBitmap(acapgrad))
-        
+
         acaptxt = self._frame.GetDockArt().GetColour(wx.aui.AUI_DOCKART_ACTIVE_CAPTION_TEXT_COLOUR)
         self._active_caption_text_color.SetBitmapLabel(self.CreateColorBitmap(acaptxt))
-        
+
         sash = self._frame.GetDockArt().GetColour(wx.aui.AUI_DOCKART_SASH_COLOUR)
         self._sash_color.SetBitmapLabel(self.CreateColorBitmap(sash))
-        
+
         border = self._frame.GetDockArt().GetColour(wx.aui.AUI_DOCKART_BORDER_COLOUR)
         self._border_color.SetBitmapLabel(self.CreateColorBitmap(border))
-        
+
         gripper = self._frame.GetDockArt().GetColour(wx.aui.AUI_DOCKART_GRIPPER_COLOUR)
         self._gripper_color.SetBitmapLabel(self.CreateColorBitmap(gripper))
-    
-    
+
+
     def OnPaneBorderSize(self, event):
-    
+
         self._frame.GetDockArt().SetMetric(wx.aui.AUI_DOCKART_PANE_BORDER_SIZE,
                                            event.GetInt())
         self._frame.DoUpdate()
@@ -293,24 +293,24 @@ class SettingsPanel(wx.Panel):
         self._frame.GetDockArt().SetMetric(wx.aui.AUI_DOCKART_SASH_SIZE,
                                            event.GetInt())
         self._frame.DoUpdate()
-    
+
 
     def OnCaptionSize(self, event):
-    
+
         self._frame.GetDockArt().SetMetric(wx.aui.AUI_DOCKART_CAPTION_SIZE,
                                            event.GetInt())
         self._frame.DoUpdate()
-    
+
 
     def OnSetColor(self, event):
-    
+
         dlg = wx.ColourDialog(self._frame)
-        
+
         dlg.SetTitle("Color Picker")
-        
+
         if dlg.ShowModal() != wx.ID_OK:
             return
-        
+
         var = 0
         if event.GetId() == ID_BackgroundColor:
             var = wx.aui.AUI_DOCKART_BACKGROUND_COLOUR
@@ -333,10 +333,8 @@ class SettingsPanel(wx.Panel):
         elif event.GetId() == ID_GripperColor:
             var = wx.aui.AUI_DOCKART_GRIPPER_COLOUR
         else:
-            return        
-        
+            return
+
         self._frame.GetDockArt().SetColor(var, dlg.GetColourData().GetColour())
         self._frame.DoUpdate()
         self.UpdateColors()
-
-

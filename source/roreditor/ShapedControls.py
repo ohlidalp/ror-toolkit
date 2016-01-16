@@ -1,7 +1,7 @@
 #Lepes and wx documentation Examples
 
 import wx, os, os.path, copy
-import ogre.renderer.OGRE as ogre 
+import ogre.renderer.OGRE as ogre
 #from wxogre.OgreManager import *
 from wxogre.wxOgreWindow import *
 from ror.settingsManager import rorSettings
@@ -10,7 +10,7 @@ from rorFrame import *
 
 skinBackColor = wx.Color(254, 184, 0)
 skinTransparentColor = wx.Color(0, 0, 0)
-skinTheme = 'RoR theme' 
+skinTheme = 'RoR theme'
 
 
 class ShapedWindow(rorFrame):
@@ -26,16 +26,16 @@ class ShapedWindow(rorFrame):
 						 )
 		log().debug("%s is initialising..." % title)
 		# perspective is the Perspective menu index (1, 2 or 3)
-		self.perspective = 1 
+		self.perspective = 1
 		self.skinSize = (0, 0)
 		self.SetAutoLayout(True)
 		self.hasShape = False
 		self.skinFile = skinOnlyFilename
 		if self.skinFile is None:
 			self.skinFile = 'base.png'
-	
+
 		self.title = title
-		
+
 		# min height when you click on the window
 		self.smallHeight = 100
 		self.delta = (0, 20)
@@ -57,7 +57,7 @@ class ShapedWindow(rorFrame):
 			# On wxMSW and wxMac the window has already been created, so go for it.
 #			self.updateSkin(self.skinFile)
 			pass
-		self.grid = wx.GridBagSizer(2, 2) 
+		self.grid = wx.GridBagSizer(2, 2)
 #		self.SetSizer(self.grid)
 		self.updateSkin()
 #		self.Hide()
@@ -76,7 +76,7 @@ class ShapedWindow(rorFrame):
 		self.skinBack = skinBackColor
 		if hasattr(self, 'bmp'):
 			del self.bmp
-		self.bmp = wx.Image(imgpath).ConvertToBitmap()		 
+		self.bmp = wx.Image(imgpath).ConvertToBitmap()
 		w, h = self.bmp.GetWidth(), self.bmp.GetHeight()
 		self.SetWindowShape()
 		self.skinSize = wx.Size(w, h)
@@ -88,45 +88,45 @@ class ShapedWindow(rorFrame):
 
 	def ChangeSize(self):
 		pass
-		
+
 	def OnPaint(self, evt):
 		dc = wx.PaintDC(self)
 		dc.DrawBitmap(self.bmp, 0, 0, True)
 		dc.DrawText(self.title, 120, 10)
 		evt.Skip()
-		
+
 	def OnLeftDown(self, evt):
 		self.isMouseDownHere = True
 		self.CaptureMouse()
 		x, y = self.ClientToScreen(evt.GetPosition())
-		originx, originy = self.GetPosition() 
+		originx, originy = self.GetPosition()
 		dx = x - originx
 		dy = y - originy
 		self.delta = ((dx, dy))
-		
+
 		evt.Skip()
 
 	def OnLeftUp(self, evt):
 		self.isMouseDownHere = False
 		if self.HasCapture():
 			self.ReleaseMouse()
-			
+
 		if self.moving:
 			self.savePosition()
 
-		
+
 		evt.Skip()
 
 	def OnMouseMove(self, evt):
 		# only if he pressed LMB on this window
-		self.moving = self.isMouseDownHere and evt.Dragging() and evt.LeftIsDown() 
+		self.moving = self.isMouseDownHere and evt.Dragging() and evt.LeftIsDown()
 		if self.moving:
 			x, y = self.ClientToScreen(evt.GetPosition())
 			fp = (x - self.delta[0], y - self.delta[1])
 			self.Move(fp)
 		evt.Skip()
-		
-							 
+
+
 	def checkValidChars(self, text):
 		# we allow mathematic calcs as 3*3, 2.0+10, etc
 		try:
@@ -134,4 +134,4 @@ class ShapedWindow(rorFrame):
 		except Exception:
 			rorSettings().mainApp.MessageBox('error', "Hey, don't be a bad child and type a valid Float Number")
 			raise # keep the bad number at the edit and abort saving the value
-		return f		
+		return f

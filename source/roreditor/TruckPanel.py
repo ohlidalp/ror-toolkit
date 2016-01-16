@@ -13,7 +13,7 @@ class TruckViewPanel(wx.Panel):
 		wx.Panel.__init__(self, parent, wx.ID_ANY, wx.DefaultPosition,
 						  wx.DefaultSize)
 		self.parent = parent
-		
+
 		vert = wx.BoxSizer(wx.VERTICAL)
 
 		s1 = wx.BoxSizer(wx.HORIZONTAL)
@@ -35,7 +35,7 @@ class TruckViewPanel(wx.Panel):
 		self.chkshowExhaustNodes = wx.CheckBox(self, -1, "Display Exhaust Nodes", wx.DefaultPosition, wx.Size(50, 20))
 		self.chkshowExhaustNodes.Bind(wx.EVT_CHECKBOX, self.OnshowExhaustNodes)
 		vert.Add(self.chkshowExhaustNodes, 0, wx.EXPAND | wx.LEFT | wx.BOTTOM, 5)
-		
+
 		self.chkshowHookNodes = wx.CheckBox(self, -1, "Display Hook Nodes", wx.DefaultPosition, wx.Size(50, 20))
 		self.chkshowHookNodes.Bind(wx.EVT_CHECKBOX, self.OnshowHookNodes)
 		vert.Add(self.chkshowHookNodes, 0, wx.EXPAND | wx.LEFT | wx.BOTTOM, 5)
@@ -51,19 +51,19 @@ class TruckViewPanel(wx.Panel):
 		self.chkshowLoadNodes = wx.CheckBox(self, -1, "Display Load Nodes", wx.DefaultPosition, wx.Size(50, 20))
 		self.chkshowLoadNodes.Bind(wx.EVT_CHECKBOX, self.OnshowLoadNodes)
 		vert.Add(self.chkshowLoadNodes, 0, wx.EXPAND | wx.LEFT | wx.BOTTOM, 5)
-		
+
 		self.chkshowNormalNodes = wx.CheckBox(self, -1, "Display Normal Nodes", wx.DefaultPosition, wx.Size(50, 20))
 		self.chkshowNormalNodes.Bind(wx.EVT_CHECKBOX, self.OnshowNormalNodes)
-		vert.Add(self.chkshowNormalNodes, 0, wx.EXPAND | wx.LEFT | wx.BOTTOM, 5)	   
+		vert.Add(self.chkshowNormalNodes, 0, wx.EXPAND | wx.LEFT | wx.BOTTOM, 5)
 
 		self.chkshowNormalBeams = wx.CheckBox(self, -1, "Display Normal Beams", wx.DefaultPosition, wx.Size(50, 20))
 		self.chkshowNormalBeams.Bind(wx.EVT_CHECKBOX, self.OnshowNormalBeams)
-		vert.Add(self.chkshowNormalBeams, 0, wx.EXPAND | wx.LEFT | wx.BOTTOM, 5)	
+		vert.Add(self.chkshowNormalBeams, 0, wx.EXPAND | wx.LEFT | wx.BOTTOM, 5)
 
 		self.chkshowInvisibleBeams = wx.CheckBox(self, -1, "Display Invisible Beams", wx.DefaultPosition, wx.Size(50, 20))
 		self.chkshowInvisibleBeams.Bind(wx.EVT_CHECKBOX, self.OnshowInvisibleBeams)
-		vert.Add(self.chkshowInvisibleBeams, 0, wx.EXPAND | wx.LEFT | wx.BOTTOM, 5)  
-		
+		vert.Add(self.chkshowInvisibleBeams, 0, wx.EXPAND | wx.LEFT | wx.BOTTOM, 5)
+
 		self.chkshowRopeBeams = wx.CheckBox(self, -1, "Display Rope Beams", wx.DefaultPosition, wx.Size(50, 20))
 		self.chkshowRopeBeams.Bind(wx.EVT_CHECKBOX, self.OnshowRopeBeams)
 		vert.Add(self.chkshowRopeBeams, 0, wx.EXPAND | wx.LEFT | wx.BOTTOM, 5)
@@ -75,39 +75,39 @@ class TruckViewPanel(wx.Panel):
 		self.chknodeNumber = wx.CheckBox(self, -1, "Node numbers", wx.DefaultPosition, wx.Size(50, 20))
 		self.chknodeNumber.Bind(wx.EVT_CHECKBOX, self.OnchknodeNumber)
 		vert.Add(self.chknodeNumber, 0, wx.EXPAND | wx.LEFT | wx.BOTTOM, 5)
-		
+
 		self.chkautobeam = wx.CheckBox(self, -1, "Auto create Beam", wx.DefaultPosition, wx.Size(50, 20))
 		self.chkautobeam.Bind(wx.EVT_CHECKBOX, self.OncreateBeam)
-		vert.Add(self.chkautobeam, 0, wx.EXPAND | wx.LEFT | wx.BOTTOM, 5)	   
+		vert.Add(self.chkautobeam, 0, wx.EXPAND | wx.LEFT | wx.BOTTOM, 5)
 
 		self.chkHideProps = wx.CheckBox(self, -1, "Hide Props", wx.DefaultPosition, wx.Size(50, 20))
 		self.chkHideProps.Bind(wx.EVT_CHECKBOX, self.OnHideProps)
-		vert.Add(self.chkHideProps, 0, wx.EXPAND | wx.LEFT | wx.BOTTOM, 5)	   
-		
+		vert.Add(self.chkHideProps, 0, wx.EXPAND | wx.LEFT | wx.BOTTOM, 5)
+
 #===============================================================================
-# 
+#
 #===============================================================================
 		self.SetSizer(vert)
 		self.GetSizer().SetSizeHints(self)
 		self.resetControls()
-	
+
 	def resetControls(self):
 		pass
 	def OnHideProps(self, event):
 		self.parent.truckEditorOgreWin.hideProps(not event.IsChecked())
-		
+
 	def OnchknodeNumber(self, event):
 		self.parent.truckEditorOgreWin.visibleNodeNumbers(event.IsChecked())
 		event.Skip()
-	def OnchkbeamVisible(self, event):	
+	def OnchkbeamVisible(self, event):
 		print "beam visible"
 		self.parent.truckEditorOgreWin.visibleBeams(event.IsChecked())
 #		event.Skip()
-		
+
 	def OnMainMeshTransChange(self, event):
 #		self.parent.odefEditorOgreWin.setMainMeshTrans(event.GetInt())
 		event.Skip()
-		
+
 	def OnMeshVisible(self, event):
 		self.parent.truckEditorOgreWin.showSubmeshs(event.IsChecked())
 		event.Skip()
@@ -131,27 +131,27 @@ class TruckViewPanel(wx.Panel):
 	def OnshowContactNodes(self, event):
 		self.parent.truckEditorOgreWin.showContactNodes(event.IsChecked())
 		event.Skip()
-	
+
 	def OnshowLoadNodes(self, event):
-		self.parent.truckEditorOgreWin.showLoadNodes(event.IsChecked())		
+		self.parent.truckEditorOgreWin.showLoadNodes(event.IsChecked())
 		event.Skip()
-	
+
 	def OnshowNormalNodes(self, event):
-		self.parent.truckEditorOgreWin.showNormalNodes(event.IsChecked())	   
+		self.parent.truckEditorOgreWin.showNormalNodes(event.IsChecked())
 		event.Skip()
 	def OnshowNormalBeams(self, event):
-		self.parent.truckEditorOgreWin.showNormalBeams(event.IsChecked())	
+		self.parent.truckEditorOgreWin.showNormalBeams(event.IsChecked())
 		event.Skip()
-	
+
 	def OnshowInvisibleBeams(self, event):
 		self.parent.truckEditorOgreWin.showInvisibleBeams(event.IsChecked())
 		event.Skip()
-	
+
 	def OnshowRopeBeams(self, event):
-		self.parent.truckEditorOgreWin.showRopeBeams(event.IsChecked())		
+		self.parent.truckEditorOgreWin.showRopeBeams(event.IsChecked())
 		event.Skip()
-	
-				
+
+
 	def loadReadme(self):
 		if os.path.isfile(HELPFILENAME):
 			try:
