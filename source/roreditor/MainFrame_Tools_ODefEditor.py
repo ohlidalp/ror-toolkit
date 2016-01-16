@@ -16,7 +16,7 @@ ID_ChangeVirtualBoxesVisibility = wx.NewId()
 class OdefViewPanel(ShapedWindow):
 	def __init__(self, parent, title, **kwargs):
 		ShapedWindow.__init__(self, parent, title, ** kwargs)
-	   
+
 		self.parent = parent
 		self.rordir = rorSettings().rorFolder
 		self.title = title
@@ -33,12 +33,12 @@ class OdefViewPanel(ShapedWindow):
 		self.transpa.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.NORMAL))
 		grid.Add(self.transpa, pos=wx.GBPosition(r, c), span=wx.GBSpan(1, 3))
 
-		r += 1 
+		r += 1
 		self.ObjTransparencySlider = wx.SpinCtrl(self, ID_ChangeMainMeshTrans, "", wx.DefaultPosition, wx.Size(265, 20), min=0, max=100, initial=60)
 		grid.Add(self.ObjTransparencySlider,
 				pos=wx.GBPosition(r, c),
 				span=wx.GBSpan(1, 4))
-		
+
 		r += 1
 		c = 1
 
@@ -46,13 +46,13 @@ class OdefViewPanel(ShapedWindow):
 		grid.Add(self.chkMeshVisible,
 				 pos=wx.GBPosition(r, c),
 				 span=wx.GBSpan(1, 4))
-		
+
 		r += 1
 		self.chkBoxNormalVisible = wx.CheckBox(self, ID_ChangeNormalBoxesVisibility, "Display Collision Boxes", wx.DefaultPosition, wx.Size(265, 20))
 		grid.Add(self.chkBoxNormalVisible,
 				 pos=wx.GBPosition(r, c),
 				 span=wx.GBSpan(1, 4))
-		
+
 		r += 1
 		self.chkBoxVirtualVisible = wx.CheckBox(self, ID_ChangeVirtualBoxesVisibility, "Display Virtual Boxes", wx.DefaultPosition, wx.Size(265, 20))
 		self.chkBoxVirtualVisible.SetValue(True)
@@ -68,16 +68,16 @@ class OdefViewPanel(ShapedWindow):
 		self.SetSizerAndFit(grid)
 		self.resetControls()
 		self.updateSkin()
-	
+
 	def resetControls(self):
 		self.chkMeshVisible.SetValue(True)
 		self.chkBoxNormalVisible.SetValue(True)
 		self.ObjTransparencySlider.SetValue(60)
-		
-	
+
+
 	def OnMainMeshTransChange(self, event):
 		self.parent.odefEditorOgreWin.setMainMeshTrans(event.GetInt())
-		
+
 	def OnMainMeshVisibilityChange(self, event):
 		self.parent.odefEditorOgreWin.setMainMeshVisible(event.IsChecked())
 
@@ -86,7 +86,7 @@ class OdefViewPanel(ShapedWindow):
 
 	def OnVirtualBoxesVisibilityChange(self, event):
 		self.parent.odefEditorOgreWin.setBoxesVisibility("virtual", event.IsChecked())
-		
+
 	def loadReadme(self):
 		if os.path.isfile(HELPFILENAME):
 			try:

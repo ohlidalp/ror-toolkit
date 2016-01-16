@@ -52,7 +52,7 @@ def switchRGBtoBGR(color):
 
 class FM_MyRenderer(RendererBase):
 	""" My custom style. """
-	
+
 	def __init__(self):
 
 		RendererBase.__init__(self)

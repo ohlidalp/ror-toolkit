@@ -2,17 +2,17 @@
 import sys
 import wx
 import math
-import ogre.renderer.OGRE as ogre 
+import ogre.renderer.OGRE as ogre
 from wxogre.OgreManager import *
 from wxogre.wxOgreWindow import *
 from random import random
 
-class RoRTerrainSelectedObjectOgreWindow(wxOgreWindow): 
+class RoRTerrainSelectedObjectOgreWindow(wxOgreWindow):
     def __init__(self, parent, ID, RoRTerrainOgreWindow, size = wx.Size(200,200), **kwargs):
         self.sceneManager = RoRTerrainOgreWindow.sceneManager
         self.mainWindow = RoRTerrainOgreWindow
         self.rand = str(random())
-        wxOgreWindow.__init__(self, parent, ID, "terrainSelectedObject", size = size, **kwargs) 
+        wxOgreWindow.__init__(self, parent, ID, "terrainSelectedObject", size = size, **kwargs)
         self.parent = parent
         self.camalpha = 0
         self.radius = 40
@@ -31,7 +31,7 @@ class RoRTerrainSelectedObjectOgreWindow(wxOgreWindow):
                     self.camera.setPosition(camPos.x, terrainHeight + 1, camPos.z)
         except:
             pass
-        
+
     def OnFrameStarted(self):
         # sync with main
         if not self.mainWindow.mSelected is None:
@@ -51,15 +51,13 @@ class RoRTerrainSelectedObjectOgreWindow(wxOgreWindow):
 
     def SceneInitialisation(self):
         # create a camera
-        self.camera = self.sceneManager.createCamera('SharedCamera' + self.rand) 
-        self.camera.lookAt(ogre.Vector3(0, 0, 0)) 
+        self.camera = self.sceneManager.createCamera('SharedCamera' + self.rand)
+        self.camera.lookAt(ogre.Vector3(0, 0, 0))
         self.camera.setPosition(ogre.Vector3(0, 0, 100))
         self.camera.nearClipDistance = 0.1
-        self.camera.setAutoAspectRatio(True) 
+        self.camera.setAutoAspectRatio(True)
 
         # create the Viewport"
-        self.viewport = self.renderWindow.addViewport(self.camera, 0, 0.0, 0.0, 1.0, 1.0) 
-        self.viewport.backgroundColour = ogre.ColourValue(0, 0, 0) 
+        self.viewport = self.renderWindow.addViewport(self.camera, 0, 0.0, 0.0, 1.0, 1.0)
+        self.viewport.backgroundColour = ogre.ColourValue(0, 0, 0)
         self.terrainRaySceneQuery = self.sceneManager.createRayQuery(ogre.Ray());
-
-            

@@ -265,7 +265,7 @@ class RoRTruckOgreWindow(wxOgreWindow):
 			print id0
 		except Exception, e:
 			print "error creating beam: "+str(e)
-	
+
 	def updateBeams(self):
 		for bk in self.beams.keys():
 			beam = self.beams[bk]
@@ -305,7 +305,7 @@ class RoRTruckOgreWindow(wxOgreWindow):
 			self.shocks[id0] = [linenode, id1, id2, options, line]
 		except Exception, e:
 			print "error creating shock: "+str(e)
-			
+
 	def createSubMeshGroup(self, tree, smg, smgid):
 		#print smg
 		try:
@@ -358,7 +358,7 @@ class RoRTruckOgreWindow(wxOgreWindow):
 			self.submeshs[smgid] = [smnode, smgid, smg, sm]
 		except Exception, e:
 			print "error creating submesh-group: "+str(e)
-			
+
 	def makeSimpleBox( self, size, pos,  orient ):
 		## base mass on the size of the object.
 		mass = size.x * size.y * size.z * 2.5
@@ -498,7 +498,7 @@ class RoRTruckOgreWindow(wxOgreWindow):
 			#self.uvFrame.Show()
 		except Exception, e:
 			print "error creating truck: "+str(e)
-			
+
 	def onMouseEvent(self,event):
 		width, height, a, b, c = self.renderWindow.getMetrics()
 

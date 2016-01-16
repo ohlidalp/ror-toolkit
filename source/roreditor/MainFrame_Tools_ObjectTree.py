@@ -18,16 +18,16 @@ class RoRObjectTreeCtrl(ShapedWindow):
 		ShapedWindow.__init__(self, parent, skinOnlyFilename=self.skin, **kwargs)
 		self.parent = parent
 		#		self._frame = frame
-		
+
 		# Auto Open Map stuff
 		self.autoOpenItem = None
 		self.selectedItem = None
 		self.boldedItem = None
-		
+
 		#Truck to use when starting RoR
 		self.useTruck = rorSettings().getSetting(TOOLKIT, 'usetruck')
 		if self.useTruck == "" : self.useTruck = None
-		 
+
 		self.rordir = rorSettings().rorFolder
 		grid = self.grid
 		grid.SetEmptyCellSize(wx.Size(110, 3))
@@ -38,38 +38,38 @@ class RoRObjectTreeCtrl(ShapedWindow):
 		r += 1
 		self.objectPreviewWindow = ObjectPreviewOgreWindow(self, "PreviewToolwindow", size=wx.Size(260, 160))
 		grid.Add(self.objectPreviewWindow, pos=wx.GBPosition(r, c), span=wx.GBSpan(1, 2))
-		
+
 		self.errorLabel = wx.StaticText(self, -1, " ")#, size=wx.Size(260, 20))
 		self.errorLabel.SetForegroundColour(wx.RED)
 		r += 1
 		grid.Add(self.errorLabel,
 				 pos=wx.GBPosition(r, c),
-				 span=wx.GBSpan(1, 1))		
-		
+				 span=wx.GBSpan(1, 1))
+
 		r += 1
 		self.chkMousePlacement = wx.CheckBox(self, -1, "Place Objects with Middle Mouse Button")#, wx.DefaultPosition, wx.Size(240,20))
 		self.chkMousePlacement.Bind(wx.EVT_CHECKBOX, self.OnMousePlacement)
 		grid.Add(self.chkMousePlacement,
 				 pos=wx.GBPosition(r, c))
-		
+
 		r += 1
 		tree = wx.TreeCtrl(self, -1, size=(265, 360), style=wx.NO_BORDER | wx.TR_HIDE_ROOT)
 		grid.Add(tree,
 				 pos=wx.GBPosition(r, c))
 
-		
+
 		self.SetSizerAndFit(grid)
 		self.updateSkin()
-		 
+
 		self.Refresh()
 		root = tree.AddRoot("Objects")
 		items = []
-		
+
 		imglist = wx.ImageList(16, 16, True, 2)
 		imglist.Add(wx.ArtProvider_GetBitmap(wx.ART_FOLDER, wx.ART_OTHER, wx.Size(16, 16)))
 		imglist.Add(wx.ArtProvider_GetBitmap(wx.ART_NORMAL_FILE, wx.ART_OTHER, wx.Size(16, 16)))
 		tree.AssignImageList(imglist)
-		
+
 		self.tree = tree
 		self.treeroot = root
 		#saves the section node to expand when load finish
@@ -78,7 +78,7 @@ class RoRObjectTreeCtrl(ShapedWindow):
 		self._autoOpenMap = rorSettings().getSetting(TOOLKIT, "autoopen")
 		t = self.addSection("Terrains", ['*.terrn'], None, True)
 		bo = beamobjs = self.tree.AppendItem(self.treeroot, "Beam Objects", 0)
-		
+
 		self.addSection("Trucks", ['*.truck'], beamobjs, True)
 		self.addSection("Boats", ['*.boat'], beamobjs, True)
 		self.addSection("Airplanes", ['*.airplane'], beamobjs, True)
@@ -87,11 +87,11 @@ class RoRObjectTreeCtrl(ShapedWindow):
 		self.addSection("Statics Structures", ['*.fixed'], beamobjs, True)
 		tree.SortChildren(bo)
 		o = self.addSection("Objects", ['*.odef'], None, False)
-		
+
 		metaobjs = self.tree.AppendItem(self.treeroot, "Meta Files (click to load)", 0)
 
 
-		
+
 		# no full expand because there are a lot of children
 		#expand only first level
 #		if t is not None:
@@ -103,36 +103,36 @@ class RoRObjectTreeCtrl(ShapedWindow):
 #			self.tree.Expand(bo)# beam objects
 #		if metaobjs is not None:
 #			self.tree.Expand(metaobjs) # materials
- 
-		
+
+
 
 		#		self.GetSizer().SetSizeHints(self)
-				
-		
-		
+
+
+
 		self.Bind(wx.EVT_TREE_SEL_CHANGED, self.onTreeSelectionChange, self.tree)
 		self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnRightClick, self.tree)
 		#self.Bind(wx.wxEVT_TREE_BEGIN_DRAG, self.BeginDrag, self.tree)
-		
+
 		#initalize variable !!!!
 		self.selectedfn = None
 
 	def updateSkin(self):
 		super(RoRObjectTreeCtrl, self).updateSkin()
 
-		
+
 	def OnMousePlacement(self, event):
 		self.parent.terrainOgreWin.placeWithMouse = not self.parent.terrainOgreWin.placeWithMouse
 		event.Skip()
-		
+
 	def addSection(self, sectionName, filepattern, parent, UseIngameName):
 		""" sectionName, filepattern, parent = None, UseIngameName, files"""
 		parent = ifNone(parent, self.treeroot)
-		
+
 		files_editable = []
 #		files_uneditable=[]
 		files = self.getInstalledFiles(filepattern[0])
-		
+
 		for file in files:
 			type = 'Zip'
 			if file.archive:
@@ -155,7 +155,7 @@ class RoRObjectTreeCtrl(ShapedWindow):
 		section = None
 		if len(files_editable) > 0:
 			section = self.tree.AppendItem(parent, "%s (%d)" % (sectionName, len(files_editable)), 0)
-		
+
 		if len(files_editable) > 0:
 #			section_editable = self.tree.AppendItem(section, "Editable (%d)" % len(files_editable), 0)
 			for file in files_editable:
@@ -168,11 +168,11 @@ class RoRObjectTreeCtrl(ShapedWindow):
 					tmp = loadResourceLine(file.filename, 0)
 					if tmp != "":
 						filenameonly = tmp
-					
+
 				theitem = self.tree.AppendItem(section, filenameonly.lower(), 1, data=data)
 				if self.autoOpenMap == file.filename:
 					self.selectedItem = theitem
-					
+
 					self.autoOpenMap = file.filename #make it bold
 			self.tree.SortChildren(section)
 
@@ -189,32 +189,32 @@ class RoRObjectTreeCtrl(ShapedWindow):
 		if section is not None:
 			self.tree.SortChildren(section)
 		return section
-			
+
 	def OnRightClick(self, event):
-		fileinfo = self.tree.GetItemData(event.GetItem()).GetData()		
+		fileinfo = self.tree.GetItemData(event.GetItem()).GetData()
 		if fileinfo is None:
 			event.Skip()
 			return
-		
+
 		self.selectedfn = fileinfo.filename
 #		if fileinfo.archive.getType() != 'FileSystem':
 #			# no action for non editable files!
 #			event.Skip()
 #			return
 		filenameonly, extension = os.path.splitext(os.path.basename(fileinfo.filename))
-		
+
 		menu = wx.Menu()
 		#create various menu entries
 		if extension.lower() == ".odef":
 			item_edit_odef = menu.Append(wx.ID_ANY, "Edit in ODef Editor")
 			self.Bind(wx.EVT_MENU, self.editOdef, item_edit_odef)
-			
+
 			m = menu.Append(wx.ID_ANY, "Replace Selected(s)")
 			self.Bind(wx.EVT_MENU, self.replaceSelection, m)
 		if extension.lower() == ".terrn":
 			item_edit_terrain = menu.Append(wx.ID_ANY, "Edit in Terrain Editor")
 			self.Bind(wx.EVT_MENU, self.editTerrain, item_edit_terrain)
-			
+
 			item_autoOpen_terrain = menu.Append(wx.ID_ANY, "Auto-Open at Start up")
 			self.Bind(wx.EVT_MENU, self.AutoOpenTerrain, item_autoOpen_terrain)
 
@@ -232,16 +232,16 @@ class RoRObjectTreeCtrl(ShapedWindow):
 		menu.AppendSeparator()
 		item_add = menu.Append(wx.ID_ANY, "add to Terrain")
 		self.Bind(wx.EVT_MENU, self.addObjectToTerrain, item_add)
-			
+
 		self.PopupMenu(menu)
 		menu.Destroy()
 		event.Skip()
-		
+
 	def editTruck(self, event=None):
 		if self.selectedfn is None:
 			return
 		self.parent.editTruck(self.selectedfn)
-	
+
 	def editOdef(self, event=None):
 		if self.selectedfn is None:
 			return
@@ -251,7 +251,7 @@ class RoRObjectTreeCtrl(ShapedWindow):
 		if self.selectedfn is None:
 			return
 		self.parent.openTerrain(self.selectedfn)
-	
+
 	def OnuseTruck(self, event):
 		if event.IsChecked():
 			self.useTruck = fileinfo = self.tree.GetItemData(self.selectedItem).GetData().filename
@@ -260,11 +260,11 @@ class RoRObjectTreeCtrl(ShapedWindow):
 	def AutoOpenTerrain(self, event):
 		self.autoOpenMap = self.selectedfn
 		event.Skip()
-		
+
 	def disableAutoOpenTerrain(self, event):
 		self.autoOpenMap = ""
 		event.Skip()
-		
+
 	def addObjectToTerrain(self, event=None):
 		if self.selectedfn is None:
 			return
@@ -280,14 +280,14 @@ class RoRObjectTreeCtrl(ShapedWindow):
 	#			return
 	#		#event.Allow()
 	#		wx.TreeEvent.Allow(event)
-	
+
 	def replaceSelection(self, event):
 		self.parent.terrainOgreWin.replaceSelectionWith(self.selectedfn)
-		
+
 	def onTreeSelectionChange(self, event=None):
 		if "Meta Files (click to load)" == self.tree.GetItemText(self.tree.GetSelection()):
 			self.askUserToLoadMetaFiles()
-		fileinfo = self.tree.GetItemData(event.GetItem()).GetData()		
+		fileinfo = self.tree.GetItemData(event.GetItem()).GetData()
 		if fileinfo is None:
 			event.Skip()
 			return
@@ -297,7 +297,7 @@ class RoRObjectTreeCtrl(ShapedWindow):
 		self.selectedfn = fn
 		self.selectedItem = event.GetItem()
 		event.Skip()
-	
+
 	def askUserToLoadMetaFiles(self):
 		dlg = wx.MessageDialog(self, "This category may hold a lot of objects and it could \nspend some time to load\n\n Do you want to load it now?", "Question", style=wx.YES_NO | wx.ICON_QUESTION)
 		if dlg.ShowModal() == wx.ID_YES:
@@ -308,7 +308,7 @@ class RoRObjectTreeCtrl(ShapedWindow):
 			self.addSection("Configurations", ['*.cfg'], metaobjs, False)
 			self.tree.Expand(metaobjs)
 			self.parent.MessageBox("info", "All Meta files loaded")
-			
+
 	def getInstalledFiles(self, extension):
 		files = []
 #		extensions = " ".join('*'+x for x in extension)
@@ -318,10 +318,10 @@ class RoRObjectTreeCtrl(ShapedWindow):
 				files.append(file)
 		return files
 
-	
+
 	def _getautoOpenMap(self):
 		return self._autoOpenMap
-			
+
 	def _setautoOpenMap(self, value):
 		""" _autoOpenMap holds the terrain file "aspen.terrn"
 		    boldedItem and selectedItem holds the treeCtrl Item
@@ -338,9 +338,9 @@ class RoRObjectTreeCtrl(ShapedWindow):
 				isZip = d.archive.getType() == 'Zip'
 		rorSettings().setSetting(TOOLKIT, "autoopen", value)
 		rorSettings().setSetting(TOOLKIT, "autoopeniszip", isZip)
-			
+
 		self._autoOpenMap = value
-		
+
 	autoOpenMap = property(_getautoOpenMap, _setautoOpenMap,
 						doc="""un/set bold the terrain item that will be autoOpened""")
 	def loadFile(self, filename):
@@ -353,15 +353,15 @@ class RoRObjectTreeCtrl(ShapedWindow):
 			log().error(str(err))
 		else:
 			self.error("")
-		
+
 #	def OnLeftDown(self,event):
 #		ShapedWindow.OnLeftDown(self, event)
 #		event.Skip()
-	
+
 	def error(self, text):
 		self.errorLabel.SetLabel(text)
 		self.errorLabel.Update()
-	
+
 
 	def Destroy(self):
 		log().debug("freeing " + self.title)

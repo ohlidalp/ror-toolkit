@@ -39,8 +39,8 @@ class rorNotepad(rorFrame):
 #		self.grid.SetDefaultChildClass(rorGridEditor)
 		self._fontsize = 0
 		self.parent = parent
-		#_sizer = wx.BoxSizer(wx.VERTICAL)		
-		
+		#_sizer = wx.BoxSizer(wx.VERTICAL)
+
 		self.grid = rorGridEditor(self, **args)
 		self.grid.SetScrollLineY(40)
 		#self.createToolbar()
@@ -51,17 +51,17 @@ class rorNotepad(rorFrame):
 		#self.toolbar.Refresh()
 		#self.SetSizer(_sizer)
 		self.Show(True)
-		
+
 
 
 	def _getfontsize(self):
 		return self._fontsize
-			
+
 	def _setfontsize(self, value):
 		self._fontsize = value
 		self.grid.fontsize = value
 		self.helpWindow.fontsize = value
-	
+
 	fontsize = property(_getfontsize, _setfontsize)
 	""" increase or decrement font size of help window
 	"""
@@ -82,12 +82,12 @@ class rorNotepad(rorFrame):
 		for b in tb_buttons:
 			if b['icontype'] == 'wx': graphic = wx.ArtProvider_GetBitmap(b['icon'])
 			else: graphic = getBitmap(b['icon'])
-			
+
 			self.toolbar.AddTool(b['id'], b['caption'], graphic, shortHelp=b['shorthelp'])
 			self.Bind(wx.EVT_MENU, b['event'], id=b['id'])
-			
+
 		return self.toolbar
-	
+
 class rorGridEditor(gridlib.Grid):
 	def __init__(self, parent, **args):
 		gridlib.Grid.__init__(self, parent, -1, **args)
@@ -99,7 +99,7 @@ class rorGridEditor(gridlib.Grid):
 		self.Bind(gridlib.EVT_GRID_RANGE_SELECT, self.OnSelectRange)
 		self.Bind(gridlib.EVT_GRID_SELECT_CELL, self.OnSelectCell)
 #		self.Bind(gridlib.EVT_GRID_CELL_CHANGE, self.OnCellChanged)
-		
+
 		self.SetDefaultCellOverflow(True)
 		self.SetDefaultCellBackgroundColour(wx.Color(220, 220, 220))
 		self.highlightColor = NOTEPAD_HIGHLIGHTCOLOR
@@ -109,7 +109,7 @@ class rorGridEditor(gridlib.Grid):
 		self._Row = 0
 		self._fontsize = 0
 		self.menuItems = {}
-	
+
 	def createMenu(self):
 		""" popup menu with commands and sections to add"""
 		def doMenu(themenu, listOfCaptions, popuphandler=None):
@@ -119,7 +119,7 @@ class rorGridEditor(gridlib.Grid):
 				self.menuItems[str(id)] = it
 				item = themenu.Append(id, it)
 				if popuphandler is None: self.Bind(wx.EVT_MENU, self.popupHandler, item)
-				else: self.Bind(wx.EVT_MENU, popuphandler, item) 
+				else: self.Bind(wx.EVT_MENU, popuphandler, item)
 		self.menu = wx.Menu()
 		commands = wx.Menu()
 		doMenu(commands, self.parser.commands.keys())
@@ -128,9 +128,9 @@ class rorGridEditor(gridlib.Grid):
 		sections = wx.Menu()
 		doMenu(sections, [x for x in k if x not in self.parser.truckSections])
 		self.menu.AppendSubMenu(sections, 'sections')
-		
+
 		doMenu(self.menu, ['group beams'], self.groupHightlightBeams)
-		
+
 		#local variable
 		#menuItems = ['set_beam_defaults', ';']
 	def groupHightlightBeams(self, evt):
@@ -141,11 +141,11 @@ class rorGridEditor(gridlib.Grid):
 		section.comment_line = 'group'
 		footer = self.insertSection(';', minIdx + howmany + 2)
 		footer.comment_line = 'end group'
-		
+
 		self.Refresh()
 		self.Update()
 		evt.Skip()
-		
+
 	def insertSection(self, sectionOrObj, atRow):
 		""" insert a new section notifying Grid
 		return the lineOfSection created
@@ -155,14 +155,14 @@ class rorGridEditor(gridlib.Grid):
 				gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, # what we did to it
 				1									   # how many
 				)
-		self.ProcessTableMessage(msg)	
+		self.ProcessTableMessage(msg)
 		return gr
-		
+
 	def groupBeams(self, beams):
 		""" move all beams into a contigous block
-		
+
 		beams is a list of entries
-		
+
 		return a tuple
 		- the minimun row index used
 		- how many beams are in the group
@@ -176,8 +176,8 @@ class rorGridEditor(gridlib.Grid):
 					#print e.lineTruck.getTruckLine()
 					idx = self.parser.lines.index(e.lineTruck)
 					if not idx in idxlist:
-						idxlist.append(idx) 
-			if len(idxlist) < 2: 
+						idxlist.append(idx)
+			if len(idxlist) < 2:
 				print "emtpy list to hightlight"
 				return
 			minidx = min(idxlist)
@@ -187,9 +187,9 @@ class rorGridEditor(gridlib.Grid):
 				item = self.parser.lines.pop(i)
 				self.parser.lines.insert(minidx + cont, item)
 				cont += 1
-				#print "Unit testing: item was at ", i, " now it is at ", self.parser.lines.index(item), " that should be ", minidx 
+				#print "Unit testing: item was at ", i, " now it is at ", self.parser.lines.index(item), " that should be ", minidx
 			return minidx, cont
-		
+
 	def popupHandler(self, evt):
 		id = evt.GetId()
 		section = self.menuItems[str(id)]
@@ -200,9 +200,9 @@ class rorGridEditor(gridlib.Grid):
 		idx = list_has_key(self.parser.sectionfooter, section)
 		if idx > -1:
 			self.insertSection(section, self._Row + 1)
-	
+
 		evt.Skip()
-		
+
 	def setParser(self, parser):
 		table = rortable(self)
 		self.parser = parser
@@ -217,7 +217,7 @@ class rorGridEditor(gridlib.Grid):
 		table.FromLinesOfSection(self.parser.lines)
 		table.maxColumns = self.parser.maxColumns() + 1
 		self.SetTable(table)
-		
+
 
 
 #		for i in range(0, table.maxColumns - 1):
@@ -237,11 +237,11 @@ class rorGridEditor(gridlib.Grid):
 		self.RegisterDataType('string',
 							  gridlib.GridCellStringRenderer(),
 							  gridlib.GridCellTextEditor())
-		
+
 		self.RegisterDataType('material_managed_effect',
 							  gridlib.GridCellStringRenderer(),
 							  gridlib.GridCellChoiceEditor(managedMaterialEffect, False))
-		
+
 		self.RegisterDataType('material',
 							  gridlib.GridCellStringRenderer(),
 							  gridlib.GridCellChoiceEditor(self.materials, True))
@@ -266,13 +266,13 @@ class rorGridEditor(gridlib.Grid):
 							gridlib.GridCellFloatRenderer(precision=2),
 							gridlib.GridCellFloatEditor(precision=3))
 
-		
+
 	def retrieveFiles(self, path):
 		self.meshes = []
 		self.materials = []
 		self.sounds = []
 		self.shortcuts = self.getShortcuts()
-		
+
 		if not os.path.isdir(path): return
 		files = glob.glob(os.path.join(path, '*.*'))
 		for file in files:
@@ -296,14 +296,14 @@ class rorGridEditor(gridlib.Grid):
 		if event.Selecting():
 			# adding to the list...
 			for row in range(event.GetTopRow(), event.GetBottomRow() + 1):
-				for col in range(event.GetLeftCol(), event.GetRightCol() + 1): 
+				for col in range(event.GetLeftCol(), event.GetRightCol() + 1):
 					ele = (row, col)
 					if  ele not in self.selCells:
 						self.selCells.append(ele)
 		else:
 			# removal from list
 		   for row in range(event.GetTopRow(), event.GetBottomRow() + 1):
-				for col in range(event.GetLeftCol(), event.GetRightCol() + 1): 
+				for col in range(event.GetLeftCol(), event.GetRightCol() + 1):
 					ele = (row, col)
 					if  ele in self.selCells:
 						self.selCells.remove(ele)
@@ -318,20 +318,20 @@ class rorGridEditor(gridlib.Grid):
 		if attr is not None:
 			print "attr get size " , attr.GetSize()
 		else: print "attr is none for %d %d" % (self.GetGridCursorRow(), old)
-		
+
 		event.Skip()
 	def selSameCol(self):
 		if len(selCells) == 0 : return False
 		for ele in range(0, len(self.selCells) - 1):
 			if self.selCells[ele][1] <> self.selCells[ele + 1][1]: return False
 		return True
-	
+
 	def selSameRow(self):
 		if len(selCells) == 0 : return False
 		for ele in range(0, len(self.selCells) - 1):
 			if self.selCells[ele][0] <> self.selCells[ele + 1][0]: return False
 		return True
-	
+
 	def GetLabelTextColour(self):
 		if self.parser.lines[self.Row].section == uhoh:
 			return wx.RED
@@ -352,12 +352,12 @@ class rorGridEditor(gridlib.Grid):
 #			self.parent.helpWindow.column = coldef['name']
 #			thehelp = ""
 #			optionList = None
-#			if coldef.has_key("help"): thehelp = coldef['help'] 
-#			if coldef.has_key("validmultiplevalues"): 
+#			if coldef.has_key("help"): thehelp = coldef['help']
+#			if coldef.has_key("validmultiplevalues"):
 #				optionList = coldef['validmultiplevalues']
 #			elif coldef.has_key('validvalues'):
 #				optionList = coldef['validvalues']
-#			
+#
 #			if optionList is not None:
 #				if isinstance(optionList, ListType):
 #					for element in optionList:
@@ -367,9 +367,9 @@ class rorGridEditor(gridlib.Grid):
 #								thehelp += ' - ' + element['help']
 #							thehelp += '\n'
 #						elif isinstance(element, StringType):
-#							thehelp += element + ' ' 
+#							thehelp += element + ' '
 #			self.parent.helpWindow.text = thehelp
-#				
+#
 #		else:
 #			self.parent.helpWindow.column = ""
 #			self.parent.helpWindow.text = ""
@@ -388,7 +388,7 @@ class rorGridEditor(gridlib.Grid):
 			self.Refresh()
 			self.Update()
 			self.Row = i - 1
-	def moveDown(self):		
+	def moveDown(self):
 		if self._Row < len(self.parser.lines) - 1:
 			Skip = False
 			i = self._Row
@@ -403,7 +403,7 @@ class rorGridEditor(gridlib.Grid):
 		new = self.parser.insertLine(self._Row, self.parser.lines[self._Row])
 		if hasattr(new, 'entry'):
 			new.entry = None # new object doesn't share 3D object
-	
+
 	def OnKeyEvent(self, evt):
 		Skip = True
 		if evt.m_keyCode == wx.WXK_RETURN or evt.m_keyCode == wx.WXK_NUMPAD_ENTER:
@@ -416,7 +416,7 @@ class rorGridEditor(gridlib.Grid):
 			if evt.ShiftDown(): sum = -1
 			else: sum = 1
 			c = self.GetGridCursorCol() + sum
-			if c == -1 : 
+			if c == -1 :
 				r += sum
 				c = self.parser.lines[r].getMaxCols() - 1
 			elif c == self.parser.lines[r].getMaxCols():
@@ -430,7 +430,7 @@ class rorGridEditor(gridlib.Grid):
 			if self.CanEnableCellControl():
 				self.EnableCellEditControl()
 			return
-		
+
 		elif evt.m_keyCode == wx.WXK_F12 :
 			for a in self.selCells:
 				print str(a)
@@ -438,15 +438,15 @@ class rorGridEditor(gridlib.Grid):
 			self.newRow()
 		elif evt.m_keyCode == wx.WXK_DELETE and evt.ControlDown():
 			self.delRow()
-		
+
 		elif evt.m_keyCode == wx.WXK_UP and evt.ControlDown():
 			self.moveUp()
-		elif evt.m_keyCode == wx.WXK_DOWN and evt.ControlDown():				
+		elif evt.m_keyCode == wx.WXK_DOWN and evt.ControlDown():
 			self.moveDown()
 		elif evt.m_keyCode == WXK_D and evt.ControlDown():
 			self.dupplicate()
 		elif evt.m_keyCode == wx.WXK_F1:
-			
+
 		# 	saving truck
 
 			content = []
@@ -460,16 +460,16 @@ class rorGridEditor(gridlib.Grid):
 #						content.append(l[i].section + '\n')
 				content.append(l[i].getTruckLine() + '\n')
 			saveContent(content, os.path.join(self.currentPath(), 'new_generated.truck'))
-		
+
 		if Skip: evt.Skip()
-			
+
 	def RightClickCell(self, evt):
 		self.createMenu()
 		self.PopupMenu(self.menu)
 		self.menu.Destroy()
 		evt.Skip()
 	def onMouseEvent(self, evt):
-		# change Grid Font size 
+		# change Grid Font size
 		if evt.ControlDown() and evt.GetWheelRotation() != 0:
 			self.Parent.fontsize = (evt.GetWheelRotation() / abs(evt.GetWheelRotation()))
 			self.MakeCellVisible(self.Row, self.GetGridCursorCol())
@@ -477,10 +477,10 @@ class rorGridEditor(gridlib.Grid):
 			evt.Skip()
 	def LeftClickCell(self, evt):
 		evt.Skip()
-	
+
 	def _getRow(self):
 		return self._Row
-			
+
 	def _setRow(self, value):
 		self.animNodes(self._Row, False)
 		self._Row = value
@@ -489,7 +489,7 @@ class rorGridEditor(gridlib.Grid):
 			#get all entries and highlit on 3D window
 			r = self._Row + 1
 			self.parent.parent.clearAnim()
-			if r < len(self.parser.lines): 
+			if r < len(self.parser.lines):
 				section = self.parser.lines[r].section
 				while r < len(self.parser.lines):
 					if self.parser.lines[r].section == section:
@@ -509,29 +509,29 @@ class rorGridEditor(gridlib.Grid):
 #				elif coldef['type'] == 'float' : w = 80
 #				elif coldef['type'] == 'string': w = 200
 #			self.SetColSize(i, w + (self._fontsize))
-		self.ForceRefresh()	
+		self.ForceRefresh()
 
 	def _delRow(self):
 		del self._Row
-	
+
 	def animNodes(self, row, value):
 		if row < len(self.parser.lines):
 			self.parent.parent.animNodes(self.parser.lines[row], value)
 
 	def _getfontsize(self):
 		return self._fontsize
-			
+
 	def _setfontsize(self, value):
 		font = self.GetDefaultCellFont()
-		self._fontsize = font.GetPointSize() + value 
-		font.SetPointSize(self._fontsize)  
+		self._fontsize = font.GetPointSize() + value
+		font.SetPointSize(self._fontsize)
 		self.SetDefaultCellFont(font)
 		self.SetDefaultRowSize(self._fontsize * 2 , True)
 		font.SetWeight(wx.FONTWEIGHT_BOLD)
 		self.SetLabelFont(font)
 		self.SetRowLabelSize(self._fontsize * 10)
 		self.ForceRefresh()
-	
+
 	def getShortcuts(self):
 		""" shortcuts used on commands, commands2, etc.
 		we return a list used as a combobox to choose the text to show
@@ -546,8 +546,8 @@ class rorGridEditor(gridlib.Grid):
 			result.append(text)
 		return result
 	fontsize = property(_getfontsize, _setfontsize)
-	""" increasement of point size  
-	"""	
+	""" increasement of point size
+	"""
 	Row = property(_getRow, _setRow, _delRow)
 
 class helpFrame(rorFrame):
@@ -564,8 +564,8 @@ class helpFrame(rorFrame):
 		else:
 			path = os.path.join(os.path.dirname(__file__), 'default.htm')
 			self.myhtml.LoadPage(path)
-			
-			
+
+
 #		self.html.SetRelatedFrame(frame, self.titleBase + " -- %s")
 		return
 
@@ -577,20 +577,20 @@ class helpFrame(rorFrame):
 		grid.Add(self.txt, pos=wx.GBPosition(r, c), span=wx.GBSpan(2, 1), flag=wx.EXPAND)
 		grid.AddGrowableRow(0)
 		grid.AddGrowableCol(0)
-		
+
 #		self.SetSizerAndFit(grid)
 		self.Layout()
 		self.AutoLayout = True
-	
+
 	def _getsection(self):
 		return self.lblSection.GetLabel()
-			
+
 	def _setsection(self, value):
 		if self.loaded:
 			if self.myhtml.HasAnchor(value.title()): self.myhtml.ScrollToAnchor(value.title())
 			#only a few of anchor are in lowercase
 			elif self.myhtml.HasAnchor(value): self.myhtml.ScrollToAnchor(value)
-			elif len(value) > 2: 
+			elif len(value) > 2:
 				if self.myhtml.HasAnchor(value.capitalize()): self.myhtml.ScrollToAnchor(value.capitalize())
 #			else: print "web help for not found, searched ' % s' and ' % s'" % (value, value.title())
 #			page = self.file + '#' + value.title()
@@ -598,21 +598,21 @@ class helpFrame(rorFrame):
 
 	def _getcolumn(self):
 		return self.lblColumn.GetLabel()
-			
+
 	def _setcolumn(self, value):
 #		self.lblColumn.SetLabel("Column: " + value)
 		pass
-		
-			
+
+
 	def _gettext(self):
 		return self.txt.GetValue()
-			
+
 	def _settext(self, value):
 		self.txt.SetValue(value)
 
 	def _getfontsize(self):
 		return self._fontsize
-			
+
 	def _setfontsize(self, value):
 #		for x in [self.txt ]:#,self.lblSection, self.lblColumn, ]:
 #			font = x.GetFont()
@@ -625,12 +625,12 @@ class helpFrame(rorFrame):
 	""" increase or decrement font size of help window
 	"""
 
-		
+
 	text = property(_gettext, _settext)
 	""" set help text
 	"""
 	section = property(_getsection, _setsection)
-	"""set up label of section 
+	"""set up label of section
 	"""
 	column = property(_getcolumn, _setcolumn)
 	""" set column label

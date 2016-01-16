@@ -1,0 +1,29 @@
+material ToolKit/rorlogo
+{
+   technique 
+   {
+       pass
+       {
+			specular 1 1 1
+			emissive 1 1 1
+			texture_unit
+			{
+			   texture rorlogo.png
+			}
+       }
+   }
+}
+
+material ToolKit/wheel
+{
+   technique 
+   {
+       pass
+       {
+			ambient 0 1 0 
+			diffuse 0 1 0 
+			specular 0 1 0 
+			emissive 0 1 0 
+       }
+   }
+}

@@ -2,9 +2,9 @@
 #===============================================================================
 # Make this window visible when a Map is loaded into RoRTerrainOgreWindow
 # since CameraWindow need to know where the camera is.
-# 
-# 
-# 
+#
+#
+#
 #===============================================================================
 import math, glob
 import wx, os, os.path, copy
@@ -17,16 +17,16 @@ from ror.lputils import positionClass
 from ror.logger import log
 
 class CameraWindow(ShapedWindow):
-	
+
 	def __del__(self):
 		self.saveCamera()
-	
+
 	def __init__(self, parent, **kwargs):
 		ShapedWindow.__init__(self, parent, **kwargs)
-	   
+
 		self.parent = parent
 		self.rordir = rorSettings().rorFolder
-			
+
 
 		self.cameraList = []
 		# self.cameraList = [ {'name': "camera 1", 'pos': tupleType, 'dir': tupleType ]
@@ -39,14 +39,14 @@ class CameraWindow(ShapedWindow):
 		#self.mainLabel.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
 		grid.Add(self.mainLabel, pos=wx.GBPosition(r, c), span=wx.GBSpan(1, 1))
 
-		
+
 		r += 2
-		c = 1		 
+		c = 1
 		l = wx.StaticText(self, -1, " add a New camera Bookmark called:")
 		grid.Add(l,
 				 pos=wx.GBPosition(r, c),
 				 span=wx.GBSpan(1, 1))
-		
+
 		r += 1
 		c = 1
 		self.cameraName = wx.TextCtrl(self, -1, "", size=wx.Size(250, 20), style=wx.TE_PROCESS_ENTER)
@@ -54,7 +54,7 @@ class CameraWindow(ShapedWindow):
 		grid.Add(self.cameraName,
 				 pos=wx.GBPosition(r, c),
 				 span=wx.GBSpan(1, 1))
-		
+
 		r += 1
 		c = 1
 		self.add = wx.Button(self, -1, "add New camera Position", size=wx.Size(250, 20))
@@ -62,7 +62,7 @@ class CameraWindow(ShapedWindow):
 		grid.Add(self.add, pos=wx.GBPosition(r, c))
 
 		r += 2
-		c = 1		 
+		c = 1
 		l = wx.StaticText(self, -1, "Available cameras (left click to go)")
 		grid.Add(l,
 				 pos=wx.GBPosition(r, c),
@@ -80,7 +80,7 @@ class CameraWindow(ShapedWindow):
 		self.deleteCamera = wx.Button(self, -1, "Delete selected camera or last one", size=wx.Size(250, 20))
 		self.deleteCamera.Bind(wx.EVT_BUTTON, self.Ondelete)
 		grid.Add(self.deleteCamera, pos=wx.GBPosition(r, c))
-		
+
 		r += 1
 		c = 1
 		# create a panel to put some static labels and TextCtrl on the same row.
@@ -97,7 +97,7 @@ class CameraWindow(ShapedWindow):
 		r += 1
 		c = 1
 		pan = wx.Panel(self, -1, size=wx.Size(250, 20))
-		
+
 		l = wx.StaticText(pan, -1, " SHIFT Velocity", pos=wx.Point(0, 0), size=wx.Size(80, 20))
 
 		self.shiftVel = wx.TextCtrl(pan, -1, "", pos=wx.Point(80, 0), size=wx.Size(40, 20), style=wx.TE_PROCESS_ENTER)
@@ -106,10 +106,10 @@ class CameraWindow(ShapedWindow):
 		grid.Add(pan,
 				 pos=wx.GBPosition(r, c),
 				 span=wx.GBSpan(1, 1))
-		
+
 		self.SetSizerAndFit(grid)
 		self.updateSkin()
-		 
+
 
 
 
@@ -118,7 +118,7 @@ class CameraWindow(ShapedWindow):
 		self.list.Set([])
 		barename, self.ext = os.path.splitext(os.path.basename(terrnFile))
 		self._file = rorSettings().concatToToolkitHomeFolder(['cameras', '%s.txt' % barename], True)
-		
+
 		try:
 			if os.path.isfile(self._file):
 				input = open(self._file, 'rb')
@@ -129,17 +129,17 @@ class CameraWindow(ShapedWindow):
 		except:
 			self.cameraList = []
 			log().info("cameraBookmark couldn't be loaded")
-			
+
 		self.lastcount = len(self.cameraList)
 		self.list.Set(self.getValues())
-		
+
 	def getValues(self):
 		v = []
 		for i in range(0, len(self.cameraList)):
 			v.append(self.cameraList[i]['name'])
 		self.cameraName.ChangeValue("camera %03d" % self.lastcount)
 		return v
-		
+
 	def saveCamera(self, terrnFile=None):
 		if self.cameraList and (len(self.cameraList) > 0):
 			log().debug("saving %d cameras" % len(self.cameraList))
@@ -152,18 +152,18 @@ class CameraWindow(ShapedWindow):
 				output.close()
 				log().debug("cameras saved to %s" % self._file)
 
-		
+
 	def OnLeftDown(self, event):
 		ShapedWindow.OnLeftDown(self, event)
 		event.Skip()
-		
+
 	def Onadd(self, event):
 		# add new bookmark
 		s = self.cameraName.GetValue().strip()
 
 		p, d = self.parent.terrainOgreWin.getCamera()
 		self.cameraAdd(s, p, d)  #replace selection
-		event.Skip()				
+		event.Skip()
 
 
 	def cameraExists(self, cameraName):
@@ -171,8 +171,8 @@ class CameraWindow(ShapedWindow):
 			if cameraName == self.cameraList[i]['name']:
 				return i
 		return - 1
-	
-	def cameraAdd(self, name, tuplePos=(0, 0, 0), tupleDir=(0, 0, 0)):			
+
+	def cameraAdd(self, name, tuplePos=(0, 0, 0), tupleDir=(0, 0, 0)):
 		idx = self.cameraExists(name)
 		if idx > -1:
 			self.cameraList[idx] = {'name' : name, 'pos': tuplePos, 'dir': tupleDir }
@@ -181,8 +181,8 @@ class CameraWindow(ShapedWindow):
 		v = self.getValues()
 		self.list.Set(v) # maintain syncrhonization
 		self.lastcount += 1
-		self.cameraName.ChangeValue("camera %03d" % self.lastcount)		
-	
+		self.cameraName.ChangeValue("camera %03d" % self.lastcount)
+
 	def Onselect(self, event):
 		#mouse down on listbox
 		s = event.GetString().strip()
@@ -190,20 +190,20 @@ class CameraWindow(ShapedWindow):
 			if s == self.cameraList[i]['name']:
 				self.parent.terrainOgreWin.setCamera(self.cameraList[i]['pos'], \
 														self.cameraList[i]['dir'])
-			
+
 		event.Skip()
-		
+
 	def OnText(self, event):
 		# return key on camera Text control
 		self.Onadd(event)
 		event.Skip()
-			
-	def OnnormalVel(self, event):	
+
+	def OnnormalVel(self, event):
 		vel = ShapedWindow.checkValidChars(self, event.GetString())
 		self.parent.terrainOgreWin.cameraVel = vel
 		event.Skip()
 
-	def OnshiftVel(self, event):	
+	def OnshiftVel(self, event):
 		vel = ShapedWindow.checkValidChars(self, event.GetString())
 		self.parent.terrainOgreWin.cameraShiftVel = vel
 		event.Skip()
@@ -212,7 +212,7 @@ class CameraWindow(ShapedWindow):
 			self.normalVel.SetValue("%.1f" % normalVel)
 		if shiftVel > 0.0:
 			self.shiftVel.SetValue("%.1f" % shiftVel)
-		
+
 	def Ondelete(self, evt):
 		# delete selected camera position
 		sel = self.list.GetSelection()
@@ -224,7 +224,5 @@ class CameraWindow(ShapedWindow):
 			self.list.Set(self.getValues())
 		if len(self.cameraList) == 0:
 			self.lastcount = 0
-		
-		evt.Skip()		
-	
-	 
+
+		evt.Skip()
