@@ -95,8 +95,8 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 	selectionMaterial = None
 	selectionMaterialAnimState = 0
 
-	StartDragLeftX = (0, 0)
-	StartDragLeftY = (0, 0)
+	_mouse_drag_start_screen_x = int(0)
+	_mouse_drag_start_screen_y = int(0)
 	stickCurrentObjectToGround = False
 	cicle = 0
 	stickTo02 = False
@@ -298,7 +298,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.ID = ID
 		wxOgreWindow.__init__(self, self.parent, self.ID, "terrainEditor", size=self.size, **self.kwargs) 
 
-		self.initVariables()
+		self._resetVariables()
 		if self.cameraBookmark:
 			self.cameraBookmark.updateVelocity(self.cameraVel, self.cameraShiftVel)
 	
@@ -577,7 +577,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 
 				
 				
-	def initVariables(self):
+	def _resetVariables(self):
 		self.terrain = None
 		self.commandhistory = []
 		self.historypointer = 0
@@ -588,8 +588,8 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.selectionMaterial = None
 		self.selectionMaterialAnimState = 0
 	
-		self.StartDragLeftX = (0, 0)
-		self.StartDragLeftY = (0, 0)
+		self._mouse_drag_start_screen_x = int(0)
+		self._mouse_drag_start_screen_y = int(0)
 		self.stickCurrentObjectToGround = False
 		self.stickTo02 = False
 		self.knownObjects = {}	   
@@ -722,7 +722,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		if not self.terrain is None:
 			self.cameraBookmark.saveCamera()
 			self.clear()
-			self.initVariables()
+			self._resetVariables()
 		self.roadSystem.loadSplines(filename)
 		self.terrain = RoRTerrain(filename)
 		if self.terrain.errorSaving != "":
@@ -1139,7 +1139,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.selected.type = "terrain"
 		self.selected.entry = None
 	
-	def selectnew(self, event):
+	def _updateMapSelection(self, event):
 		x, y = event.GetPosition() 
 
 		width = self.renderWindow.getWidth()
@@ -1157,6 +1157,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 				if r.movable.getName() in self.axis.arrowNames:
 					self.axis.arrow = r.movable
 					return
+					
 		selectedSomething = False
 		if len(self.ignorearray) > 20:
 			self.ignorearray = []
@@ -1276,9 +1277,11 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.selected.entry = self.entries[hentry.uuid]
 		self.currentStatusMsg = "redo step %d of %d" % (self.historypointer + 1, len(self.commandhistory))
 				
-	def translateSelected(self, vector, steps=False,
-		doc=""" vector is an offset to translate to
-				 steps is something like align to grid"""):
+	def _translateSelected(self, vector, steps=False):
+		"""
+		:param {xyz} vector: World-space vector to translate the object
+		:param bool steps: something like align to grid - move in bigger steps.
+		"""
 		
 		if not self.selected.entry:
 			return
@@ -1440,15 +1443,16 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			log().info("I can not get control points terrain height from a empty dictionary")
 			return 0
 		
-	def controlArrows(self, event):
-		forcex = float(0)
-		if event.Dragging() and event.LeftIsDown():
-			x, y = event.GetPosition()
-		else: 
+	def _onSelectionControlArrowsMouseEvent(self, event):
+
+		if not (event.Dragging() and event.LeftIsDown()):
 			return
-	 
-		forcex = float(self.StartDragLeftX - x)
-		self.StartDragLeftX, self.StartDragLeftY = event.GetPosition()
+			
+		screen_x, screen_y = event.GetPosition()
+		# TODO: Code something better
+		# Currently, mouse X movement translates to object world-axis movement,
+		#    regardless on the screen orientation of the axis.
+		forcex = float(self._mouse_drag_start_screen_x - screen_x)
 		forcex /= 2
 		if event.ShiftDown():
 			forcex /= 10
@@ -1458,11 +1462,11 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		
 		self.movingEntry = True
 		if self.selected.axis.arrow.getName() == self.selected.axis.arrowNames[0]:
-			 self.translateSelected(ogre.Vector3(forcex, 0, 0), LockSteps)
+			 self._translateSelected(ogre.Vector3(forcex, 0, 0), LockSteps)
 		elif self.selected.axis.arrow.getName() == self.selected.axis.arrowNames[1]:
-			self.translateSelected(ogre.Vector3(0, 0, forcex), LockSteps)
+			self._translateSelected(ogre.Vector3(0, 0, forcex), LockSteps)
 		elif self.selected.axis.arrow.getName() == self.selected.axis.arrowNames[2]:
-			self.translateSelected(ogre.Vector3(0, forcex, 0), LockSteps)
+			self._translateSelected(ogre.Vector3(0, forcex, 0), LockSteps)
 		
 		elif self.selected.axis.arrow.getName() == self.selected.axis.arrowNames[3]:
 			self.rotateSelected(ogre.Vector3(0, 1, 0), forceDegree, LockSteps)
@@ -1470,6 +1474,8 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			self.rotateSelected(ogre.Vector3(1, 0, 0), forceDegree, LockSteps)
 		elif self.selected.axis.arrow.getName() == self.selected.axis.arrowNames[5]:
 			self.rotateSelected(ogre.Vector3(0, 0, 1), forceDegree, LockSteps)
+			
+		self._mouse_drag_start_screen_x, self._mouse_drag_start_screen_y = event.GetPosition()
 
 	
 	def getTerrainHeight(self, pos):
@@ -1518,7 +1524,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			self.SetFocus()
 		# ignore selected arrow if control key is pressed
 		if not event.ControlDown() and 	self.selected.axis.arrow is not None:
-			self.controlArrows(event)
+			self._onSelectionControlArrowsMouseEvent(event)
 		
 		#here was spline
 	
@@ -1548,8 +1554,8 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 				oldPos = self.selected.coords.asVector3
 			self.selected.coords.asVector3 = self.getPointedPosition(event)	
 			self.addtomultiselect = event.ShiftDown()
-			self.selectnew(event)
-			self.StartDragLeftX, self.StartDragLeftY = event.GetPosition() #saves position of initial click 
+			self._updateMapSelection(event)
+			self._mouse_drag_start_screen_x, self._mouse_drag_start_screen_y = event.GetPosition() #saves position of initial click 
 			if event.ShiftDown():
 				log().info('distance : %.3f' % (oldPos.distance(self.selected.coords.asVector3)))
 		if (event.LeftDown()) and self.splineMode:
