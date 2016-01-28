@@ -3,14 +3,10 @@ Created on 07/04/2009
 
 @author: Lepes
 '''
-import wx, os, os.path, copy
-import cPickle
-import errno
 import ogre.renderer.OGRE as ogre 
 from ror.rorcommon import *
 from RoRVirtualKeys import *
 from ror.lputils import *
-from roreditor.RoRConstants import *
 from ror.logger import log
 
 #===============================================================================
