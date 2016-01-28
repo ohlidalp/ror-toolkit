@@ -23,8 +23,11 @@ class AxisTranslationArrow:
 	"""
 	Represents a manipulation arrow to move selection along 1 axis.
 	
+	:attribute string           _axis_name: X/Y/Z (Carthesian, not OGRE)
 	:attribute string           _material_instance_name:
 	:attribute ogre.MaterialPtr _material_instance:
+	:attribute string           _material_highlight_name:
+	:attribute ogre.MaterialPtr _material_highlight_instance:
 	:attribute string           _ogre_scenenode_name:
 	:attribute ogre.SceneNode   _ogre_scenenode:
 	
@@ -34,7 +37,7 @@ class AxisTranslationArrow:
 	def __init__(self, common_scenenode, axis_name, arrow_entity_name, ogre_scenemanager):
 		self._axis_name = axis_name
 		
-		# Create our own material instances (to enable individual transparency adjustment)
+		# Create our own material instances
 		if axis_name == "X":
 			common_mat_name = "mysimple/transred"
 		elif axis_name == "Y":
