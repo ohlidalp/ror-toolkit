@@ -23,11 +23,58 @@ ARROW_SCALE_MINFACTOR = 0.01
 ARROW_SCALE_MAXFACTOR = 1.3
 
 
+class AxisTranslationArrow:
+	"""
+	Represents a manipulation arrow to move selection along 1 axis.
+	
+	:attribute string           _material_instance_name:
+	:attribute ogre.MaterialPtr _material_instance:
+	:attribute string           _ogre_scenenode_name:
+	:attribute ogre.SceneNode   _ogre_scenenode:
+	
+	:author: Petr Ohlidal a.k.a. 'only_a_ptr', 01/2016
+	"""
+	
+	def __init__(self, common_scenenode, axis_name, arrow_entity_name, ogre_scenemanager):
+		self._axis_name = axis_name
+		
+		# Create our own material instances (to enable individual transparency adjustment)
+		if axis_name == "X":
+			common_mat_name = "mysimple/transred"
+		elif axis_name == "Y":
+			common_mat_name = "mysimple/transgreen"
+		elif axis_name == "Z":
+			common_mat_name = "mysimple/transblue"
+		
+		common_mat = ogre.MaterialManager.getSingleton().getByName(common_mat_name)
+		self._material_instance_name = "rortoolkit/editor_arrow_" + axis_name
+		self._material_instance = common_mat.clone(self._material_instance_name)
+		common_sel_mat = ogre.MaterialManager.getSingleton().getByName(common_mat_name + "sel")
+		self._material_highlight_name = self._material_instance_name + "sel"
+		self._material_highlight_instance = common_sel_mat.clone(self._material_highlight_name)
+		
+		# Mk scene node
+		self._ogre_scenenode_name = "movearrowsnode" + axis_name + randomID()
+		self._ogre_scenenode = common_scenenode.createChildSceneNode(self._ogre_scenenode_name)
+		
+		# Mk entity
+		self._ogre_entity = ogre_scenemanager.createEntity(arrow_entity_name, "axis.mesh")
+		self._ogre_entity.setMaterialName(self._material_instance_name)
+			
+		# Attach and rotate
+		# Cloned code by Lepes
+		self._ogre_scenenode.attachObject(self._ogre_entity)
+		if axis_name == "X":
+			self._ogre_scenenode.rotate(ogre.Vector3(0, 1, 0), ogre.Degree(-90), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+		elif axis_name == "Y":
+			self._ogre_scenenode.rotate(ogre.Vector3(0, 1, 0), ogre.Degree(-180), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+		elif axis_name == "Z":
+			self._ogre_scenenode.rotate(ogre.Vector3(0, 1, 0), ogre.Degree(-90), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
+			self._ogre_scenenode.rotate(ogre.Vector3(0, 0, 1), ogre.Degree(90), relativeTo=ogre.Node.TransformSpace.TS_WORLD)	
+
+
 class AxisClass(object):
 	'''
-		ogrewindow who manage this axis.
-		whatVisible: list of arrows you want to be visible
-						['translation', 'rotation', 'terrain']
 	Create:
 	- 1 node translateNode with 3 3D Axis 
 	- 1 node rotateNode with 3 3D arrows to rotate the object
@@ -38,6 +85,11 @@ class AxisClass(object):
 	#TODO: pointer3d not finished
 
 	def __init__(self, ogrewindow, whatVisible):
+		"""
+		:param ogrewindow: OGRE window who manage this axis.
+		:param list[string] whatVisible: list of arrows you want to be visible 
+		                                 ['translation', 'rotation', 'terrain']
+		"""
 		self._ogrewindow = ogrewindow
 		self.translateNode = None
 		self.rotateNode = None
@@ -57,6 +109,7 @@ class AxisClass(object):
 		# what is allowed to be visible
 		self._allowedToShow = whatVisible[:] #new copy
 		self._createArrows()
+		
 	
 	def __del__(self):
 		self.rotateNode = None
@@ -64,14 +117,18 @@ class AxisClass(object):
 		self.terrainNode = None
 		self.pointer3d = None
 		
+		
 	def _getrotateNodeOffset(self):
 		return self._rotateNodeOffset
+		
 			
 	def _setrotateNodeOffset(self, value):
 		self._rotateNodeOffset = value
+		
 	
 	def _getscale(self):
 		return self._scale
+		
 			
 	def _setscale(self, value):
 		self._scale = value
@@ -85,9 +142,9 @@ class AxisClass(object):
 			self.pointer3d.setScale(value)
 		
 	
-
 	def _getarrow(self):
 		return self._arrow
+		
 			
 	def _setarrow(self, value):
 		if value != self._arrow:
@@ -100,6 +157,7 @@ class AxisClass(object):
 	
 	def _getarrowScaleFactor(self):
 		return self._arrowScaleFactor
+		
 			
 	def _setarrowScaleFactor(self, value):
 		if value > ARROW_SCALE_MAXFACTOR:
@@ -112,6 +170,7 @@ class AxisClass(object):
 		self._arrowScaleFactor = value
 		self.normalScale = self._arrowScaleFactor, self._arrowScaleFactor, self._arrowScaleFactor
 		self.rotateNodeOffset = ogre.Vector3(self._arrowScaleFactor * 20 , self._arrowScaleFactor * 10, self._arrowScaleFactor * 30)
+	
 		
 	arrowScaleFactor = property(_getarrowScaleFactor, _setarrowScaleFactor,
 						doc=""" It is a dynamic scale factor to 
@@ -121,16 +180,24 @@ class AxisClass(object):
 								ARROW_SCALE_MAXFACTOR = 0.5
 								""")
 	
+	
 	arrow = property(_getarrow, _setarrow,
 						doc="""holds the last selection arrow ENTITY or None""")
+	
 		
 	scale = property(_getscale, _setscale,
 						doc="""Tuple Scale of all nodes""")
+						
+						
 	rotateNodeOffset = property(_getrotateNodeOffset, _setrotateNodeOffset,
 						doc="""Offset to misplace rotate arrows from translation axis""")
+	
+						
 	def setArrowScaleFactor(self, factor, node):
 		self.arrowScaleFactor = factor
 		self.attachTo(node)
+		
+		
 	def _createArrows(self):
 		if not self.translateNode is None:
 			log().debug("SelectionAxis._createArrows: Axes are already created !!")
@@ -138,26 +205,16 @@ class AxisClass(object):
 		# main node is always required
 		n = self._ogrewindow.smNewNode("movearrowsnode" + randomID()) 
 		n.setScale(0, 0, 0)
+		n.setPosition(0, 0, 0)
+		self.translateNode = n
+		
 		#translation nodes
 		if 'translation' in self._allowedToShow:
-			nx = n.createChildSceneNode("movearrowsnodeX" + randomID())
-			#arrow.mesh original
-			ex = self._ogrewindow.smNewEntity(self.arrowNames[0], "axis.mesh", "mysimple/transred") 
-			 
-			nx.attachObject(ex)
-			nx.rotate(ogre.Vector3(0, 1, 0), ogre.Degree(-90), relativeTo=ogre.Node.TransformSpace.TS_WORLD)	   
-	
-			ny = n.createChildSceneNode("movearrowsnodeY" + randomID())
-			ey = self._ogrewindow.smNewEntity(self.arrowNames[1], "axis.mesh", "mysimple/transgreen") 
-			ny.attachObject(ey)
-			ny.rotate(ogre.Vector3(0, 1, 0), ogre.Degree(-180), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
-			nz = n.createChildSceneNode("movearrowsnodeZ" + randomID())
-			ez = self._ogrewindow.smNewEntity(self.arrowNames[2], "axis.mesh", "mysimple/transblue") 
-			nz.attachObject(ez)
-			nz.rotate(ogre.Vector3(0, 1, 0), ogre.Degree(-90), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
-			nz.rotate(ogre.Vector3(0, 0, 1), ogre.Degree(90), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
-		self.translateNode = n
-		self.translateNode.setPosition(0, 0, 0)
+			scene_mgr = self._ogrewindow.getOgreSceneManager()
+			self._axis_arrows = {}
+			self._axis_arrows["X"] = AxisTranslationArrow(n, "X", self.arrowNames[0], scene_mgr)
+			self._axis_arrows["Y"] = AxisTranslationArrow(n, "Y", self.arrowNames[1], scene_mgr)
+			self._axis_arrows["Z"] = AxisTranslationArrow(n, "Z", self.arrowNames[2], scene_mgr)
 			
 		#rotation nodes
 		if 'rotation' in self._allowedToShow:
@@ -221,6 +278,7 @@ class AxisClass(object):
 				self.rotateNode.setPosition(pos + self._rotateNodeOffset)
 				self.rotateNode.setOrientation(ori)
 				self.rotateNode.setScale(self.normalScale)
+				
 
 	def selectTerrain(self, positionTuple):
 		if 'terrain' in self._allowedToShow:
@@ -233,15 +291,22 @@ class AxisClass(object):
 			self.pointer3d.setPosition(positionTuple)
 			s = 0.05
 			self.pointer3d.setScale(s, s, s)
+			
 
 	def _selectarrow(self, arrow):
-		""" receives an entity"""
+		"""
+		:param ogre.Entity arrow: Any handle (axis/rotation/terrain)
+		"""
 		if arrow is not None:
-			if self.arrow.getSubEntity(0).getMaterialName()[ -3:] != "sel":
-				self.arrow.setMaterialName(self.arrow.getSubEntity(0).getMaterialName() + "sel")
+			mat_name = arrow.getSubEntity(0).getMaterialName()
+			if mat_name[ -3:] != "sel":
+				arrow.setMaterialName(mat_name + "sel")
+				
 			
 	def _deselectarrow(self, arrow):
-		""" receives an entity"""
+		"""
+		:param ogre.Entity arrow: Any handle (axis/rotation/terrain)
+		"""
 		if arrow is not None:
 			if self.arrow.getSubEntity(0).getMaterialName()[ -3:] == "sel":
 				self.arrow.setMaterialName(self.arrow.getSubEntity(0).getMaterialName()[:-3])

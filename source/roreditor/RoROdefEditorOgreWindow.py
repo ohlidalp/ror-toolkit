@@ -159,6 +159,11 @@ class ODefEditorOgreWindow(wxOgreWindow):
 		n = self.sceneManager.getRootSceneNode().createChildSceneNode(strName)
 		return n
 
+	
+	def getOgreSceneManager(self):
+		return self.sceneManager
+	
+	
 	def smNewEntity(self, strName, strMesh, strMaterialName=None,
 					doc=""" Scene Manager New Entity:
 					Create a new entity with: 

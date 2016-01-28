@@ -406,6 +406,10 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		return True
 		
 		
+	def getOgreSceneManager(self):
+		return self.sceneManager
+	
+	
 	def cameraLandCollision(self):
 		try:
 			camPos = self.camera.getPosition()
