@@ -23,18 +23,16 @@ class AxisTranslationArrow:
 	"""
 	Represents a manipulation arrow to move selection along 1 axis.
 	
-	:attribute string           _axis_name: X/Y/Z (Carthesian, not OGRE)
-	:attribute string           _material_instance_name:
-	:attribute ogre.MaterialPtr _material_instance:
-	:attribute string           _material_highlight_name:
-	:attribute ogre.MaterialPtr _material_highlight_instance:
-	:attribute string           _ogre_scenenode_name:
-	:attribute ogre.SceneNode   _ogre_scenenode:
-	
 	:author: Petr Ohlidal a.k.a. 'only_a_ptr', 01/2016
 	"""
 	
 	def __init__(self, common_scenenode, axis_name, arrow_entity_name, ogre_scenemanager):
+		"""
+		:param ogre.SceneNode    common_scenenode :
+		:param string            axis_name        : X/Y/Z (Carthesian, not OGRE)
+		:param string            arrow_entity_name:
+		:param ogre.SceneManager ogre_scenemanager:
+		"""
 		self._axis_name = axis_name
 		
 		# Create our own material instances
@@ -69,7 +67,7 @@ class AxisTranslationArrow:
 			self._ogre_scenenode.rotate(ogre.Vector3(0, 1, 0), ogre.Degree(-180), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
 		elif axis_name == "Z":
 			self._ogre_scenenode.rotate(ogre.Vector3(0, 1, 0), ogre.Degree(-90), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
-			self._ogre_scenenode.rotate(ogre.Vector3(0, 0, 1), ogre.Degree(90), relativeTo=ogre.Node.TransformSpace.TS_WORLD)	
+			self._ogre_scenenode.rotate(ogre.Vector3(0, 0, 1), ogre.Degree(90), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
 
 
 class AxisClass(object):
@@ -115,8 +113,8 @@ class AxisClass(object):
 		self.translateNode = None
 		self.terrainNode = None
 		self.pointer3d = None
-		
-		
+	
+	
 	def _getrotateNodeOffset(self):
 		return self._rotateNodeOffset
 		

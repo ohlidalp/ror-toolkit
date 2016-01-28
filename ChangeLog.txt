@@ -4,6 +4,7 @@
 --------------------------------------------------------------------------------
 
 NEXT:
+	2016-01-28 Mouse translation arrows now work properly (like in Blender)
 	2016-01-13 Startup settings dialog now lets user choose RoR home directory
 	           (previously hardcoded to "My Documents/Rigs of Rods 0.38")
 	2016-01-07 Error handling: added popup dialogs displaying info in case

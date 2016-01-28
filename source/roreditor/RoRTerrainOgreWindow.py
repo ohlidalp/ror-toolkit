@@ -1,7 +1,6 @@
 #Thomas Fischer 31/05/2007, thomas@thomasfischer.biz
 
 import wx, os, os.path, copy, traceback
-import cPickle
 from time import  *
 import errno
 import ogre.renderer.OGRE as ogre 
@@ -296,11 +295,15 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.size = size
 		self.kwargs = kwargs
 		self.ID = ID
-		wxOgreWindow.__init__(self, self.parent, self.ID, "terrainEditor", size=self.size, **self.kwargs) 
+		wxOgreWindow.__init__(self, self.parent, self.ID, "terrainEditor", size=self.size, **self.kwargs)
+		
+		import rortoolkit.mouse_3d 
+		self._mouse_world_transforms = rortoolkit.mouse_3d.MouseWorldTransforms(self.camera, self.renderWindow)
 
 		self._resetVariables()
 		if self.cameraBookmark:
 			self.cameraBookmark.updateVelocity(self.cameraVel, self.cameraShiftVel)
+			
 	
 	def newEntry(self, bAssignEvent=False, bAutouuid=False): 
 		""" bAssignEvent -> Assign ogreWindow property
@@ -627,6 +630,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.sphere = None
 		self.movingEntry = False
 		
+		
 	def loadMisplacedObjects(self):
 		file = rorSettings().concatToToolkitHomeFolder(['config', 'editorConf.txt'], True)
 		self.preLoad = {}
@@ -637,7 +641,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 				log().debug("Preload file exists, loading")
 				self.preLoad = pickle.load(input)
 				input.close()
-		
 	
 	def close(self):
 		log().debug("closing terrain Ogre Window")
@@ -1142,6 +1145,13 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 	def selectTerrain(self):
 		self.selected.type = "terrain"
 		self.selected.entry = None
+		
+		
+	def _getCameraToViewportRay(self, screen_x, screen_y):
+		width  = self.renderWindow.getWidth()
+		height = self.renderWindow.getHeight()
+		return self.camera.getCameraToViewportRay((screen_x / float(width)), (screen_y / float(height)))	
+	
 	
 	def _updateMapSelection(self, event):
 		x, y = event.GetPosition() 
@@ -1281,26 +1291,24 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.selected.entry = self.entries[hentry.uuid]
 		self.currentStatusMsg = "redo step %d of %d" % (self.historypointer + 1, len(self.commandhistory))
 				
-	def _translateSelected(self, vector, steps=False):
+	def _translateSelected(self, axis_ogre, mouse_x1, mouse_y1, mouse_x2, mouse_y2):
 		"""
-		:param {xyz} vector: World-space vector to translate the object
-		:param bool steps: something like align to grid - move in bigger steps.
+		Translates selected object based on mouse input.
+		:param string axis_str: X/Y/Z - OGRE world space (Y = up)
 		"""
 		
 		if not self.selected.entry:
 			return
 		
-		newpos = self.selected.entry.node._getDerivedPosition() + vector
-		if steps:
-			stepsize = 1
-			if newpos.x != 0.0:
-				newpos.x = round(newpos.x / 10.0, 1) * 10.0 
-			if newpos.y != 0.0:
-				newpos.y = round(newpos.y / 10.0, 1) * 10.0 
-			if newpos.z != 0.0:
-				newpos.z = round(newpos.z / 10.0, 1) * 10.0 
-
+		pivot = self.selected.entry.node._getDerivedPosition()
+		was_success, offset = self._mouse_world_transforms.mouse_translate_along_axis(
+			pivot, axis_ogre, mouse_x1, mouse_y1, mouse_x2, mouse_y2)
+		if not was_success:
+			return
+		newpos = pivot + offset			
 		self.selected.entry.position = newpos.x, newpos.y, newpos.z
+		
+		# Post-process
 		self.selected.entry.data.modified = True
 		self.selected.axis.attachTo(self.selected.entry.node)
 		self.addObjectToHistory(self.selected.entry)
@@ -1465,19 +1473,32 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		forceDegree = ogre.Degree(forcex).valueRadians()
 		
 		self.movingEntry = True
-		if self.selected.axis.arrow.getName() == self.selected.axis.arrowNames[0]:
-			 self._translateSelected(ogre.Vector3(forcex, 0, 0), LockSteps)
-		elif self.selected.axis.arrow.getName() == self.selected.axis.arrowNames[1]:
-			self._translateSelected(ogre.Vector3(0, 0, forcex), LockSteps)
-		elif self.selected.axis.arrow.getName() == self.selected.axis.arrowNames[2]:
-			self._translateSelected(ogre.Vector3(0, forcex, 0), LockSteps)
-		
-		elif self.selected.axis.arrow.getName() == self.selected.axis.arrowNames[3]:
+		arrow_name = self.selected.axis.arrow.getName()
+		translate_axis = None
+		if arrow_name == self.selected.axis.arrowNames[0]:
+			 translate_axis = "X"
+		elif arrow_name == self.selected.axis.arrowNames[1]:
+			translate_axis = "Y"
+		elif arrow_name == self.selected.axis.arrowNames[2]:
+			translate_axis = "Z"
+		elif arrow_name == self.selected.axis.arrowNames[3]:
 			self.rotateSelected(ogre.Vector3(0, 1, 0), forceDegree, LockSteps)
-		elif self.selected.axis.arrow.getName() == self.selected.axis.arrowNames[4]:
+		elif arrow_name == self.selected.axis.arrowNames[4]:
 			self.rotateSelected(ogre.Vector3(1, 0, 0), forceDegree, LockSteps)
-		elif self.selected.axis.arrow.getName() == self.selected.axis.arrowNames[5]:
+		elif arrow_name == self.selected.axis.arrowNames[5]:
 			self.rotateSelected(ogre.Vector3(0, 0, 1), forceDegree, LockSteps)
+			
+		if translate_axis is not None:
+			# Fix axis -> OGRE world space
+			if translate_axis == "Z":
+				translate_axis = "Y"
+			elif translate_axis == "Y":
+				translate_axis = "Z"
+		
+			self._translateSelected(translate_axis, 
+				self._mouse_drag_start_screen_x, 
+				self._mouse_drag_start_screen_y,
+				screen_x, screen_y)
 			
 		self._mouse_drag_start_screen_x, self._mouse_drag_start_screen_y = event.GetPosition()
 
