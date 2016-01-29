@@ -15,7 +15,7 @@ skinTheme = 'RoR theme'
 
 class ShapedWindow(rorFrame):
 	def __init__(self, parent, title="ShapeW", skinOnlyFilename=None, **kwargs):
-		panel_styles = wx.FRAME_SHAPED | wx.BORDER_NONE | wx.FRAME_NO_TASKBAR | wx.FRAME_FLOAT_ON_PARENT | wx.TAB_TRAVERSAL
+		panel_styles = wx.FRAME_FLOAT_ON_PARENT | wx.FRAME_NO_TASKBAR | wx.TAB_TRAVERSAL
 		rorFrame.__init__(self, parent, title, style=panel_styles, **kwargs)
 		log().debug("%s is initialising..." % title)
 		# perspective is the Perspective menu index (1, 2 or 3)
