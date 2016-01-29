@@ -12,11 +12,11 @@ def list_ror_home_directories():
 	:returns: List of tuples (dirname, full_path)
 	"""
 	
-	if not is_system_windows():
-		raise RuntimeError("Not implemented besides Windows")
+	import wx
+	wx_paths = wx.StandardPaths.Get()
 	
 	import os.path	
-	base_path = os.path.expanduser("~/Documents/")
+	base_path = wx_paths.GetDocumentsDir()
 	all_files = os.listdir(base_path)
 	ror_dirs = [] # Tuples (dirname, fullpath)
 	for dirname in all_files:
