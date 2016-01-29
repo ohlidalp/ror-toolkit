@@ -49,16 +49,7 @@ class ShapedWindow(rorFrame):
 
 	def updateSkin(self):
 		""" must call after window is created """
-		th = rorSettings().toolkitMainFolder
-		imgpath = rorSettings().getConcatPath(th, ['media', 'gui', 'skins', skinTheme, self.skinFile], True)
-		self.skinBack = skinBackColor
-		if hasattr(self, 'bmp'):
-			del self.bmp
-		self.bmp = wx.Image(imgpath).ConvertToBitmap()		 
-		w, h = self.bmp.GetWidth(), self.bmp.GetHeight()
-		
-		self.skinSize = wx.Size(w, h)
-		self.SetSize(self.skinSize)
+
 		self.SetBackgroundColour(skinBackColor)
 		self.Refresh() # wtf about wxWindow.Update and Refresh on help file???? !!!!
 		self.Update()  # should be posible for wxWidget to implement 20 more routines to be called for updating a fuc**** paint window?
