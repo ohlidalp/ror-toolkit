@@ -31,6 +31,12 @@ class RoRObjectTreeCtrl(ShapedWindow):
 		self.rordir = rorSettings().rorFolder
 		grid = self.grid
 		grid.SetEmptyCellSize(wx.Size(110, 3))
+		
+		# Window padding
+		spacer_size = (6,6)
+		grid.AddSpacer(spacer_size, (0,0)) # Row 0, Col 0
+		grid.AddSpacer(spacer_size, (0,2)) # Row 0, Col 2
+		
 		r = 2
 		c = 1
 		self.mainLabel = wx.StaticText(self, -1, "", size=wx.Size(0, 20), style=wx.ST_NO_AUTORESIZE | wx.TRANSPARENT_WINDOW)
@@ -56,6 +62,10 @@ class RoRObjectTreeCtrl(ShapedWindow):
 		tree = wx.TreeCtrl(self, -1, size=(265, 360), style=wx.NO_BORDER | wx.TR_HIDE_ROOT)
 		grid.Add(tree,
 				 pos=wx.GBPosition(r, c))
+				 
+		# Bottom padding
+		r += 1
+		grid.AddSpacer(spacer_size, (r,c))
 
 		
 		self.SetSizerAndFit(grid)
