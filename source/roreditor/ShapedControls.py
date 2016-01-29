@@ -40,26 +40,12 @@ class ShapedWindow(rorFrame):
 
 		self.isMouseDownHere = False
 
-		if wx.Platform == "__WXGTK__":
-			# wxGTK requires that the window be created before you can
-			# set its shape, so delay the call to SetWindowShape until
-			# this event.
-			self.Bind(wx.EVT_WINDOW_CREATE, self.SetWindowShape)
-		else:
-			# On wxMSW and wxMac the window has already been created, so go for it.
-#			self.updateSkin(self.skinFile)
-			pass
 		self.grid = wx.GridBagSizer(2, 2) 
 #		self.SetSizer(self.grid)
 		self.updateSkin()
 #		self.Hide()
 		log().debug("%s created" % title)
 
-	def SetWindowShape(self, *evt):
-		# Use the bitmap's mask to determine the region
-		r = wx.RegionFromBitmapColour(self.bmp, skinTransparentColor)
-		self.hasShape = self.SetShape(r)
-		#FIXME:  (Linux) see help of self.CanSetTransparent()
 
 	def updateSkin(self):
 		""" must call after window is created """
@@ -70,7 +56,7 @@ class ShapedWindow(rorFrame):
 			del self.bmp
 		self.bmp = wx.Image(imgpath).ConvertToBitmap()		 
 		w, h = self.bmp.GetWidth(), self.bmp.GetHeight()
-		self.SetWindowShape()
+		
 		self.skinSize = wx.Size(w, h)
 		self.SetSize(self.skinSize)
 		self.SetBackgroundColour(skinBackColor)
