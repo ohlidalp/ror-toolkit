@@ -38,7 +38,6 @@ class ShapedWindow(rorFrame):
 		self.Bind(wx.EVT_MOTION, 		self.OnMouseMove)
 
 
-		self.Bind(wx.EVT_PAINT, 		 self.OnPaint)
 		self.isMouseDownHere = False
 
 		if wx.Platform == "__WXGTK__":
@@ -81,12 +80,6 @@ class ShapedWindow(rorFrame):
 
 	def ChangeSize(self):
 		pass
-		
-	def OnPaint(self, evt):
-		dc = wx.PaintDC(self)
-		dc.DrawBitmap(self.bmp, 0, 0, True)
-		dc.DrawText(self.title, 120, 10)
-		evt.Skip()
 		
 	def OnLeftDown(self, evt):
 		self.isMouseDownHere = True
