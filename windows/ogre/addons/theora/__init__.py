@@ -1,1 +1,0 @@
-from _theora_ import *
