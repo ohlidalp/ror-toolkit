@@ -1,9 +1,7 @@
 #Lepes and wx documentation Examples
 
-import wx, os, os.path, copy
-import ogre.renderer.OGRE as ogre 
-#from wxogre.OgreManager import *
-from wxogre.wxOgreWindow import *
+import wx
+import ogre.renderer.OGRE as ogre
 from ror.settingsManager import rorSettings
 from ror.logger import log
 from rorFrame import *
@@ -14,16 +12,15 @@ skinTheme = 'RoR theme'
 
 
 class ShapedWindow(rorFrame):
+	"""
+	Middle layer for RoRToolkit tool panels.
+	Obsolete, scheduled for removal.
+	Original purpose: draw skinned and bitmap-shaped windows (disabled)
+	"""
+	
 	def __init__(self, parent, title="ShapeW", skinOnlyFilename=None, **kwargs):
-		rorFrame.__init__(self, parent, title,
-						 style=
-						   wx.FRAME_SHAPED
-						 | wx.BORDER_NONE
-						 | wx.FRAME_NO_TASKBAR
-						 | wx.FRAME_FLOAT_ON_PARENT
-						 | wx.TAB_TRAVERSAL,
-						 **kwargs
-						 )
+		wx_styles = wx.DEFAULT_FRAME_STYLE | wx.FRAME_TOOL_WINDOW |	wx.FRAME_NO_TASKBAR | wx.FRAME_FLOAT_ON_PARENT
+		rorFrame.__init__(self, parent, title, style=wx_styles, **kwargs)
 		log().debug("%s is initialising..." % title)
 		# perspective is the Perspective menu index (1, 2 or 3)
 		self.perspective = 1 
@@ -31,8 +28,6 @@ class ShapedWindow(rorFrame):
 		self.SetAutoLayout(True)
 		self.hasShape = False
 		self.skinFile = skinOnlyFilename
-		if self.skinFile is None:
-			self.skinFile = 'base.png'
 	
 		self.title = title
 		
@@ -44,56 +39,21 @@ class ShapedWindow(rorFrame):
 		self.Bind(wx.EVT_LEFT_UP, 	   self.OnLeftUp)
 		self.Bind(wx.EVT_MOTION, 		self.OnMouseMove)
 
-
-		self.Bind(wx.EVT_PAINT, 		 self.OnPaint)
 		self.isMouseDownHere = False
 
-		if wx.Platform == "__WXGTK__":
-			# wxGTK requires that the window be created before you can
-			# set its shape, so delay the call to SetWindowShape until
-			# this event.
-			self.Bind(wx.EVT_WINDOW_CREATE, self.SetWindowShape)
-		else:
-			# On wxMSW and wxMac the window has already been created, so go for it.
-#			self.updateSkin(self.skinFile)
-			pass
 		self.grid = wx.GridBagSizer(2, 2) 
 #		self.SetSizer(self.grid)
 		self.updateSkin()
-#		self.Hide()
+
 		log().debug("%s created" % title)
 
-	def SetWindowShape(self, *evt):
-		# Use the bitmap's mask to determine the region
-		r = wx.RegionFromBitmapColour(self.bmp, skinTransparentColor)
-		self.hasShape = self.SetShape(r)
-		#FIXME:  (Linux) see help of self.CanSetTransparent()
-
 	def updateSkin(self):
-		""" must call after window is created """
-		th = rorSettings().toolkitMainFolder
-		imgpath = rorSettings().getConcatPath(th, ['media', 'gui', 'skins', skinTheme, self.skinFile], True)
-		self.skinBack = skinBackColor
-		if hasattr(self, 'bmp'):
-			del self.bmp
-		self.bmp = wx.Image(imgpath).ConvertToBitmap()		 
-		w, h = self.bmp.GetWidth(), self.bmp.GetHeight()
-		self.SetWindowShape()
-		self.skinSize = wx.Size(w, h)
-		self.SetSize(self.skinSize)
 		self.SetBackgroundColour(skinBackColor)
 		self.Refresh() # wtf about wxWindow.Update and Refresh on help file???? !!!!
 		self.Update()  # should be posible for wxWidget to implement 20 more routines to be called for updating a fuc**** paint window?
 
-
 	def ChangeSize(self):
 		pass
-		
-	def OnPaint(self, evt):
-		dc = wx.PaintDC(self)
-		dc.DrawBitmap(self.bmp, 0, 0, True)
-		dc.DrawText(self.title, 120, 10)
-		evt.Skip()
 		
 	def OnLeftDown(self, evt):
 		self.isMouseDownHere = True

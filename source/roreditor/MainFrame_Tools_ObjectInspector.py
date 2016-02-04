@@ -16,10 +16,16 @@ import cStringIO
 class ObjectInspector(ShapedWindow):
 	def __init__(self, parent, **kwargs):
 		ShapedWindow.__init__(self, parent, **kwargs)
-#		self._frame = frame
+
 		self.parent = parent
 		grid = self.grid
 		grid.SetEmptyCellSize(wx.Size(110, 3))
+		
+		# Window padding - sides
+		spacer_size = (6,6)
+		grid.AddSpacer(spacer_size, (0,0)) # Row 0, Col 0
+		grid.AddSpacer(spacer_size, (0,2)) # Row 0, Col 2
+		
 		r = 1
 		c = 1
 		self.mainLabel = wx.StaticText(self, -1, "", size=wx.Size(0, 20), style=wx.TRANSPARENT_WINDOW | wx.ST_NO_AUTORESIZE)
@@ -235,7 +241,10 @@ class ObjectInspector(ShapedWindow):
 		self.Bind(wx.EVT_TEXT_ENTER, self.OnEditrotChanged, self.rotY)
 		self.Bind(wx.EVT_TEXT_ENTER, self.OnEditrotChanged, self.rotZ)
 		self.Bind(wx.EVT_TEXT_ENTER, self.OnEditcommentChanged, self.comments)
-
+		
+		# Bottom padding
+		r += 1
+		grid.AddSpacer(spacer_size, (r, 4))
 
 		self.SetSizerAndFit(grid)
 		

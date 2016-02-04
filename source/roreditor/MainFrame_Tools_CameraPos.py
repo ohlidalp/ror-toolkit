@@ -33,6 +33,13 @@ class CameraWindow(ShapedWindow):
 		self.lastcount = 0
 		grid = self.grid
 		grid.SetEmptyCellSize(wx.Size(110, 3))
+		
+		# Window padding
+		spacer_size = (6,6)
+		grid.AddSpacer(spacer_size, (0,0)) # Row 0, Col 0
+		grid.AddSpacer(spacer_size, (0,2)) # Row 0, Col 2
+		
+		
 		r = 1
 		c = 1
 		self.mainLabel = wx.StaticText(self, -1, "", size=wx.Size(0, 20), style=wx.TRANSPARENT_WINDOW | wx.ST_NO_AUTORESIZE)
@@ -106,6 +113,10 @@ class CameraWindow(ShapedWindow):
 		grid.Add(pan,
 				 pos=wx.GBPosition(r, c),
 				 span=wx.GBSpan(1, 1))
+				 
+		# Bottom padding
+		r += 1
+		grid.AddSpacer(spacer_size, (r,c))
 		
 		self.SetSizerAndFit(grid)
 		self.updateSkin()

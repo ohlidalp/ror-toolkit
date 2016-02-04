@@ -331,7 +331,7 @@ class MainFrame(wx.Frame):
 						id = wx.NewId()
 						
 						buttonidx = self.terraintoolbar.AddTool(id, label, bitmap1=getBitmap(label), bitmap2=getBitmap(label), kind=wx.ITEM_CHECK)						
-						self.Bind(wx.EVT_MENU, self.OntbButtonClick, id=id)
+						self.Bind(wx.EVT_MENU, self.OnToolbarButtonClick, id=id)
 						w.Hide()
 						self.tbbuttons.append({'id' : id, 'label': label, 'window': w, 'perspective' : w.perspective, 'buttonidx': buttonidx})
 												  
@@ -472,7 +472,7 @@ class MainFrame(wx.Frame):
 			self.terrainOgreWin.selected.paste()
 			evt.Skip()
 			
-		def OntbButtonClick(self, evt):
+		def OnToolbarButtonClick(self, evt):
 			id = evt.GetId()
 			idx = list_has_value(self.tbbuttons, 'id', id)
 			if idx > -1:
