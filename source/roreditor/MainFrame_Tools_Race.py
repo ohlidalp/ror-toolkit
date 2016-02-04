@@ -22,6 +22,12 @@ class Race(ShapedWindow):
 					
 		grid = self.grid
 		grid.SetEmptyCellSize(wx.Size(110, 20))
+		
+		# Window padding - sides
+		spacer_size = (6,6)
+		grid.AddSpacer(spacer_size, (0,0)) # Row 0, Col 0
+		grid.AddSpacer(spacer_size, (0,3)) # Row 0, Col 2
+		
 		r = 1
 		c = 1
 		self.mainLabel = wx.StaticText(self, -1, "", size=wx.Size(0, 20), style=wx.TRANSPARENT_WINDOW | wx.ST_NO_AUTORESIZE)
@@ -89,6 +95,10 @@ class Race(ShapedWindow):
 		grid.Add(self.isLoop,
 				 pos=wx.GBPosition(r, c),
 				 span=wx.GBSpan(1, 1))
+				 
+		# Window padding - bottom
+		r += 1
+		grid.AddSpacer(spacer_size, (r, c))
 	
 		self.SetSizerAndFit(grid)
 		self._raceIndex = -1

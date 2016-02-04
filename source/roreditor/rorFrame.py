@@ -18,6 +18,8 @@ class rorFrame(wx.Frame):
 		wx.Frame.__init__(self, parent, -1, title, **args)
 		self.title = title
 		self.restorePosition()
+		self.Bind(wx.EVT_CLOSE, self.OnClose)
+		self._parent = parent
 		
 	def restorePosition(self):
 		if rorSettings().has_section(self.title):
@@ -48,3 +50,6 @@ class rorFrame(wx.Frame):
 	def Destroy(self):
 		self.savePosition()
 		super(rorFrame, self).Destroy()
+		
+	def OnClose(self, event):
+		pass # TODO: Hide the panel and update associated toolbar button
