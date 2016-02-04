@@ -4,11 +4,12 @@
 --------------------------------------------------------------------------------
 
 NEXT:
-	2016-01-28 Mouse translation arrows now work properly (like in Blender)
-	2016-01-13 Startup settings dialog now lets user choose RoR home directory
-	           (previously hardcoded to "My Documents/Rigs of Rods 0.38")
-	2016-01-07 Error handling: added popup dialogs displaying info in case
-	           of crash or failure to start.
+	* Removed bitmap skins - windows are plain "tool panels" now.
+	* Mouse translation arrows now work properly (like in Blender).
+	* Startup settings dialog now lets user choose RoR home directory
+	  (previously hardcoded to "My Documents/Rigs of Rods 0.38").
+	* Error handling: added popup dialogs displaying info in case of
+	  crash or failure to start.
 
 --------------------------------------------------------------------------------
     2016-01-06: RoR Toolkit ressurected after almost 5 years of inactivity.                      
