@@ -1,0 +1,238 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{9c077d3a-0aa9-47ad-b6c6-e0644ff7ef89}</ProjectGuid>
+    <ProjectHome>..\..\</ProjectHome>
+    <StartupFile>main.py</StartupFile>
+    <SearchPath />
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <InterpreterId />
+    <InterpreterVersion />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <PropertyGroup>
+    <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
+    <PtvsTargetsFile>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets</PtvsTargetsFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="ChangeLog.txt" />
+    <Content Include="devtools\setup\readme-installer.txt" />
+    <Content Include="devtools\setup\splash.bmp" />
+    <Content Include="media\gui\blank.png" />
+    <Content Include="media\gui\Camera_Bookmark.png" />
+    <Content Include="media\gui\delRow.png" />
+    <Content Include="media\gui\down.png" />
+    <Content Include="media\gui\Favorites.png" />
+    <Content Include="media\gui\Inspector.png" />
+    <Content Include="media\gui\Manage_Races.png" />
+    <Content Include="media\gui\Map_Options.png" />
+    <Content Include="media\gui\newRow.png" />
+    <Content Include="media\gui\OpenFile.gif" />
+    <Content Include="media\gui\Road.png" />
+    <Content Include="media\gui\Save_Start_RoR.png" />
+    <Content Include="media\gui\skins\Blue\base.png" />
+    <Content Include="media\gui\skins\Blue\config.txt" />
+    <Content Include="media\gui\skins\Blue\scrolledtext.png" />
+    <Content Include="media\gui\skins\Blue\treepreview.png" />
+    <Content Include="media\gui\skins\Dark Blue\base.png" />
+    <Content Include="media\gui\skins\Dark Blue\config.txt" />
+    <Content Include="media\gui\skins\Dark Blue\scrolledtext.png" />
+    <Content Include="media\gui\skins\Dark Blue\treepreview.png" />
+    <Content Include="media\gui\skins\flat\base.png" />
+    <Content Include="media\gui\skins\flat\config.txt" />
+    <Content Include="media\gui\skins\flat\scrolledtext.png" />
+    <Content Include="media\gui\skins\flat\treepreview.png" />
+    <Content Include="media\gui\skins\Orange\base.png" />
+    <Content Include="media\gui\skins\Orange\config.txt" />
+    <Content Include="media\gui\skins\Orange\scrolledtext.png" />
+    <Content Include="media\gui\skins\Orange\treepreview.png" />
+    <Content Include="media\gui\skins\RoR theme\base.png" />
+    <Content Include="media\gui\skins\RoR theme\config.txt" />
+    <Content Include="media\gui\skins\RoR theme\scrolledtext.png" />
+    <Content Include="media\gui\skins\RoR theme\treepreview.png" />
+    <Content Include="media\gui\splash.bmp" />
+    <Content Include="media\gui\splash.png" />
+    <Content Include="media\gui\Tree.png" />
+    <Content Include="media\gui\up.png" />
+    <Content Include="media\materials\arrow.png" />
+    <Content Include="media\materials\clouds.jpg" />
+    <Content Include="media\materials\dirt-grass.jpg" />
+    <Content Include="media\materials\textures\Terrain.png" />
+    <Content Include="media\materials\textures\TerrainAmbientMap.jpg" />
+    <Content Include="media\materials\textures\TerrainTex0.jpg" />
+    <Content Include="media\materials\textures\TerrainTex1.jpg" />
+    <Content Include="media\materials\textures\terrain_detail.jpg" />
+    <Content Include="media\materials\textures\terrain_texture.jpg" />
+    <Content Include="media\materials\uvbg.png" />
+    <Content Include="media\materials\water.jpg" />
+    <Content Include="media\overlay\autotrack.png" />
+    <Content Include="media\overlay\autotrack1.png" />
+    <Content Include="media\overlay\new 2.txt" />
+    <Content Include="media\overlay\New_Ogre_Border.png" />
+    <Content Include="media\overlay\New_Ogre_Border_Break.png" />
+    <Content Include="media\overlay\New_Ogre_Border_Center.png" />
+    <Content Include="media\overlay\panel.png" />
+    <Content Include="media\overlay\popanel.png" />
+    <Content Include="media\overlay\pythonogretext.png" />
+    <Content Include="media\overlay\race.png" />
+    <Content Include="media\overlay\read_me.html" />
+    <Content Include="media\overlay\run.png" />
+    <Content Include="media\overlay\spline.png" />
+    <Content Include="media\overlay\splinepause.png" />
+    <Content Include="media\overlay\workingSpline.png" />
+    <Content Include="rortoolkit.ico" />
+    <Content Include="rortoolkit.ini" />
+    <Content Include="source\roreditor\default.htm" />
+    <Content Include="source\roreditor\help.html" />
+    <Content Include="source\ror\031amd5.txt" />
+    <Content Include="source\ror\logging.ini" />
+    <Content Include="source\ror\ror.ico" />
+    <Content Include="source\ror\splash.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="doc\createdoc.py" />
+    <Compile Include="main.py" />
+    <Compile Include="source\roreditor\copyPastePanel.py" />
+    <Compile Include="source\roreditor\FM_renderer.py" />
+    <Compile Include="source\roreditor\GUIObjectTree.py" />
+    <Compile Include="source\roreditor\MainFrame.py" />
+    <Compile Include="source\roreditor\MainFrame_Tools.py" />
+    <Compile Include="source\roreditor\MainFrame_Tools_CameraPos.py" />
+    <Compile Include="source\roreditor\MainFrame_Tools_MapOptions.py" />
+    <Compile Include="source\roreditor\MainFrame_Tools_ObjectInspector.py" />
+    <Compile Include="source\roreditor\MainFrame_Tools_ObjectTree.py" />
+    <Compile Include="source\roreditor\MainFrame_Tools_ODefEditor.py" />
+    <Compile Include="source\roreditor\MainFrame_Tools_Pivot.py" />
+    <Compile Include="source\roreditor\MainFrame_Tools_Preview.py" />
+    <Compile Include="source\roreditor\MainFrame_Tools_Race.py" />
+    <Compile Include="source\roreditor\MainFrame_Tools_RoadSystem.py" />
+    <Compile Include="source\roreditor\odefSelection.py" />
+    <Compile Include="source\roreditor\RoRConstants.py" />
+    <Compile Include="source\roreditor\rorFrame.py" />
+    <Compile Include="source\roreditor\RoRGridTable.py" />
+    <Compile Include="source\roreditor\rorNotepad.py" />
+    <Compile Include="source\roreditor\RoRObjectPreviewOgreWindow.py" />
+    <Compile Include="source\roreditor\RoROdefEditorOgreWindow.py" />
+    <Compile Include="source\roreditor\RoRRoadSystem.py" />
+    <Compile Include="source\roreditor\RoRScrolledText.py" />
+    <Compile Include="source\roreditor\RoRSkinSelection.py" />
+    <Compile Include="source\roreditor\RoRTerrainOgreWindow.py" />
+    <Compile Include="source\roreditor\RoRTerrainSelectedObjectOgreWindow.py" />
+    <Compile Include="source\roreditor\RoRTerrainSelectedObjectTopOgreWindow.py" />
+    <Compile Include="source\roreditor\RoRTerrainSelection.py" />
+    <Compile Include="source\roreditor\RoRTruckLinePanel.py" />
+    <Compile Include="source\roreditor\RoRTruckOgreWindow.py" />
+    <Compile Include="source\roreditor\RoRTruckUVOgreWindow.py" />
+    <Compile Include="source\roreditor\RoRVirtualKeys.py" />
+    <Compile Include="source\roreditor\SelectionAxis.py" />
+    <Compile Include="source\roreditor\ShapedControls.py" />
+    <Compile Include="source\roreditor\text_draw.py" />
+    <Compile Include="source\roreditor\TruckPanel.py" />
+    <Compile Include="source\roreditor\__init__.py" />
+    <Compile Include="source\rortoolkit\exceptions.py" />
+    <Compile Include="source\rortoolkit\gui_panels.py" />
+    <Compile Include="source\rortoolkit\gui_widgets.py" />
+    <Compile Include="source\rortoolkit\mouse_3d.py" />
+    <Compile Include="source\rortoolkit\sys_utils.py" />
+    <Compile Include="source\rortoolkit\__init__.py" />
+    <Compile Include="source\ror\bugreport.py" />
+    <Compile Include="source\ror\camera.py" />
+    <Compile Include="source\ror\depchecker.py" />
+    <Compile Include="source\ror\depcheckerplugins\deptools.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_afl.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_airplane.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_asm.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_bmp.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_boat.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_cfg.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_cg.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_compositor.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_dds.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_dll.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_exe.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_fixed.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_glsl.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_hlsl.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_jpg.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_load.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_material.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_mesh.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_msi.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_odef.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_overlay.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_particle.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_png.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_psd.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_raw.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_skeleton.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_terrn.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_trailer.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_truck.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_txt.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_wav.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_xml.py" />
+    <Compile Include="source\ror\depcheckerplugins\ror_zip.py" />
+    <Compile Include="source\ror\depcheckerplugins\__init__.py" />
+    <Compile Include="source\ror\logger.py" />
+    <Compile Include="source\ror\lputils.py" />
+    <Compile Include="source\ror\luabasic.py" />
+    <Compile Include="source\ror\luaparser.py" />
+    <Compile Include="source\ror\modgui.py" />
+    <Compile Include="source\ror\modtool.py" />
+    <Compile Include="source\ror\newterrainparser.py" />
+    <Compile Include="source\ror\odefparser.py" />
+    <Compile Include="source\ror\ogrelogger.py" />
+    <Compile Include="source\ror\repoclient.py" />
+    <Compile Include="source\ror\repomanager.py" />
+    <Compile Include="source\ror\rorcommon.py" />
+    <Compile Include="source\ror\RoROgreWindow.py" />
+    <Compile Include="source\ror\settingsManager.py" />
+    <Compile Include="source\ror\SimpleTruckRepresentation.py" />
+    <Compile Include="source\ror\starter.py" />
+    <Compile Include="source\ror\terrainparser.py" />
+    <Compile Include="source\ror\toolkitparser.py" />
+    <Compile Include="source\ror\truckparser.py" />
+    <Compile Include="source\ror\TrueSingleton.py" />
+    <Compile Include="source\ror\__init__.py" />
+    <Compile Include="source\wxogre\OgreManager.py" />
+    <Compile Include="source\wxogre\wxOgreWindow.py" />
+    <Compile Include="source\wxogre\__init__.py" />
+    <Compile Include="tools\checkmods.py" />
+    <Compile Include="tools\depchecker.py" />
+    <Compile Include="tools\modgui.py" />
+    <Compile Include="tools\modtool.py" />
+    <Compile Include="tools\update.py" />
+    <Compile Include="tools\updaterestart.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="devtools\" />
+    <Folder Include="devtools\setup" />
+    <Folder Include="doc" />
+    <Folder Include="media\" />
+    <Folder Include="media\gui" />
+    <Folder Include="media\gui\skins\" />
+    <Folder Include="media\gui\skins\Blue" />
+    <Folder Include="media\gui\skins\Dark Blue" />
+    <Folder Include="media\gui\skins\flat" />
+    <Folder Include="media\gui\skins\Orange" />
+    <Folder Include="media\gui\skins\RoR theme" />
+    <Folder Include="media\materials" />
+    <Folder Include="media\materials\textures" />
+    <Folder Include="media\overlay" />
+    <Folder Include="source\" />
+    <Folder Include="source\ror" />
+    <Folder Include="source\roreditor" />
+    <Folder Include="source\rortoolkit" />
+    <Folder Include="source\ror\depcheckerplugins" />
+    <Folder Include="source\wxogre" />
+    <Folder Include="tools" />
+  </ItemGroup>
+  <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="!Exists($(PtvsTargetsFile))" />
+</Project>
