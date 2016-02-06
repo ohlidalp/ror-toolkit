@@ -41,7 +41,7 @@ def write_crash_log_file():
 	text = separator + err + separator
 	sys.stderr.write(text)
 	
-	if sys.platform in ['win32', 'win64']:
+	if "win32" in sys.platform:
 		# Quick hack to get at least SOME crash-reporting.
 		try:
 			
@@ -106,8 +106,9 @@ def main():
 			show_dialog_non_wx(str(sys.exc_info()[1]), "RoRToolkit stopped on error")
 			write_crash_log_file()
 		except:
+			write_crash_log_file()
 			show_error_dialog_non_wx(sys.exc_info()[1], "RoRToolkit crashed :(")
-			write_crash_log_file()		
+			
 
 
 if __name__ == "__main__": 

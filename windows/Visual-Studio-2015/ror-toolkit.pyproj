@@ -139,6 +139,9 @@
     <Compile Include="source\rortoolkit\gui_panels.py" />
     <Compile Include="source\rortoolkit\gui_widgets.py" />
     <Compile Include="source\rortoolkit\mouse_3d.py" />
+    <Compile Include="source\rortoolkit\resources.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="source\rortoolkit\sys_utils.py" />
     <Compile Include="source\rortoolkit\__init__.py" />
     <Compile Include="source\ror\bugreport.py" />

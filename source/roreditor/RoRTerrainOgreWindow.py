@@ -290,6 +290,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 	def __init__(self, parent, ID, size=wx.Size(200, 200), rordir="", maininstance=None, **kwargs): 
 		self.rordir = rordir
 		self._object_tree_window = None
+		self.roadSystem = None
 		log().debug(" Main terrain ogre window is being created")
 		self.maininstance = maininstance
 		if not maininstance is None:
@@ -387,12 +388,13 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		try:
 			if self.cameraCollision:
 				self.cameraLandCollision()
-			if self.roadSystem.AnimState is not None:
-				if self.roadSystem.AnimState.hasEnded(): # I don't know when an animation will finish  :-|
-					self.roadSystem.walkOnRoads = False
-				elif self.roadSystem.AnimState.getEnabled():
-					self.roadSystem.AnimState.addTime(0.5)
-					self.camera.lookAt(self.roadSystem.dotwalk.node.getPosition())
+			if self.roadSystem is not None:
+				if self.roadSystem.AnimState is not None:
+					if self.roadSystem.AnimState.hasEnded(): # I don't know when an animation will finish  :-|
+						self.roadSystem.walkOnRoads = False
+					elif self.roadSystem.AnimState.getEnabled():
+						self.roadSystem.AnimState.addTime(0.5)
+						self.camera.lookAt(self.roadSystem.dotwalk.node.getPosition())
 	
 			# axes size related to camera distance
 			if self.selected.entry is not None and self.selected.entry != self.selected.axis.arrow:
@@ -625,7 +627,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self._currentStatusMsg = ""
 		self.loadMisplacedObjects()
 		self.waterentity = None
-		self.roadSystem = RoadSystemClass(self.road, self) #self.road is toolwindow
 		self._usepopup = None
 		self._cameraVel = None
 		self._cameraShiftVel = None
@@ -742,6 +743,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			self.cameraBookmark.saveCamera()
 			self.clear()
 			self._resetVariables()
+		self.roadSystem = RoadSystemClass(self.road, self)
 		self.roadSystem.loadSplines(filename)
 		self.terrain = RoRTerrain(filename)
 		if self.terrain.errorSaving != "":
@@ -750,7 +752,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.cameraBookmark.loadCamera(filename)
 		
 		cfgfile = os.path.join(os.path.dirname(filename), self.terrain.TerrainConfig)
-		#fullpath = disableCustomMaterial(cfgfile)
+		
 		self.sceneManager.setWorldGeometry(cfgfile)
 		self.createWaterPlane()
 		if self.terrain.cubemap:

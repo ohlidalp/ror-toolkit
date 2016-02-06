@@ -288,8 +288,10 @@ class MainFrame(wx.Frame):
 				self.terrainOgreWin = RoRTerrainOgreWindow(self, wx.ID_ANY, rordir=self.rordir)
 				self._mgr.AddPane(self.terrainOgreWin, wx.aui.AuiPaneInfo().Name("ogre_terrain_content").CenterPane().Hide())
 
-				import ror.rorcommon
-				ror.rorcommon.initResources() # Load media
+				# Load essential media
+				import rortoolkit.resources
+				rortoolkit.resources.resource_manager_init_singleton()
+				rortoolkit.resources.resource_manager_get_singleton().load_builtin_resources()
 
 				self.terrainOgreWin.finalize_init() # Must be done after rortoolkit media were loaded
 
