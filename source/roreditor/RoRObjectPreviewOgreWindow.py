@@ -66,7 +66,6 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
 
 	def SceneInitialisation(self):
 		log().debug("SceneInitialisation")
-		initResources()
 		self.createSceneManager()
 
 	def createSceneManager(self, type="object"):

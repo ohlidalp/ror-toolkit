@@ -113,7 +113,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		return self.parent.ObjectInspector
 	
 	def getObjectTree(self):
-		return self.parent.ObjectTree
+		return self.parent._object_tree_window
 	
 	def _getMapOptions(self):
 		return self.parent.MapOptions
@@ -136,7 +136,10 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 	
 
 	def getcameraCollision(self):
-		return self._cameraCollision
+		if "_cameraCollision" in self.__dict__:
+			return self._cameraCollision
+		else: # May happen if exception is raised during startup
+			return False
 	   
 	def setcameraCollision(self, value):
 		self._cameraCollision = value
@@ -286,6 +289,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 
 	def __init__(self, parent, ID, size=wx.Size(200, 200), rordir="", maininstance=None, **kwargs): 
 		self.rordir = rordir
+		self._object_tree_window = None
 		log().debug(" Main terrain ogre window is being created")
 		self.maininstance = maininstance
 		if not maininstance is None:
@@ -296,7 +300,12 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.kwargs = kwargs
 		self.ID = ID
 		wxOgreWindow.__init__(self, self.parent, self.ID, "terrainEditor", size=self.size, **self.kwargs)
-		
+
+	def finalize_init(self):
+		"""
+		Init; must be called before object is used 
+		but after toolkit media were loaded
+		"""
 		import rortoolkit.mouse_3d 
 		self._mouse_world_transforms = rortoolkit.mouse_3d.MouseWorldTransforms(self.camera, self.renderWindow)
 
@@ -612,7 +621,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.keyPress = ogre.Vector3(0, 0, 0)
 		self.moveVector = ogre.Vector3(0, 0, 0)
 		self._cameraCollision = False
-		self._placeWithMouse = self.ObjectTree.chkMousePlacement.IsChecked()
+		self.update_mouse_placement_mode()
 		self._currentStatusMsg = ""
 		self.loadMisplacedObjects()
 		self.waterentity = None
@@ -630,7 +639,10 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.sphere = None
 		self.movingEntry = False
 		
-		
+	def update_mouse_placement_mode(self):
+		if self._object_tree_window is not None: # The 'ObjectTree' window is created later than this class.
+			self._placeWithMouse = self._object_tree_window.chkMousePlacement.IsChecked()
+
 	def loadMisplacedObjects(self):
 		file = rorSettings().concatToToolkitHomeFolder(['config', 'editorConf.txt'], True)
 		self.preLoad = {}
@@ -1532,7 +1544,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		
 		if event.MiddleDown() and self._placeWithMouse:
 			self.selected.coords.asVector3 = self.getPointedPosition(event) + ogre.Vector3(0, 0.1, 0)
-			self.addGeneralObject(self.ObjectTree.selectedfn)		
+			self.addGeneralObject(self._object_tree_window.selectedfn)		
 		
 			
 
@@ -1746,7 +1758,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			self.keyPress.x = -d
 		elif event.m_keyCode == wx.WXK_INSERT:
 			if self.selected:
-				e = self.addGeneralObject(self.ObjectTree.selectedfn)
+				e = self.addGeneralObject(self._object_tree_window.selectedfn)
 		
 		elif event.m_keyCode == wx.WXK_DELETE:
 			# delete key

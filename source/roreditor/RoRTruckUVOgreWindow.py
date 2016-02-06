@@ -72,7 +72,6 @@ class RoRTruckUVOgreWindow(wxOgreWindow):
 		pass
 
 	def SceneInitialisation(self):
-		initResources()
 	
 		#get the scenemanager
 		self.sceneManager = getOgreManager().createSceneManager(ogre.ST_GENERIC)

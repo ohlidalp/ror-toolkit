@@ -250,76 +250,11 @@ class MainFrame(wx.Frame):
 												  Hide().
 												  CloseButton(True).
 												  MaximizeButton(True))
-				#BUG: why first wxOgreWindow that is created, it is mess up when starting RoR in full screen mode ??
-			
-				# Map Preview
-				self.MapPreview = ObjectPreviewOgreWindow(self, "mapPreview")
-				self._mgr.AddPane(self.MapPreview, wx.aui.AuiPaneInfo().
-								  Name("Map_Preview").
-								  Caption("Map Preview").
-								  MinSize(wx.Size(200, 200)).
-								  CloseButton(True).
-								  MaximizeButton(False).
-								  Show(True).
-								  CenterPane())
-#				self.MapPreview.Show(False)
 
-				self.ObjectTree = RoRObjectTreeCtrl(self, title="Tree")
-				self.ObjectTree.perspective = 1
-#				self._mgr.AddPane(self.ObjectTree, wx.aui.AuiPaneInfo().
-#												  Name("object_tree").
-#												  Caption("Object Tree").
-#												  Show(True)
-#												  )
 
 				self.MapOptions = MapOptionWindow(self, title="Map Options")
 				self.MapOptions.perspective = 1						  
-				# odef editor panels
-				self.oddefEditorViewSettings = OdefViewPanel(self, title="Odef")
-				self.oddefEditorViewSettings.perspective = 2
-#				self._mgr.AddPane(self.oddefEditorViewSettings, wx.aui.AuiPaneInfo().
-#												  Name("odef_editor_view_settings").
-#												  Caption("ODef Editor View Settings").
-#												  MinSize(wx.Size(200, 100)).
-#												  Left().
-#												  CloseButton(True).
-#												  MaximizeButton(False).
-#												  Hide())
 
-#				self.sectionLine = TruckLinePanel(self)
-#				self._mgr.AddPane(self.sectionLine, wx.aui.AuiPaneInfo().
-#												  Name("sectionLine").
-#												  Caption("Section Line").
-#												  MinSize(wx.Size(400, 100)).
-#												  Bottom().
-#												  CloseButton(True).
-#												  MaximizeButton(False).
-#												  Hide()
-#												  )				
-				self.truckEditorViewSettings = TruckViewPanel(self)
-				self._mgr.AddPane(self.truckEditorViewSettings, wx.aui.AuiPaneInfo().
-												  Name("truck_editor_view_settings").
-												  Caption("Truck Editor View Settings").
-												  MinSize(wx.Size(200, 100)).
-												  Left().
-												  CloseButton(True).
-												  MaximizeButton(False).
-												  Hide())
-				# Lepes Object Inspector, only visible on RoRTerrainEditor
-				self.ObjectInspector = ObjectInspector(self, title="Inspector")
-				self.ObjectInspector.perspective = 1
-#				self._mgr.AddPane(self.ObjectInspector, wx.aui.AuiPaneInfo().
-#												  Name("object_inspector").
-#												  Caption("Object Inspector")
-#												  CloseButton(True).
-#												  MaximizeButton(False).
-#												  PinButton(True).
-##												  Float().
-#												  FloatingPosition(wx.Point(200,20)).
-#												  FloatingSize(wx.Size(240,430)).
-#												  LeftDockable().
-#												  RightDockable()
-#												  )
 				self.cameraBookmark = CameraWindow(self, title="Camera Bookmark")
 											  
 				self.cameraBookmark.perspective = 1
@@ -341,10 +276,58 @@ class MainFrame(wx.Frame):
 				self.ogreTimer.SetOwner(self)
 				self.Bind(wx.EVT_TIMER, self.onUpdateRender, self.ogreTimer)
 				self.ogreTimer.Start(25)
+
+				# Init OGRE
+				import wxogre
+				wxogre.OgreManager.getOgreManager() # Inits singleton
 				
 				# the terrain editor ogre window
+				# only_a_ptr, 02/2016: Must be the first 3D-rendering window created.
+				#                      to receive window-resize events.
+				#                      Observed on Windows 10, x64, OpenGL renderer, PyOGRE 1.7.1
 				self.terrainOgreWin = RoRTerrainOgreWindow(self, wx.ID_ANY, rordir=self.rordir)
 				self._mgr.AddPane(self.terrainOgreWin, wx.aui.AuiPaneInfo().Name("ogre_terrain_content").CenterPane().Hide())
+
+				import ror.rorcommon
+				ror.rorcommon.initResources() # Load media
+
+				self.terrainOgreWin.finalize_init() # Must be done after rortoolkit media were loaded
+
+				# odef editor panels
+				self.oddefEditorViewSettings = OdefViewPanel(self, title="Odef")
+				self.oddefEditorViewSettings.perspective = 2
+
+				self.truckEditorViewSettings = TruckViewPanel(self)
+				self._mgr.AddPane(self.truckEditorViewSettings, wx.aui.AuiPaneInfo().
+												  Name("truck_editor_view_settings").
+												  Caption("Truck Editor View Settings").
+												  MinSize(wx.Size(200, 100)).
+												  Left().
+												  CloseButton(True).
+												  MaximizeButton(False).
+												  Hide())
+				# Lepes Object Inspector, only visible on RoRTerrainEditor
+				self.ObjectInspector = ObjectInspector(self, title="Inspector")
+				self.ObjectInspector.perspective = 1
+
+
+				self.ObjectTree = RoRObjectTreeCtrl(self, title="Tree")
+				self.ObjectTree.perspective = 1
+
+				# Read mouse object placement mode from ObjectTree window
+				# The reference is passed thru main window
+				self.terrainOgreWin.update_mouse_placement_mode()
+
+				# Map Preview
+				self.MapPreview = ObjectPreviewOgreWindow(self, "mapPreview")
+				self._mgr.AddPane(self.MapPreview, wx.aui.AuiPaneInfo().
+								  Name("Map_Preview").
+								  Caption("Map Preview").
+								  MinSize(wx.Size(200, 200)).
+								  CloseButton(True).
+								  MaximizeButton(False).
+								  Show(True).
+								  CenterPane())
 
 
 				#lepesnew

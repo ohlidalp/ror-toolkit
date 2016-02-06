@@ -17,7 +17,11 @@ class wxOgreWindow(wx.PyWindow):
 		#Event bindings 
 		self.Bind(wx.EVT_CLOSE, 			self._OnCloseWindow) 
 		self.Bind(wx.EVT_ERASE_BACKGROUND, self._OnEraseBackground) 
-		self.Bind(wx.EVT_SIZE, 			 self._OnSize) 
+
+		# only_a_ptr, 02/2016: Only the first wx.PyWindow to register for this event
+		#                      will receive notifications
+		#                      Observed on Windows 10, x64, OpenGL renderer, PyOGRE 1.7.1
+		self.Bind(wx.EVT_SIZE, self._OnSize) 
 
 		#Ogre Initialisation 
 		#self.ogreRoot = getOgreManager().getRoot()
@@ -42,9 +46,8 @@ class wxOgreWindow(wx.PyWindow):
 		@return: none
 		"""
 		try:
-			if getattr(self, 'ogreRoot', None): 
-				self.renderWindow.windowMovedOrResized() 
-			event.Skip() 
+			self.renderWindow.windowMovedOrResized()
+			event.Skip()
 		except:
 			pass
 

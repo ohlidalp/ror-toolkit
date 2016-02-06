@@ -121,7 +121,6 @@ class RoRTruckOgreWindow(wxOgre3D):
 		pass
 
 	def SceneInitialisation(self):
-		initResources()
 
 		#get the scenemanager
 		if self.sceneManager is None:
