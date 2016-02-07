@@ -92,9 +92,13 @@ class MainFrame(wx.Frame):
 															wx.CLIP_CHILDREN):
 
 				wx.Frame.__init__(self, parent, id, title, pos, size, style)
-				self._gui_panels = {
-					"terrain_project_manager_window" : None
-				}
+
+				# Create application class
+				# TODO: Application should manage MainFrame, not the other way around!!
+				import rortoolkit.app
+				self.application = rortoolkit.app.Application()
+				self.application.init_set_main_frame(self)
+
 				self.lastFilenameUsed = ""
 				# tell FrameManager to manage this frame		
 				self._mgr = wx.aui.AuiManager()
@@ -762,13 +766,7 @@ class MainFrame(wx.Frame):
 				return wx.Point(pt.x + x, pt.y + x)
 
 		def OnFileMenuOpenTerrainProject(self, event):
-			window = self._gui_panels["terrain_project_manager_window"]
-			if window is None:
-				import rortoolkit.gui
-				window = rortoolkit.gui.TerrainProjectManagerPanel(self)
-				self._gui_panels["terrain_project_manager_window"] = window
-			# TODO: Load projects
-			window.Show()
+			self.application.open_terrain_projects_window()
 
 		def MessageBox(self, type='info', text="",
 					   doc=""" Show a MessageBox to the user with the Text  

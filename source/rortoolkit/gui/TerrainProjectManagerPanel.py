@@ -4,7 +4,7 @@ import wx
 _bg_color = wx.Color(254, 184, 0) # Default orange. TODO: Make properly configurable
 
 class TerrainProjectManagerPanel(wx.Frame):
-	def __init__(self, parent, **kwargs):
+	def __init__(self, parent, app, **kwargs):
 		# Setup wxPython window
 		styles = wx.DEFAULT_FRAME_STYLE | wx.FRAME_TOOL_WINDOW | wx.FRAME_NO_TASKBAR | wx.FRAME_FLOAT_ON_PARENT
 		title = "Terrain projects"
@@ -12,7 +12,7 @@ class TerrainProjectManagerPanel(wx.Frame):
 		self.SetBackgroundColour(_bg_color)
 		self.Bind(wx.EVT_CLOSE, self._on_close_window)
 
-		self._parent = parent
+		self._application = app
 
 		grid = wx.GridBagSizer(2, 2)
 		grid.SetEmptyCellSize(wx.Size(110, 3))
