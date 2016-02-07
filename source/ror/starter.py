@@ -59,8 +59,8 @@ def startApp(MainApp):
 	### The startup settings dialog
 	
 	# Create dialog, setup callbacks
-	import rortoolkit.gui_panels
-	conf_dialog = rortoolkit.gui_panels.StartupSettingsDialog(MainApp, -1, "")
+	import rortoolkit.gui
+	conf_dialog = rortoolkit.gui.StartupSettingsDialog(MainApp, -1, "")
 	conf_dialog.set_callback_installdir_updated(callback_installdir_updated)
 	conf_dialog.set_callback_renderer_selected(callback_renderer_selected)
 	conf_dialog.set_callback_homedir_selected(callback_homedir_selected)

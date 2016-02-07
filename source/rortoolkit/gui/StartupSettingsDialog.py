@@ -43,8 +43,8 @@ class StartupSettingsDialog(wx.Dialog):
 		c = 0 # column
 
 		# Banner image
-		import rortoolkit.gui_widgets
-		banner = rortoolkit.gui_widgets.ImagePanelWidget(self, wx.ID_ANY, banner_image_path)
+		import rortoolkit.gui
+		banner = rortoolkit.gui.ImagePanelWidget(self, wx.ID_ANY, banner_image_path)
 		grid.Add(banner, pos = wx.GBPosition(r,c), span = wx.GBSpan(3, 3))
 
 		# Step1 (RoR installdir): Bullet point

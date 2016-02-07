@@ -136,8 +136,14 @@
     <Compile Include="source\roreditor\TruckPanel.py" />
     <Compile Include="source\roreditor\__init__.py" />
     <Compile Include="source\rortoolkit\exceptions.py" />
-    <Compile Include="source\rortoolkit\gui_panels.py" />
-    <Compile Include="source\rortoolkit\gui_widgets.py" />
+    <Compile Include="source\rortoolkit\gui\StartupSettingsDialog.py" />
+    <Compile Include="source\rortoolkit\gui\ImagePanelWidget.py" />
+    <Compile Include="source\rortoolkit\gui\TerrainProjectManagerPanel.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="source\rortoolkit\gui\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="source\rortoolkit\mouse_3d.py" />
     <Compile Include="source\rortoolkit\resources.py">
       <SubType>Code</SubType>
@@ -232,6 +238,7 @@
     <Folder Include="source\ror" />
     <Folder Include="source\roreditor" />
     <Folder Include="source\rortoolkit" />
+    <Folder Include="source\rortoolkit\gui\" />
     <Folder Include="source\ror\depcheckerplugins" />
     <Folder Include="source\wxogre" />
     <Folder Include="tools" />

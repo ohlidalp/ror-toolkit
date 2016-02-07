@@ -56,7 +56,7 @@ import wx.aui
 import cStringIO
 from subprocess import *
 
-ID_OpenTerrain = wx.NewId()
+ID_OpenTerrainProject = wx.NewId()
 ID_SaveTerrain = wx.NewId()
 ID_SaveTerrainAs = wx.NewId()
 ID_AddObject = wx.NewId()
@@ -92,7 +92,9 @@ class MainFrame(wx.Frame):
 															wx.CLIP_CHILDREN):
 
 				wx.Frame.__init__(self, parent, id, title, pos, size, style)
-				log().debug("MainFrame.__init__  started")
+				self._gui_panels = {
+					"terrain_project_manager_window" : None
+				}
 				self.lastFilenameUsed = ""
 				# tell FrameManager to manage this frame		
 				self._mgr = wx.aui.AuiManager()
@@ -106,7 +108,7 @@ class MainFrame(wx.Frame):
 				self.ConfigureSkin()
 				# Lepes: move starter here since rorSettings needs a MainApp launched
 				# before retrieving paths due wx.StandardPaths module
-				import ror.rorcommon		
+				import ror.rorcommon
 				if not ror.rorcommon.checkRoRDirectory():
 					import ror.starter
 					log().debug("First time Toolkit is running.")
@@ -125,10 +127,12 @@ class MainFrame(wx.Frame):
 					self.SetDimensions(0, 0, 800, 600)
 				self.newMyTheme = ArtManager.Get().AddMenuTheme(FM_MyRenderer())
 				ArtManager.Get().SetMenuTheme(self.newMyTheme)
+
+				# [File] menu
 				file_menu = FM.FlatMenu()
-				#file_menu.Append(ID_OpenTerrain, "Open Terrain")
+				open_map_item = FM.FlatMenuItem(file_menu, ID_OpenTerrainProject, "Open terrain project", "", wx.ITEM_NORMAL)
+				file_menu.AppendItem(open_map_item)
 				file_menu.AppendItem(FM.FlatMenuItem(file_menu, wx.ID_EXIT, "Exit", "", wx.ITEM_NORMAL))
-				#view_menu = wx.Menu()
 
 				self.managerInit()
 				options_menu = FM.FlatMenu()
@@ -408,8 +412,9 @@ class MainFrame(wx.Frame):
 				self.Bind(wx.EVT_SIZE, self.OnSize)
 				self.Bind(wx.EVT_CLOSE, self.OnClose)
 
+				self.Bind(wx.EVT_MENU, self.OnFileMenuOpenTerrainProject, id=ID_OpenTerrainProject)
 				self.Bind(wx.EVT_MENU, self.OnSaveTerrain, id=ID_SaveTerrain)
-				self.Bind(wx.EVT_MENU, self.OnSaveTerrainAs, id=ID_SaveTerrainAs)				
+				self.Bind(wx.EVT_MENU, self.OnSaveTerrainAs, id=ID_SaveTerrainAs)
 				self.Bind(wx.EVT_MENU, self.OnViewHelp, id=ID_ViewHelp)
 				self.Bind(wx.EVT_MENU, self.OnmodTool, id=ID_ModTool)
 
@@ -755,6 +760,15 @@ class MainFrame(wx.Frame):
 				pt = self.ClientToScreen(wx.Point(0, 0))
 				
 				return wx.Point(pt.x + x, pt.y + x)
+
+		def OnFileMenuOpenTerrainProject(self, event):
+			window = self._gui_panels["terrain_project_manager_window"]
+			if window is None:
+				import rortoolkit.gui
+				window = rortoolkit.gui.TerrainProjectManagerPanel(self)
+				self._gui_panels["terrain_project_manager_window"] = window
+			# TODO: Load projects
+			window.Show()
 
 		def MessageBox(self, type='info', text="",
 					   doc=""" Show a MessageBox to the user with the Text  
