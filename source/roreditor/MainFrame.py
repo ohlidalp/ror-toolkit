@@ -264,20 +264,25 @@ class MainFrame(wx.Frame):
 				self.MapOptions.perspective = 1						  
 
 				self.cameraBookmark = CameraWindow(self, title="Camera Bookmark")
-											  
+
 				self.cameraBookmark.perspective = 1
+
 				self.tbbuttons = [] #[ {'id' :ID, 'label': string, 'window' : ShapedWindow_instance} ]
+				def add_toolbar_button(self, window):
+					label = window.title
+					window_id = wx.NewId()
+					bitmap = getBitmap(label)
+					buttonidx = self.terraintoolbar.AddTool(window_id, label, bitmap1=bitmap, bitmap2=bitmap, kind=wx.ITEM_CHECK)
+					self.Bind(wx.EVT_MENU, self.on_toolbar_button_click, id=window_id)
+					self.tbbuttons.append({'id' : window_id, 'label': label, 'window': window, 'perspective' : w.perspective, 'buttonidx': buttonidx})
+					
 				#create toolbarButtons for shaped windows
+				# TODO: Don't rely on window iteration + isinstance(), use actual references!! ~ only_a_ptr 2016/02
 				for w in wx.GetTopLevelWindows():
 					if isinstance(w, ShapedWindow):
-						label = w.title
-						id = wx.NewId()
-						
-						buttonidx = self.terraintoolbar.AddTool(id, label, bitmap1=getBitmap(label), bitmap2=getBitmap(label), kind=wx.ITEM_CHECK)						
-						self.Bind(wx.EVT_MENU, self.OnToolbarButtonClick, id=id)
+						add_toolbar_button(self, w)
 						w.Hide()
-						self.tbbuttons.append({'id' : id, 'label': label, 'window': w, 'perspective' : w.perspective, 'buttonidx': buttonidx})
-												  
+
 				#  create the center pane(s)
 				#Timer creation  (for rendering)
 				self.ogreTimer = wx.Timer() 
@@ -320,9 +325,9 @@ class MainFrame(wx.Frame):
 				self.ObjectInspector = ObjectInspector(self, title="Inspector")
 				self.ObjectInspector.perspective = 1
 
-
 				self.ObjectTree = RoRObjectTreeCtrl(self, title="Tree")
 				self.ObjectTree.perspective = 1
+				add_toolbar_button(self, self.ObjectTree)
 
 				# Read mouse object placement mode from ObjectTree window
 				# The reference is passed thru main window
@@ -466,14 +471,22 @@ class MainFrame(wx.Frame):
 			self.terrainOgreWin.selected.paste()
 			evt.Skip()
 			
-		def OnToolbarButtonClick(self, evt):
-			id = evt.GetId()
-			idx = list_has_value(self.tbbuttons, 'id', id)
+		def on_toolbar_button_click(self, evt):
+			window_id = evt.GetId()
+			idx = list_has_value(self.tbbuttons, 'id', window_id)
 			if idx > -1:
-				if self.tbbuttons[idx]['window'].IsShown(): 
-					self.tbbuttons[idx]['window'].Hide()
-				else: 	self.tbbuttons[idx]['window'].Show(True)
-			
+				window = self.tbbuttons[idx]['window']
+				if window.IsShown():
+					window.Hide()
+				else:
+					window.Show(True)
+
+		def hide_all_toolbar_windows(self):
+			# TODO: Toggle button states!
+			for tb_button in self.tbbuttons:
+				window = tb_button["window"]
+				window.Hide()
+		
 		def OnfindObject(self, evt):
 			dlg = wx.TextEntryDialog(
 							self, 'Enter position you want go separate by comma',
@@ -519,12 +532,13 @@ class MainFrame(wx.Frame):
 		
 
 		def hideAllPanes(self):
-			""" hide all _mgr Panes
+			""" 
+			hide all _mgr Panes
 			"""
-			all_panes = self._mgr.GetAllPanes()	   
+			all_panes = self._mgr.GetAllPanes()
 			for ii in xrange(len(all_panes)):
 					if not all_panes[ii].IsToolbar():
-							all_panes[ii].Hide()				
+							all_panes[ii].Hide()
 			
 		
 		def OnStickTo02Click(self,
@@ -790,7 +804,6 @@ class MainFrame(wx.Frame):
 			dlg = wx.MessageDialog(self, text, caption, flags)
 			dlg.ShowModal()
 			dlg.Destroy()
-
 	
 		def _getlastFilenameUsed(self):
 			return self._lastFilenameUsed
