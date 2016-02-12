@@ -304,7 +304,10 @@ class MainFrame(wx.Frame):
 				# Load essential media
 				import rortoolkit.resources
 				rortoolkit.resources.resource_manager_init_singleton()
-				rortoolkit.resources.resource_manager_get_singleton().load_builtin_resources()
+				resource_mgr = rortoolkit.resources.resource_manager_get_singleton()
+				resource_mgr.load_builtin_resources()
+				resource_mgr.scan_for_available_resources()
+				
 
 				self.terrainOgreWin.finalize_init() # Must be done after rortoolkit media were loaded
 

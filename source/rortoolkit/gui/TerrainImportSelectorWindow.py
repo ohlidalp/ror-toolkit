@@ -70,7 +70,7 @@ class TerrainImportSelectorWindow(wx.Frame):
 	def assign_terrains(self, terrn_list):
 		import os.path
 		for terrn_filename in terrn_list:
-			self._selector.AppendItem(self._tree_root, terrn_filename)
+			self._tree.AppendItem(self._tree_root, terrn_filename)
 
 	def _cancel_import(self):
 		self.Hide()

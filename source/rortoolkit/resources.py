@@ -20,7 +20,7 @@ def resource_manager_init_singleton():
 		pick which ones to import to current project.
 		"""
 		def __init__(self):
-			self._available_resources = {} # Key = group, Val = tuple (type, filepath)
+			self._available_resources = {} # Key = group, Val = dict {path, type(FileSystem/Zip)}
 			self._initialized_groups = [] # List of OGRE resource group names
 
 		def load_builtin_resources(self):
@@ -45,6 +45,7 @@ def resource_manager_init_singleton():
 			Adds found res. locations to internal list, doesn't touch OGRE
 			"""
 			config_mgr = ror.rorcommon.rorSettings()
+			import os
 			import os.path
 
 			homedir_scan_dirnames = ["packs", "terrains", "vehicles"]
@@ -56,7 +57,7 @@ def resource_manager_init_singleton():
 				dir_path = os.path.normpath(dir_path)
 				filenames = os.listdir(dir_path);
 				for filename in filenames:
-					filepath = os.path.normpath(path.join(dir_path, filename))
+					filepath = os.path.normpath(os.path.join(dir_path, filename))
 					self._check_and_add_resource_location(dirname, filepath)
 
 		def _check_and_add_resource_location(self, group_name, filepath):
@@ -64,12 +65,14 @@ def resource_manager_init_singleton():
 			Adds res. location to internal list, doesn't touch OGRE
 			:returns: True if added
 			"""
+			import os.path
+
 			if (os.path.isdir(filepath)):
 				self._add_resource(group_name, filepath, "FileSystem")
 				return True
 			elif (os.path.isfile(filepath)):
 				# TODO: Check zipfile validity
-				is_zipfile = filename[-4:] == ".zip"
+				is_zipfile = filepath[-4:] == ".zip"
 				if is_zipfile:
 					self._add_resource(group_name, filepath, "Zip")
 					return True
@@ -80,18 +83,20 @@ def resource_manager_init_singleton():
 			"""
 			Adds res. location to internal list, doesn't touch OGRE
 			"""
-			if group_name not in self._available_resources:
-				self._available_resources[group_name] = []
 			entry = {
 				"type": type,
 				"path": path
 			}
+
+			if group_name not in self._available_resources:
+				self._available_resources[group_name] = []
 			self._available_resources[group_name].append(entry)
 
 		def _add_ogre_resource_group(self, groupname, itemlist):
 			ogre_res_mgr = OGRE.ResourceGroupManager.getSingleton()
 			for item in itemlist:
 				ogre_res_mgr.addResourceLocation(item["path"], item["type"], groupname)
+			ogre_res_mgr.initialiseResourceGroup(groupname)
 			self._initialized_groups.append(groupname)
 
 		def init_all_known_resources(self):
@@ -99,18 +104,25 @@ def resource_manager_init_singleton():
 				group_entries = self._available_resources[group_key]
 				group_name = "AllRes_" + group_key
 				self._add_ogre_resource_group(group_name, group_entries)
-				del self._available_resources[group_key]
+			self._available_resources = {}
 
 		def search_importable_terrains(self):
 			"""
 			:returns: List of filenames
 			"""
-			all_files = []
+			# Search
+			all_fileinfos = []
 			ogre_res_mgr = OGRE.ResourceGroupManager.getSingleton()
 			for group_name in self._initialized_groups:
-				files = ogre_res_mgr.findResourceFileInfo(group_name, ["*.terrn", "*.terrn2"])
-				all_files.append(files)
-			return all_files
+				terrn_files = ogre_res_mgr.findResourceFileInfo(group_name, "*.terrn")
+				terrn2_files = ogre_res_mgr.findResourceFileInfo(group_name, "*.terrn2")
+				all_fileinfos.extend(terrn_files)
+				all_fileinfos.extend(terrn2_files)
+			# Return list of filenames
+			all_filenames = []
+			for fileinfo in all_fileinfos:
+				all_filenames.append(fileinfo.filename)
+			return all_filenames
 
 	_resource_manager_singleton = ResourceManager()
 

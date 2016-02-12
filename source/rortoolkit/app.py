@@ -66,7 +66,8 @@ class Application:
 		res_mgr = rortoolkit.resources.resource_manager_get_singleton()
 		res_mgr.init_all_known_resources() # This inits OGRE resource groups
 		# Search for terrains
-		window.assign_terrains(res_mgr.search_importable_terrains())
+		terrns = res_mgr.search_importable_terrains()
+		window.assign_terrains(terrns)
 		# Callbacks
 		def cancel_import_fn():
 			self.enter_mode(AppMode.MAIN_MENU)
