@@ -20,7 +20,8 @@ def resource_manager_init_singleton():
 		pick which ones to import to current project.
 		"""
 		def __init__(self):
-			self._available_resources = {} # Key = group, Val = filepath
+			self._available_resources = {} # Key = group, Val = tuple (type, filepath)
+			self._initialized_groups = [] # List of OGRE resource group names
 
 		def load_builtin_resources(self):
 			# aabb offset setup to zero
@@ -64,24 +65,52 @@ def resource_manager_init_singleton():
 			:returns: True if added
 			"""
 			if (os.path.isdir(filepath)):
-				self._add_resource(group_name, filepath)
+				self._add_resource(group_name, filepath, "FileSystem")
 				return True
 			elif (os.path.isfile(filepath)):
 				# TODO: Check zipfile validity
 				is_zipfile = filename[-4:] == ".zip"
 				if is_zipfile:
-					self._add_resource(group_name, filepath)
+					self._add_resource(group_name, filepath, "Zip")
 					return True
 			else:
 				return False
 		
-		def _add_resource(self, group_name, path):
+		def _add_resource(self, group_name, path, type):
 			"""
 			Adds res. location to internal list, doesn't touch OGRE
 			"""
 			if group_name not in self._available_resources:
 				self._available_resources[group_name] = []
-			self._available_resources[group_name].append(path)
+			entry = {
+				"type": type,
+				"path": path
+			}
+			self._available_resources[group_name].append(entry)
+
+		def _add_ogre_resource_group(self, groupname, itemlist):
+			ogre_res_mgr = OGRE.ResourceGroupManager.getSingleton()
+			for item in itemlist:
+				ogre_res_mgr.addResourceLocation(item["path"], item["type"], groupname)
+			self._initialized_groups.append(groupname)
+
+		def init_all_known_resources(self):
+			for group_key in self._available_resources:
+				group_entries = self._available_resources[group_key]
+				group_name = "AllRes_" + group_key
+				self._add_ogre_resource_group(group_name, group_entries)
+				del self._available_resources[group_key]
+
+		def search_importable_terrains(self):
+			"""
+			:returns: List of filenames
+			"""
+			all_files = []
+			ogre_res_mgr = OGRE.ResourceGroupManager.getSingleton()
+			for group_name in self._initialized_groups:
+				files = ogre_res_mgr.findResourceFileInfo(group_name, ["*.terrn", "*.terrn2"])
+				all_files.append(files)
+			return all_files
 
 	_resource_manager_singleton = ResourceManager()
 

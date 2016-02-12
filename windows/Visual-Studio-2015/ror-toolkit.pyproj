@@ -141,6 +141,9 @@
     <Compile Include="source\rortoolkit\exceptions.py" />
     <Compile Include="source\rortoolkit\gui\StartupSettingsDialog.py" />
     <Compile Include="source\rortoolkit\gui\ImagePanelWidget.py" />
+    <Compile Include="source\rortoolkit\gui\TerrainImportSelectorWindow.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="source\rortoolkit\gui\TerrainProjectManagerPanel.py">
       <SubType>Code</SubType>
     </Compile>

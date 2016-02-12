@@ -13,6 +13,7 @@ class TerrainProjectManagerPanel(wx.Frame):
 		self.Bind(wx.EVT_CLOSE, self._on_close_window)
 
 		self._application = app
+		self.callback_import_button_pressed = None
 
 		grid = wx.GridBagSizer(2, 2)
 		grid.SetEmptyCellSize(wx.Size(110, 3))
@@ -53,7 +54,9 @@ class TerrainProjectManagerPanel(wx.Frame):
 		self.SetSizerAndFit(grid)
 	
 	def _on_import_button_pressed(self, event):
-		pass # TODO
+		if self.callback_import_button_pressed is not None:
+			fn = self.callback_import_button_pressed
+			fn()
 
 	def _on_open_button_pressed(self, event):
 		pass # TODO
@@ -61,4 +64,5 @@ class TerrainProjectManagerPanel(wx.Frame):
 	def _on_close_window(self, event):
 		event.Veto() # Don't destroy the window!
 		self.Hide()
+
 
