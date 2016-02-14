@@ -1,25 +1,27 @@
 
-#Lepes: various updates to this file. 
-# latest update date: 21 feb 2009
-# 
+# terrainparser.py
+# ----------------
+# Terrain editor context data objects
+
+#Authors:
+# Thomas Fischer: original author
+# Lepes:          various updates
+# only_a_ptr:     2016's reboot
  
 
-import wx, os, os.path, copy
-import ogre.renderer.OGRE as ogre
-from logger import log
-from settingsManager import *
+from ror.logger import log
+from ror.settingsManager import *
 from ror.rorcommon import *
-from lputils import *
+from ror.lputils import *
 from roreditor.RoRConstants import *
 
 from types import *
-#from ogre.renderer.OGRE._ogre_ import *
 
 strErrors = "Errors: \n"
 noRotateObjects = ['truck', 'load', 'machine', 'airplane', 'boat', 'fixed']
 noRotateExt = ['.truck', '.load', '.machine', '.airplane', '.boat', '.fixed']
 
-class Object(object):
+class EditorObject(object):
 # Lepes: those variables are initialized with the module instantiation instead of the object instance 
 #		 so they are moved to __init__ method :-|
 #	x = None
@@ -139,6 +141,7 @@ class Object(object):
 		""" can receive:  
 		chapel.odef
 		wrecker.truck """
+		import os.path
 		self.barename, self.ext = os.path.splitext(os.path.basename(value))
 		self.name = self.barename 
 		# only filename with ext (without path) 
@@ -175,7 +178,9 @@ class Object(object):
 	def logPosRot(self, text):
 		log().info(self.vector(text))
 
-class RoRTerrain(object):
+class TerrainEditorContext(object):
+
+	from __builtin__ import staticmethod
 
 	def geterrorSaving(self):
 		return self._errorSaving
@@ -191,23 +196,87 @@ class RoRTerrain(object):
 	errorSaving = property(geterrorSaving, seterrorSaving,
 				 doc="string error with errors while saving")   
 
-	def __init__(self, filename):
-#		self.clear()
-		self.initVariables()
-		self.filename = filename
-		self.name = os.path.split(filename)[1].split(".")[0]
-		self._errorSaving = ""
+	def __init__(self):
+		"""
+		Dummy constructor. Does nothing.
+		"""
+		pass
+
+	@staticmethod
+	def create_from_file(filename):
+		"""
+		Classic constructor. Builds the terrain from .terrn file
+		Since 2016 used only for .terrn import.
+		"""
+		object = TerrainEditorContext()
+		object.initVariables()
+		object.filename = filename
+		import os.path
+		object.name = os.path.split(filename)[1].split(".")[0]
+		object._errorSaving = ""
 		content = loadResourceFile(filename)
 		log().info("processing terrain file: %s" % filename)
 		if len(content) > 2:
-			self.processTerrnFile(content)
-			self.getTerrainSize(self.TerrainConfig)
+			object.processTerrnFile(content)
+			object.getTerrainSize(object.TerrainConfig)
 		else:
 			log().error("valid terrain must have at least 3 lines")
 		log().info("processing of terrain finished!")
+		return object
+
+	@staticmethod
+	def create_from_project(project):
+		pass # WIP
+		#self = RoRTerrain()
+		# ......
+
+	def export_project(self):
+		"""
+		:returns: instance of TerrainProject
+		"""
+		pass # WIP
+
+#		import rortoolkit.terrain
+#		proj = rortoolkit.terrain.TerrainProject()
+#
+#		proj.spawn_pos_truck_xyz     = self.TruckStartPosition.asList
+#		proj.spawn_pos_camera_xyz    = self.CameraStartPosition.asList
+#		proj.spawn_pos_character_xyz = self.CharacterStartPosition.asList
+#		# Objects
+#		for obj_in in self.objects:
+#			obj_out = rortoolkit.terrain.TerrainObject()
+#			obj_out.position_xyz = o1.position
+#			obj_out.rotation_matrix = None # Primary method
+#			obj_out.rotation_xyz = None # Compatibility method
+#			obj_out.qualifier_str = None # Terrn feature
+#			obj_out.location_name_str = None # Terrn feature
+#			
+#
+#		self.objects = []
+#		self.beamobjs = [] # lepes: bug found, this line was missing so it loaded twice  // author and the following lines !!
+#		self.procroads = []
+#		# only filename with extension
+#		self.filename = ''
+#		# name is filename without extension, useful for launching RoR command line
+#		self.name = ''
+#		self.TerrainConfig = ''
+#		#name to show on Menu
+#		self.TerrainName = ''
+#	
+#		self.UsingCaelum = False
+#		self.WaterHeight = None
+#		self.SkyColor = None
+#		self.SkyColorLine = None
+#		self.worldX = None
+#		self.worldZ = None
+#		self.worldMaxY = None
+#		self.author = []
+#		self.cubemap = None	
+
+
 	def initVariables(self):
-		self.TruckStartPosition = 	 positionClass()
-		self.CameraStartPosition = 	positionClass()
+		self.TruckStartPosition     = positionClass()
+		self.CameraStartPosition    = positionClass()
 		self.CharacterStartPosition = positionClass()
 
 #	def clear(self):
@@ -410,7 +479,7 @@ class RoRTerrain(object):
 			# truck wrecker.truck	
 			if objname[0].lower() in noRotateObjects and len(objname) > 1:
 				#print "truck"
-				truck = Object()
+				truck = EditorObject()
 				truck.line = i
 				truck.isBeam = True
 				truck.fileWithExt = objname[1]
@@ -427,7 +496,7 @@ class RoRTerrain(object):
 			
 			#print "object"
 			# now it can just be an static object
-			obj = Object()
+			obj = EditorObject()
 			obj.line = i
 			
 			#check section 7-2 Terrn_file_description

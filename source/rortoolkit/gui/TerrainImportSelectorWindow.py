@@ -20,8 +20,9 @@ class TerrainImportSelectorWindow(wx.Frame):
 		self.Bind(wx.EVT_CLOSE, self._on_close_window)
 
 		self._application = app
-		self.callback_terrn_import = None
-		self.callback_cancel = None
+		self._selected_filename = None
+		self.callback_perform_import = None
+		self.callback_cancel_import = None
 
 		grid = wx.GridBagSizer(2, 2)
 		grid.SetEmptyCellSize(wx.Size(110, 3))
@@ -33,15 +34,16 @@ class TerrainImportSelectorWindow(wx.Frame):
 		grid.AddSpacer(spacer_size, (row,2)) # Col 2
 
 		row += 1
-		lbl_style = wx.ST_NO_AUTORESIZE | wx.TRANSPARENT_WINDOW
-		lbl_text = "Searching for terrains..."
-		self._status_text_label = wx.StaticText(self, -1, lbl_text, size=wx.Size(0, 20), style=lbl_style)
+		lbl_text = "Searching..."
+		self._status_text_label = wx.StaticText(self, -1, lbl_text, size=wx.Size(0, 20))
 		grid.Add(self._status_text_label, pos=wx.GBPosition(row, 1))
 
 		# Project selector
 		# TODO: Use a better suited component
 		row += 1
-		self._tree = wx.TreeCtrl(self, -1, size=(265, 360), style=wx.NO_BORDER | wx.TR_HIDE_ROOT)
+		tree_id = wx.NewId()
+		self._tree = wx.TreeCtrl(self, tree_id, size=(265, 360), style=wx.NO_BORDER | wx.TR_HIDE_ROOT)
+		self.Bind(wx.EVT_TREE_SEL_CHANGED, self._on_tree_item_selected, self._tree)
 		grid.Add(self._tree, pos=wx.GBPosition(row, 1))
 		self._tree_root = self._tree.AddRoot("Terrains")
 
@@ -74,12 +76,14 @@ class TerrainImportSelectorWindow(wx.Frame):
 
 	def _cancel_import(self):
 		self.Hide()
-		if self.callback_cancel is not None:
-			fn = self.callback_cancel
+		if self.callback_cancel_import is not None:
+			fn = self.callback_cancel_import
 			fn()
 	
 	def _on_import_button_pressed(self, event):
-		pass # TODO
+		if self.callback_perform_import is not None:
+			fn = self.callback_perform_import
+			fn(self._selected_filename)
 
 	def _on_cancel_button_pressed(self, event):
 		self._cancel_import()
@@ -87,5 +91,12 @@ class TerrainImportSelectorWindow(wx.Frame):
 	def _on_close_window(self, event):
 		event.Veto() # Don't destroy the window!
 		self._cancel_import()
+
+	def _on_tree_item_selected(self, event):
+		self._import_terrn_button.Enable()
+		item_id = event.GetItem()
+		item_text = self._tree.GetItemText(item_id)
+		self._selected_filename = item_text
+		self.set_status_text("Selected: " + item_text)
 
 

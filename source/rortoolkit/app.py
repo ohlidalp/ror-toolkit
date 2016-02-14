@@ -9,6 +9,7 @@ class AppMode:
 	"""
 	MAIN_MENU             = 0
 	TERRAIN_IMPORT_SEARCH = 1
+	TERRAIN_EDITOR        = 2
 
 class Application:
 	"""
@@ -61,7 +62,7 @@ class Application:
 			main_frame = self._gui_panels["main_frame"]
 			window = rortoolkit.gui.TerrainImportSelectorWindow(main_frame, self)
 			self._gui_panels["terrain_import_selector_window"] = window
-		window.set_status_text("Searching for terrains...")
+		window.Show()
 		# Init resources
 		res_mgr = rortoolkit.resources.resource_manager_get_singleton()
 		res_mgr.init_all_known_resources() # This inits OGRE resource groups
@@ -71,8 +72,11 @@ class Application:
 		# Callbacks
 		def cancel_import_fn():
 			self.enter_mode(AppMode.MAIN_MENU)
-		window.callback_cancel = cancel_import_fn
-		window.Show()
+		def perform_import_fn(filename):
+			self._import_terrn(filename)
+		window.callback_cancel_import = cancel_import_fn
+		window.callback_perform_import = perform_import_fn
+		window.set_status_text("Found " + str(len(terrns)) + " terrains")
 
 	def _hide_all_windows(self):
 		# Hide toolbar windows
@@ -81,3 +85,15 @@ class Application:
 		for window in self._gui_panels.values():
 			if window is not None:
 				window.Hide()
+
+	def _import_terrn(self, filename):
+		"""
+		Imports .terrn and switches app to TERRAIN_EDITOR mode.
+		"""
+		# Switch app state
+		self._mode = AppMode.TERRAIN_EDITOR
+		self._gui_panels["main_frame"].Show()
+		self._gui_panels["terrain_import_selector_window"].Hide()
+
+		# Fire legacy loading code
+		self._gui_panels["main_frame"].openTerrain(filename)

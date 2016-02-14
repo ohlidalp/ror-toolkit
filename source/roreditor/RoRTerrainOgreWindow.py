@@ -343,7 +343,8 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			n.node = parentNode.createChildSceneNode(suffix + str(n.uuid) + "node")
 		n.entity = self.smNewEntity(suffix + str(n.uuid) + "Entity", strMeshName)
 		if bCreateData:
-			n.data = Object()
+			import rortoolkit.terrain
+			n.data = rortoolkit.terrain.EditorObject()
 		if strMaterialName:
 			n.entity.setMaterialName(strMaterialName)
 		n.node.attachObject(n.entity)
@@ -745,7 +746,8 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			self._resetVariables()
 		self.roadSystem = RoadSystemClass(self.road, self)
 		self.roadSystem.loadSplines(filename)
-		self.terrain = RoRTerrain(filename)
+		import rortoolkit.terrain
+		self.terrain = rortoolkit.terrain.TerrainEditorContext.create_from_file(filename)
 		if self.terrain.errorSaving != "":
 			showInfo("info", "terrain loaded with the following error:\n" + self.terrain.errorSaving)
 		
@@ -935,7 +937,8 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			return None
 		
 		if data is None:
-			data = Object()
+			import rortoolkit.terrain
+			data = rortoolkit.terrain.EditorObject()
 			data.fileWithExt = os.path.basename(odefFilename)
 			if not self.raceMode:
 				self.terrain.objects.append(data)
@@ -1064,7 +1067,8 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			return None
 
 		if data is None:
-			data = Object()
+			import rortoolkit.terrain
+			data = rortoolkit.terrain.EditorObject()
 			# insert load/truck/machine
 			data.fileWithExt = os.path.basename(truckFilename)
 		else:

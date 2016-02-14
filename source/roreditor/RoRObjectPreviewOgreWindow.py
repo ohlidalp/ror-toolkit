@@ -169,18 +169,6 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
 				self.free()
 				self.createSceneManager("object")
 				self.loadmesh(filename, uuid)
-			elif extension.lower() in [".terrn"]:
-				self.free()
-				self.createSceneManager("terrain")
-				terrain = RoRTerrain(filename)
-				cfgfile = os.path.join(os.path.dirname(filename), terrain.TerrainConfig)
-				self.objnode = self.sceneManager.getRootSceneNode().createChildSceneNode(uuid + "objnode")
-				(x, z) = self.getTerrainSize(cfgfile)
-				self.terrainsize = (x, z)
-				print "terrain size: ", x, z
-				self.objnode.setPosition(x / 2, 0, z / 2)
-				self.sceneManager.setWorldGeometry(cfgfile)
-				del terrain
 		except:
 			self.free()
 			raise 

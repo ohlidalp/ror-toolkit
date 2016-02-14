@@ -58,7 +58,17 @@ def resource_manager_init_singleton():
 				filenames = os.listdir(dir_path);
 				for filename in filenames:
 					filepath = os.path.normpath(os.path.join(dir_path, filename))
-					self._check_and_add_resource_location(dirname, filepath)
+					res_grp_name = "homedir_" + dirname
+					self._check_and_add_resource_location(res_grp_name, filepath)
+
+			installdir_zips = ["materials.zip", "meshes.zip", "textures.zip"]
+
+			# Add zips under installation dir
+			resources_dir = os.path.normpath( os.path.join(config_mgr.rorFolder, "resources") )
+			for zipfile in installdir_zips:
+				zip_path = os.path.join(resources_dir, zipfile)
+				res_grp_name = "installdir_" + zipfile
+				self._check_and_add_resource_location(res_grp_name, zip_path)
 
 		def _check_and_add_resource_location(self, group_name, filepath):
 			"""
@@ -102,8 +112,7 @@ def resource_manager_init_singleton():
 		def init_all_known_resources(self):
 			for group_key in self._available_resources:
 				group_entries = self._available_resources[group_key]
-				group_name = "AllRes_" + group_key
-				self._add_ogre_resource_group(group_name, group_entries)
+				self._add_ogre_resource_group(group_key, group_entries)
 			self._available_resources = {}
 
 		def search_importable_terrains(self):

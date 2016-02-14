@@ -155,6 +155,12 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="source\rortoolkit\sys_utils.py" />
+    <Compile Include="source\rortoolkit\terrain\project.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="source\rortoolkit\terrain\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="source\rortoolkit\__init__.py" />
     <Compile Include="source\ror\bugreport.py" />
     <Compile Include="source\ror\camera.py" />
@@ -210,7 +216,7 @@
     <Compile Include="source\ror\settingsManager.py" />
     <Compile Include="source\ror\SimpleTruckRepresentation.py" />
     <Compile Include="source\ror\starter.py" />
-    <Compile Include="source\ror\terrainparser.py" />
+    <Compile Include="source\rortoolkit\terrain\editor_data.py" />
     <Compile Include="source\ror\toolkitparser.py" />
     <Compile Include="source\ror\truckparser.py" />
     <Compile Include="source\ror\TrueSingleton.py" />
@@ -245,6 +251,7 @@
     <Folder Include="source\roreditor" />
     <Folder Include="source\rortoolkit" />
     <Folder Include="source\rortoolkit\gui\" />
+    <Folder Include="source\rortoolkit\terrain\" />
     <Folder Include="source\ror\depcheckerplugins" />
     <Folder Include="source\wxogre" />
     <Folder Include="tools" />
