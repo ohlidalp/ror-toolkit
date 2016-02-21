@@ -140,3 +140,17 @@ def resource_manager_get_singleton():
 	if _resource_manager_singleton is None:
 		raise Exception("Programmer error: ResourceManager was not initialized")
 	return _resource_manager_singleton
+
+def open_ogre_resource(filename):
+	return OGRE.ResourceGroupManager.getSingleton().openResource(resourceName=filename, searchGroupsIfNotFound=True)
+
+def get_resource_zip_path(filename):
+	"""
+	Returns full path of ZIPfile containing the resource, or None if the resource doesn't exist/isn't zipped.
+	"""
+	try:
+		groupname = ror.rorcommon.ogreGroupFor(filename)
+		fileinfo = OGRE.ResourceGroupManager.getSingleton().findResourceFileInfo(groupname, filename, False)
+		return fileinfo[0].archive.Name
+	except:
+		return None

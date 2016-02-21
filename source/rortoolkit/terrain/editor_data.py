@@ -224,56 +224,6 @@ class TerrainEditorContext(object):
 		log().info("processing of terrain finished!")
 		return object
 
-	@staticmethod
-	def create_from_project(project):
-		pass # WIP
-		#self = RoRTerrain()
-		# ......
-
-	def export_project(self):
-		"""
-		:returns: instance of TerrainProject
-		"""
-		pass # WIP
-
-#		import rortoolkit.terrain
-#		proj = rortoolkit.terrain.TerrainProject()
-#
-#		proj.spawn_pos_truck_xyz     = self.TruckStartPosition.asList
-#		proj.spawn_pos_camera_xyz    = self.CameraStartPosition.asList
-#		proj.spawn_pos_character_xyz = self.CharacterStartPosition.asList
-#		# Objects
-#		for obj_in in self.objects:
-#			obj_out = rortoolkit.terrain.TerrainObject()
-#			obj_out.position_xyz = o1.position
-#			obj_out.rotation_matrix = None # Primary method
-#			obj_out.rotation_xyz = None # Compatibility method
-#			obj_out.qualifier_str = None # Terrn feature
-#			obj_out.location_name_str = None # Terrn feature
-#			
-#
-#		self.objects = []
-#		self.beamobjs = [] # lepes: bug found, this line was missing so it loaded twice  // author and the following lines !!
-#		self.procroads = []
-#		# only filename with extension
-#		self.filename = ''
-#		# name is filename without extension, useful for launching RoR command line
-#		self.name = ''
-#		self.TerrainConfig = ''
-#		#name to show on Menu
-#		self.TerrainName = ''
-#	
-#		self.UsingCaelum = False
-#		self.WaterHeight = None
-#		self.SkyColor = None
-#		self.SkyColorLine = None
-#		self.worldX = None
-#		self.worldZ = None
-#		self.worldMaxY = None
-#		self.author = []
-#		self.cubemap = None	
-
-
 	def initVariables(self):
 		self.TruckStartPosition     = positionClass()
 		self.CameraStartPosition    = positionClass()

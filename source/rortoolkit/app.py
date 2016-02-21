@@ -90,6 +90,9 @@ class Application:
 		"""
 		Imports .terrn and switches app to TERRAIN_EDITOR mode.
 		"""
+		import os.path
+		import rortoolkit.resources
+
 		# Switch app state
 		self._mode = AppMode.TERRAIN_EDITOR
 		self._gui_panels["main_frame"].Show()
@@ -97,3 +100,18 @@ class Application:
 
 		# Fire legacy loading code
 		self._gui_panels["main_frame"].openTerrain(filename)
+
+		# Export project from editor
+		terrn_editor_win = self._gui_panels["main_frame"].terrainOgreWin
+		terrn_project = terrn_editor_win.export_terrain_project()
+
+		# Save JSON data
+		terrn_project.save_as_json()
+		self._curr_terrn_editor_project = terrn_project
+
+		# Copy heightmap
+		src_filename = terrn_project.physics["_heightmap_filename"]
+		dst_path = os.path.join(terrn_project.get_project_directory(), terrn_project.get_heightmap_filename())
+		terrn_editor_win.export_heightmap(src_filename, dst_path)
+		del terrn_project.physics["_heightmap_filename"] # Delete temporary entry
+

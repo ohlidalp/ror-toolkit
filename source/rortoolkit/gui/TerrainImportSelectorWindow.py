@@ -42,7 +42,7 @@ class TerrainImportSelectorWindow(wx.Frame):
 		# TODO: Use a better suited component
 		row += 1
 		tree_id = wx.NewId()
-		self._tree = wx.TreeCtrl(self, tree_id, size=(265, 360), style=wx.NO_BORDER | wx.TR_HIDE_ROOT)
+		self._tree = wx.TreeCtrl(self, tree_id, size=(350, 360), style=wx.NO_BORDER | wx.TR_HIDE_ROOT)
 		self.Bind(wx.EVT_TREE_SEL_CHANGED, self._on_tree_item_selected, self._tree)
 		grid.Add(self._tree, pos=wx.GBPosition(row, 1))
 		self._tree_root = self._tree.AddRoot("Terrains")

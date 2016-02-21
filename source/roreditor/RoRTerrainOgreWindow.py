@@ -2,7 +2,6 @@
 
 import wx, os, os.path, copy, traceback
 from time import  *
-import errno
 import ogre.renderer.OGRE as ogre 
 import ogre.io.OIS as OIS
 from ror.truckparser import *
@@ -313,11 +312,136 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self._resetVariables()
 		if self.cameraBookmark:
 			self.cameraBookmark.updateVelocity(self.cameraVel, self.cameraShiftVel)
-			
+
+	def export_ogre17_terrain_config(self):
+		"""
+		reads Ogre::TerrainSceneManager (obsolete) config file.
+		Exports a dict of settings
+		:returns: Dict{Key:str => value:str}
+		"""
+		# Miniparser
+		import ror.rorcommon
+		lines = ror.rorcommon.loadResourceFile(self.terrain.TerrainConfig)
+		data = {}
+		for line in lines:
+			line = line.strip()
+			if len(line) > 0:
+				if line[0] != "#":
+					segments = line.split("=")
+					if len(segments) == 2:
+						data[segments[0].strip()] = segments[1].strip()
+		return data
+
+	def export_terrain_project(self):
+		"""
+		Exports an terrain.project.TerrainProject object from currently active terrain.
+		"""
+		import copy
+		import rortoolkit.terrain
+		project = rortoolkit.terrain.TerrainProject()
+		tsm_conf    = self.export_ogre17_terrain_config()
+		
+		# Helper functions to read TerrainSceneManager config
+		def tsm_val(key):
+			if key in tsm_conf:
+				return tsm_conf[key]
+			else:
+				return None
+
+		def tsm_bool(key):
+			val = tsm_val(key)
+			if val is None:
+				return None
+			else:
+				return (tsm_val(key).strip().lower() in ["true", "yes"])
+
+		def tsm_int(key):
+			val = tsm_val(key)
+			if val is None:
+				return None
+			else:
+				return int(tsm_val(key))
+		
+		def tsm_float(key):
+			val = tsm_val(key)
+			if val is None:
+				return None
+			else:
+				return float(tsm_val(key))
+
+		project.header["format_version"] = 1
+		project.header["name"          ] = self.terrain.TerrainName
+		project.header["technical_name"] = self.terrain.name
+		project.header["authors"       ] = copy.deepcopy(self.terrain.author)
+		
+		project.visuals["use_caelum"              ] = self.terrain.UsingCaelum
+		project.visuals["sky_color_rgb"           ] = self.terrain.SkyColor
+		project.visuals["cubemap_name"            ] = self.terrain.cubemap
+		project.visuals["full_map_diffuse_texture"] = tsm_val("WorldTexture")
+		project.visuals["full_map_detail_texture" ] = tsm_val("DetailTexture")
+		project.visuals["detail_texture_num_tiles"] = tsm_val("DetailTile")
+		
+		project.physics["global_gravity"          ] = None
+		project.physics["global_water_height"     ] = self.terrain.WaterHeight
+		project.physics["use_heightmap"           ] = True # Always true for .terrn
+		project.physics["_heightmap_filename"     ] = tsm_val("Heightmap.image") # Temporary, import only
+		project.physics["heightmap_size"          ] = tsm_int("Heightmap.raw.size")
+		project.physics["heightmap_bpp"           ] = tsm_int("Heightmap.raw.bpp")
+		project.physics["heightmap_flip"          ] = tsm_bool("Heightmap.flip")
+		project.physics["heightmap_vertical_scale"] = tsm_float("MaxHeight")
+		
+		project.gameplay["spawn_pos_truck_xyz"    ] = self.terrain.TruckStartPosition.asTuple
+		project.gameplay["spawn_pos_camera_xyz"   ] = self.terrain.CameraStartPosition.asTuple
+		project.gameplay["spawn_pos_character_xyz"] = self.terrain.CharacterStartPosition.asTuple
+		
+		project.ogre_legacy_tsm["page_size_vertices"  ] = tsm_int("PageSize")
+		project.ogre_legacy_tsm["tile_size_vertices"  ] = tsm_int("TileSize")
+		project.ogre_legacy_tsm["max_pixel_error"     ] = tsm_int("MaxPixelError")
+		project.ogre_legacy_tsm["page_size_world_x"   ] = tsm_int("PageWorldX")
+		project.ogre_legacy_tsm["page_size_world_z"   ] = tsm_int("PageWorldZ")
+		project.ogre_legacy_tsm["max_mipmap_level"    ] = tsm_int("MaxMipMapLevel")
+		project.ogre_legacy_tsm["use_vertex_normals"  ] = tsm_bool("VertexNormals")
+		project.ogre_legacy_tsm["vertex_program_morph"] = tsm_bool("VertexProgramMorph")
+		project.ogre_legacy_tsm["lod_morph_start"     ] = tsm_float("LODMorphStart")
+
+		# Objects
+		for entry in self.entries.values():
+			o = rortoolkit.terrain.TerrainObject()
+			o.position_xyz        = (entry.ogrePosition.x, entry.ogrePosition.y, entry.ogrePosition.z)
+			o.rotation_quaternion = (entry.ogreRotation.x, entry.ogreRotation.y, entry.ogreRotation.z, entry.ogreRotation.w)
+			o.filename            = entry.data.fileWithExt
+			o.type                = entry.data.type
+			o.extra_options       = entry.data.additionalOptions
+			project.objects.append(o)
+
+		return project
+
+	def export_heightmap(self, src_filename, dst_path):
+		"""
+		:param str src_filename: Input filename, will be searched in OGRE resource system
+		:param str dst_path: Output file path, will be written to directly.
+		"""
+		import os.path
+		import rortoolkit.resources
+		import zipfile
+		import shutil
+
+		# NOTE: Binary reading from OGRE DataStream is mysterious (unsigned int buf?)
+		# we must manually extract the heightmap from zipfile.
+		zip_path = rortoolkit.resources.get_resource_zip_path(src_filename)
+		if not zipfile.is_zipfile(zip_path):
+			raise Exception("Terrain import failed: Cannot read source ZIP archive: " + str(zip_path))
+		zip_file = zipfile.ZipFile(zip_path)
+		zip_info = zip_file.getinfo(src_filename)
+		zip_dst_dir = os.path.dirname(dst_path)
+		extracted_path = zip_file.extract(src_filename, zip_dst_dir)
+		if not os.path.isfile(extracted_path):
+			raise Exception("Terrn import failed, cannot read extracted heightmap:" + str(extracted_path))
+		shutil.move(extracted_path, dst_path)
 	
-	def newEntry(self, bAssignEvent=False, bAutouuid=False): 
+	def newEntry(self, bAssignEvent=False, bAutouuid=False):
 		""" bAssignEvent -> Assign ogreWindow property
-			bAutouuid -> auto generate uuid to this entry"""		
+			bAutouuid -> auto generate uuid to this entry"""
 		n = terrainEntryClass(self)
 		if bAssignEvent:
 			n.OnSelecting.append(self.entryChanged)
@@ -351,6 +475,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		if bAddToEntries:
 			self.entries[n.uuid] = n
 		return n
+
 	def smNewNode(self, strName,
 					doc=""" Scene Manager New Node:
 					Create a new SceneNode with given Name """):
@@ -367,6 +492,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		if strMaterialName:
 			e.setMaterialName(strMaterialName)
 		return e
+
 	def localPosToWorld(self, entry, localTupleOrVector):
 		if isinstance(localTupleOrVector, TupleType):
 			v = ogre.Vector3(localTupleOrVector[0], localTupleOrVector[1], localTupleOrVector[2])
@@ -424,7 +550,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 	def getOgreSceneManager(self):
 		return self.sceneManager
 	
-	
 	def cameraLandCollision(self):
 		try:
 			camPos = self.camera.getPosition()
@@ -435,7 +560,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			if rorSettings().stopOnExceptions:
 				raise 
 
-	
 	def SceneInitialisation(self):
 		log().debug("terrain SceneInitialization started")
 		self.sceneManager = getOgreManager().createSceneManager(ogre.ST_EXTERIOR_CLOSE)
@@ -564,7 +688,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 #			self.axis.attachTo(entry.node)
 			if self.autoTracking:
 				self.camera.setAutoTracking(True, entry.node)
-	
 
 	def specialEntryChanged(self, entry):
 		""" Asigned to:
@@ -592,10 +715,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 				self.cameraBookmark.cameraAdd(RORTRUCK,
 											self.terrain.TruckStartPosition.asTuple,
 											(0, 0, 0))
-				
 
-				
-				
 	def _resetVariables(self):
 		self.terrain = None
 		self.commandhistory = []
@@ -754,7 +874,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.cameraBookmark.loadCamera(filename)
 		
 		cfgfile = os.path.join(os.path.dirname(filename), self.terrain.TerrainConfig)
-		
 		self.sceneManager.setWorldGeometry(cfgfile)
 		self.createWaterPlane()
 		if self.terrain.cubemap:
