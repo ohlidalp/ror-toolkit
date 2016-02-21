@@ -90,8 +90,10 @@ class Application:
 		"""
 		Imports .terrn and switches app to TERRAIN_EDITOR mode.
 		"""
+		import os
 		import os.path
 		import rortoolkit.resources
+		import zipfile
 
 		# Switch app state
 		self._mode = AppMode.TERRAIN_EDITOR
@@ -112,4 +114,20 @@ class Application:
 		# Copy heightmap
 		dst_path = os.path.join(terrn_project.get_project_directory(), terrn_project.get_heightmap_filename())
 		terrn_editor_win.export_heightmap(export_data["heightmap_filename"], dst_path)
+
+		# Copy resources
+		res_dir = os.path.join(terrn_project.get_project_directory(), "resources")
+		if not os.path.isdir(res_dir):
+			os.mkdir(res_dir)
+		res_src_zip = rortoolkit.resources.get_resource_zip_path(export_data["heightmap_filename"])
+		zip_stream = zipfile.ZipFile(res_src_zip)
+		ext_whitelist = [
+			"png", "jpg", "dds", "tga", "bmp",          # Image files
+			"mesh", "odef",                             # Geometry + descriptors
+			"material", "program", "cg", "hlsl", "glsl" # Materials and shaders
+		]
+		for filename in zip_stream.namelist():
+			segments = filename.split(".")
+			if segments[-1].lower() in ext_whitelist:
+				zip_stream.extract(filename, res_dir)
 
