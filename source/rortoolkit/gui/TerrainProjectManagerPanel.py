@@ -13,6 +13,7 @@ class TerrainProjectManagerPanel(wx.Frame):
 		self.Bind(wx.EVT_CLOSE, self._on_close_window)
 
 		self._application = app
+		self._selected_project_dirname = None
 		self.callback_import_button_pressed = None
 
 		grid = wx.GridBagSizer(2, 2)
@@ -25,14 +26,16 @@ class TerrainProjectManagerPanel(wx.Frame):
 		grid.AddSpacer(spacer_size, (row,2)) # Col 2
 
 		row += 1
-		self._project_count_label = wx.StaticText(self, -1, "No projects found", size=wx.Size(0, 20), style=wx.ST_NO_AUTORESIZE | wx.TRANSPARENT_WINDOW)
+		self._project_count_label = wx.StaticText(self, -1, "No projects found", size=wx.Size(0, 20))
 		grid.Add(self._project_count_label, pos=wx.GBPosition(row, 1))
 
 		# Project selector
 		# TODO: Use a better suited component
 		row += 1
-		self._selector = wx.TreeCtrl(self, -1, size=(265, 360), style=wx.NO_BORDER | wx.TR_HIDE_ROOT)
-		grid.Add(self._selector, pos=wx.GBPosition(row, 1))
+		self._tree = wx.TreeCtrl(self, -1, size=(265, 360), style=wx.NO_BORDER | wx.TR_HIDE_ROOT)
+		grid.Add(self._tree, pos=wx.GBPosition(row, 1))
+		self.Bind(wx.EVT_TREE_SEL_CHANGED, self._on_tree_item_selected, self._tree)
+		self._tree_root = self._tree.AddRoot("Terrains")
 
 		# [Open] button
 		row += 1
@@ -53,6 +56,12 @@ class TerrainProjectManagerPanel(wx.Frame):
 
 		self.SetSizerAndFit(grid)
 	
+	def populate_project_list(self, project_list):
+		for dirname in project_list:
+			self._tree.AppendItem(self._tree_root, dirname)
+		text = str(len(project_list)) + " projects"
+		self._project_count_label.SetLabel(text)
+
 	def _on_import_button_pressed(self, event):
 		if self.callback_import_button_pressed is not None:
 			fn = self.callback_import_button_pressed
@@ -64,5 +73,11 @@ class TerrainProjectManagerPanel(wx.Frame):
 	def _on_close_window(self, event):
 		event.Veto() # Don't destroy the window!
 		self.Hide()
+
+	def _on_tree_item_selected(self, event):
+		self._open_project_button.Enable()
+		item_id = event.GetItem()
+		item_text = self._tree.GetItemText(item_id)
+		self._selected_project_dirname = item_text
 
 

@@ -19,7 +19,6 @@ class Application:
 	"""
 
 	def __init__(self):
-		self._terrain_project_db = {} # project_name => directory
 		self._gui_panels = {
 			"terrain_project_manager_window": None,
 			"terrain_import_selector_window": None
@@ -38,11 +37,25 @@ class Application:
 		def callback_import_fn():
 			self.enter_mode(AppMode.TERRAIN_IMPORT_SEARCH)
 		window.callback_import_button_pressed = callback_import_fn
-		# TODO: Load projects
+		window.populate_project_list(self.list_terrain_projects())
 		window.Show()
 
-	def refresh_terrain_project_db(self):
-		pass # To be done
+	def list_terrain_projects(self):
+		"""
+		Generates list of project directory names
+		"""
+		from ror.settingsManager import rorSettings
+		import os
+
+		projects_dir = rorSettings().concatToToolkitHomeFolder(["map-projects"])
+		proj_dirs = []
+		for test_dir in os.listdir(projects_dir):
+			test_path = os.path.join(projects_dir, test_dir)
+			if os.path.isdir(test_path):
+				json_path = os.path.join(test_path, "terrain-project.json")
+				if os.path.isfile(json_path):
+					proj_dirs.append(test_dir)
+		return proj_dirs
 
 	def enter_mode(self, mode):
 		if mode == AppMode.MAIN_MENU:
