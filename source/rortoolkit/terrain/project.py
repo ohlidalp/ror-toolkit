@@ -19,9 +19,19 @@ class TerrainObject:
 	
 	def __init__(self):
 		self.position_xyz        = None
-		self.rotation_quaternion = None # Primary method
+		self.rotation_quaternion = None
 		self.type                = None # Str
 		self.extra_options       = None # list[str] | None
+		self.filename            = None
+
+	def json_export(self):
+		return {
+			"position_xyz"        : self.position_xyz,
+			"rotation_quaternion" : self.rotation_quaternion,
+			"type"                : self.type,
+			"extra_options"       : self.extra_options,
+			"filename"            : self.filename
+		}
 
 class TerrainProject:
 	"""
@@ -92,7 +102,16 @@ class TerrainProject:
 		}
 		json_filename = os.path.join(project_dir, "terrain-project.json")
 		json_f = open(name=json_filename, mode="w")
-		json.dump(obj=json_project, fp=json_f, indent=4) # project file
+		json.dump(obj=json_project, fp=json_f, indent=4)
+		json_f.close()
+
+		# Save objects
+		json_obj_list = []
+		for obj in self.objects:
+			json_obj_list.append(obj.json_export())
+		json_filename = os.path.join(project_dir, "terrain-object-list.json")
+		json_f = open(name=json_filename, mode="w")
+		json.dump(obj=json_obj_list, fp=json_f, indent=4)
 		json_f.close()
 	
 	def get_project_directory(self):
