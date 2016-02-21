@@ -1,0 +1,942 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" id="page_86" lang="en"><head>
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta name="generator" content="Tiki Wiki CMS Groupware - http://tiki.org">
+	<meta name="keywords" content="Ogre, Ogre3d, wiki, support terrain scene manager  ">
+
+
+<title>Terrain Scene Manager</title>
+
+	<link rel="icon" href="http://www.ogre3d.org/tikiwiki/ogrefavicon.ico">
+
+
+	<link rel="StyleSheet" href="OGRE-Terrain-Scene-Manager_files/layerstreemenu.css" type="text/css">
+<link rel="StyleSheet" href="OGRE-Terrain-Scene-Manager_files/layerstreemenu-hidden.css" type="text/css">
+<script type="text/javascript">
+<!--//--><![CDATA[//><!--
+var numl;var toBeHidden;// PHP Layers Menu 3.2.0-rc (C) 2001-2004 Marco Pratesi - http://www.marcopratesi.it/
+
+DOM = (document.getElementById) ? 1 : 0;
+NS4 = (document.layers) ? 1 : 0;
+// We need to explicitly detect Konqueror
+// because Konqueror 3 sets IE = 1 ... AAAAAAAAAARGHHH!!!
+Konqueror = (navigator.userAgent.indexOf('Konqueror') > -1) ? 1 : 0;
+// We need to detect Konqueror 2.2 as it does not handle the window.onresize event
+Konqueror22 = (navigator.userAgent.indexOf('Konqueror 2.2') > -1 || navigator.userAgent.indexOf('Konqueror/2.2') > -1) ? 1 : 0;
+Konqueror30 =
+	(
+		navigator.userAgent.indexOf('Konqueror 3.0') > -1
+		|| navigator.userAgent.indexOf('Konqueror/3.0') > -1
+		|| navigator.userAgent.indexOf('Konqueror 3;') > -1
+		|| navigator.userAgent.indexOf('Konqueror/3;') > -1
+		|| navigator.userAgent.indexOf('Konqueror 3)') > -1
+		|| navigator.userAgent.indexOf('Konqueror/3)') > -1
+	)
+	? 1 : 0;
+Konqueror31 = (navigator.userAgent.indexOf('Konqueror 3.1') > -1 || navigator.userAgent.indexOf('Konqueror/3.1') > -1) ? 1 : 0;
+// We need to detect Konqueror 3.2 and 3.3 as they are affected by the see-through effect only for 2 form elements
+Konqueror32 = (navigator.userAgent.indexOf('Konqueror 3.2') > -1 || navigator.userAgent.indexOf('Konqueror/3.2') > -1) ? 1 : 0;
+Konqueror33 = (navigator.userAgent.indexOf('Konqueror 3.3') > -1 || navigator.userAgent.indexOf('Konqueror/3.3') > -1) ? 1 : 0;
+Opera = (navigator.userAgent.indexOf('Opera') > -1) ? 1 : 0;
+Opera5 = (navigator.userAgent.indexOf('Opera 5') > -1 || navigator.userAgent.indexOf('Opera/5') > -1) ? 1 : 0;
+Opera6 = (navigator.userAgent.indexOf('Opera 6') > -1 || navigator.userAgent.indexOf('Opera/6') > -1) ? 1 : 0;
+Opera56 = Opera5 || Opera6;
+IE = (navigator.userAgent.indexOf('MSIE') > -1) ? 1 : 0;
+IE = IE && !Opera;
+IE5 = IE && DOM;
+IE4 = (document.all) ? 1 : 0;
+IE4 = IE4 && IE && !DOM;
+
+//--><!]]>
+</script><style type="text/css">:root #header + #content > #left > #rlblock_left
+{display:none !important;}</style>
+
+
+
+
+
+
+
+		
+<link rel="stylesheet" href="OGRE-Terrain-Scene-Manager_files/minified_b332e08069a82e77347b37a40dc356b7.css" type="text/css" media="screen">
+<link rel="stylesheet" href="OGRE-Terrain-Scene-Manager_files/minified_b332e08069a82e77347b37a40dc356b7.css" type="text/css" media="print">
+<!--[if lt IE 7]>
+<link rel="stylesheet" href="css/ie6.css" type="text/css" />
+<link rel="stylesheet" href="styles/ogre/ie6.css" type="text/css" />
+<![endif]-->
+<!--[if IE 7]>
+<link rel="stylesheet" href="css/ie7.css" type="text/css" />
+<link rel="stylesheet" href="styles/ogre/ie7.css" type="text/css" />
+<![endif]-->
+<!--[if IE 8]>
+<link rel="stylesheet" href="css/ie8.css" type="text/css" />
+<![endif]-->
+
+</head>
+	<body class="tiki tiki_wiki_page"><div style="display: none;" id="cboxOverlay"></div><div style="padding-bottom: 42px; padding-right: 42px; display: none;" class="" id="colorbox"><div id="cboxWrapper"><div><div style="float: left;" id="cboxTopLeft"></div><div style="float: left;" id="cboxTopCenter"></div><div style="float: left;" id="cboxTopRight"></div></div><div style="clear:left"><div style="float: left;" id="cboxMiddleLeft"></div><div style="float: left;" id="cboxContent"><div class="" id="cboxLoadedContent" style="width: 0px; height: 0px; overflow: hidden;"></div><div class="" id="cboxLoadingOverlay"></div><div class="" id="cboxLoadingGraphic"></div><div class="" id="cboxTitle"></div><div class="" id="cboxCurrent"></div><div class="" id="cboxNext"></div><div class="" id="cboxPrevious"></div><div class="" id="cboxSlideshow"></div><div class="" id="cboxClose"></div></div><div style="float: left;" id="cboxMiddleRight"></div></div><div style="clear:left"><div style="float: left;" id="cboxBottomLeft"></div><div style="float: left;" id="cboxBottomCenter"></div><div style="float: left;" id="cboxBottomRight"></div></div></div><div style="position:absolute; width:9999px; visibility:hidden; display:none"></div></div>
+		<ul class="jumplinks" style="position:absolute;top:-9000px;left:-9000px;z-index:9;">
+			<li><a href="#tiki-center">Jump to Content</a></li>
+		</ul>
+
+		<div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
+<script type="text/javascript" language="JavaScript" src="OGRE-Terrain-Scene-Manager_files/overlib.htm"></script>
+
+
+
+
+	<div id="fixedwidth"> 
+					<div id="main-shadow">
+			<div style="position: absolute; display: none;" id="cluetip-waitimage"></div><div style="display: none; position: absolute;" id="cluetip"><div style="z-index: 1999; opacity: 0.1; top: 1px; left: 1px; position: absolute; background-color: rgb(0, 0, 0);"></div><div style="z-index: 1999; opacity: 0.1; top: 2px; left: 2px; position: absolute; background-color: rgb(0, 0, 0);"></div><div style="z-index: 1999; opacity: 0.1; top: 3px; left: 3px; position: absolute; background-color: rgb(0, 0, 0);"></div><div style="z-index: 1999; opacity: 0.1; top: 4px; left: 4px; position: absolute; background-color: rgb(0, 0, 0);"></div><div style="z-index: 1999; opacity: 0.1; top: 5px; left: 5px; position: absolute; background-color: rgb(0, 0, 0);"></div><div style="z-index: 1999; opacity: 0.1; top: 6px; left: 6px; position: absolute; background-color: rgb(0, 0, 0);"></div><div style="position: relative; z-index: 2000;" id="cluetip-outer"><h3 id="cluetip-title"></h3><div id="cluetip-inner"></div></div><div id="cluetip-extra"></div><div id="cluetip-arrows" class="cluetip-arrows"></div></div><div id="main">
+									<div id="header-shadow">
+								<div class="clearfix" id="header">
+		
+				<div class="clearfix" id="siteheader">
+		
+
+
+
+
+<div class="clearfix" id="header-top">
+
+
+
+		
+
+
+
+			<div class="clearfix" id="sioptions">
+																<div id="customcode" class="floatright">
+						<div style="float:right;"><a href="http://www.ogre3d.org/forums/" title="Ogre Forums">Ogre Forums</a>&nbsp;&nbsp;<a href="http://www.ogre3d.org/" title="ogre3d.org">ogre3d.org</a></div>
+					</div>
+								<div id="sitelogo" class="floatleft">
+					<a href="http://www.ogre3d.org/tikiwiki/" title="Ogre Wiki"><img src="OGRE-Terrain-Scene-Manager_files/site_logo.gif" alt="Ogre Wiki"></a>				</div>
+									<div id="sitetitles" class="floatleft">
+							<div id="sitetitle">
+		<a href="http://www.ogre3d.org/tikiwiki/">Ogre Wiki</a>	</div>
+	<div id="sitesubtitle">
+		 Support and community documentation for Ogre3D 	</div>
+
+					</div>
+							
+					</div>
+	
+	
+		
+
+	
+	
+
+
+
+
+
+
+
+
+
+<div id="siteloginbar"><a href="http://www.ogre3d.org/tikiwiki/tiki-login.php" title="Login">Login</a></div>
+<!--[if IE]><br style="clear:both; height: 0" /><![endif]-->
+</div>
+
+<div class="clearfix" id="tiki-top">
+
+	
+
+			<div class="role_navigation">
+			<ul id="cssmenu1" class="cssmenu_horiz menu43 sf-js-enabled sf-shadow"><li class="option182 menuOption menuLevel0"><a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Home"><span class="menuText">Home</span></a></li><li class="option183 menuSection menuSection0 menuLevel0"><a class="sf-with-ul" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Tutorials"><span class="menuText">Tutorials</span><span class="sf-sub-indicator"> »</span></a><ul style="float: none; width: 15.7273em; display: none; visibility: hidden;"><li style="white-space: normal; float: left; width: 100%;" class="option383 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Tutorials"><span class="menuText">Tutorials Home</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option192 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Basic%20Tutorials"><span class="menuText">Basic Tutorials</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option194 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Intermediate%20Tutorials"><span class="menuText">Intermediate Tutorials</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option402 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Mad%20Marx%20Tutorials"><span class="menuText">Mad Marx Tutorials</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option212 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=In%20Depth%20Tutorials"><span class="menuText">In Depth Tutorials</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option285 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Older%20Tutorials"><span class="menuText">Older Tutorials</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option382 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=External%20Tutorials"><span class="menuText">External Tutorials</span></a></li></ul></li><li class="option184 menuSection menuSection0 menuLevel0"><a class="sf-with-ul" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Cookbook"><span class="menuText">Cookbook</span><span class="sf-sub-indicator"> »</span></a><ul style="float: none; width: 11.8182em; display: none; visibility: hidden;"><li style="white-space: normal; float: left; width: 100%;" class="option384 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Cookbook"><span class="menuText">Cookbook Home</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option265 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=CodeBank"><span class="menuText">CodeBank</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option266 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Snippets"><span class="menuText">Snippets</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option267 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Experiences"><span class="menuText">Experiences</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option268 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=OgreArticles"><span class="menuText">Ogre Articles</span></a></li></ul></li><li class="option185 menuSection menuSection0 menuLevel0"><a class="sf-with-ul" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Libraries"><span class="menuText">Libraries</span><span class="sf-sub-indicator"> »</span></a><ul style="float: none; width: 15.6364em; display: none; visibility: hidden;"><li style="white-space: normal; float: left; width: 100%;" class="option385 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Libraries"><span class="menuText">Libraries Home</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option274 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Alternative%20Languages"><span class="menuText">Alternative Languages</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option273 menuSection menuSection1 menuLevel1"><a class="sf-with-ul" style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Assembling%20A%20Toolset"><span class="menuText">Assembling A Toolset</span><span class="sf-sub-indicator"> »</span></a><ul style="left: 15.6364em; float: none; width: 13.6364em; display: none; visibility: hidden;"><li style="white-space: normal; float: left; width: 100%;" class="option406 menuOption menuLevel2"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Development+Tools"><span class="menuText">Development Tools</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option276 menuOption menuLevel2"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=OGRE+Libraries"><span class="menuText">OGRE Libraries</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option407 menuOption menuLevel2"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=List+Of+Libraries"><span class="menuText">List of Libraries</span></a></li></ul></li></ul></li><li class="option190 menuSection menuSection0 menuLevel0"><a class="sf-with-ul" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Tools"><span class="menuText">Tools</span><span class="sf-sub-indicator"> »</span></a><ul style="float: none; width: 20em; display: none; visibility: hidden;"><li style="white-space: normal; float: left; width: 100%;" class="option386 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Tools"><span class="menuText">Tools Home</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option277 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=DCC%20Tools"><span class="menuText">DCC Tools</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option269 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=DCC%20Tutorials"><span class="menuText">DCC Tutorials</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option270 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=DCC%20Articles"><span class="menuText">DCC Articles</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option271 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=DCC%20Resources"><span class="menuText">DCC Resources</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option272 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Assembling%20a%20production%20pipeline"><span class="menuText">Assembling a production pipeline</span></a></li></ul></li><li class="option189 menuSection menuSection0 menuLevel0"><a class="sf-with-ul" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Development"><span class="menuText">Development</span><span class="sf-sub-indicator"> »</span></a><ul style="float: none; width: 20em; display: none; visibility: hidden;"><li style="white-space: normal; float: left; width: 100%;" class="option387 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Development"><span class="menuText">Development Home</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option201 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Roadmap"><span class="menuText">Roadmap</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option202 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Building%20Ogre"><span class="menuText">Building Ogre</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option292 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Installing%20the%20Ogre%20SDK"><span class="menuText">Installing the Ogre SDK</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option293 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Setting%20Up%20An%20Application"><span class="menuText">Setting Up An Application</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option395 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Ogre%20Wiki%20Tutorial%20Framework"><span class="menuText">Ogre Wiki Tutorial Framework</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option287 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Frequently%20Asked%20Questions"><span class="menuText">Frequently Asked Questions</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option208 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Google%20Summer%20Of%20Code"><span class="menuText">Google Summer Of Code</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option210 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Help%20Requested"><span class="menuText">Help Requested</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option283 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Ogre%20Core%20Articles"><span class="menuText">Ogre Core Articles</span></a></li></ul></li><li class="option187 menuSection menuSection0 menuLevel0"><a class="sf-with-ul" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Community"><span class="menuText">Community</span><span class="sf-sub-indicator"> »</span></a><ul style="float: none; width: 16em; display: none; visibility: hidden;"><li style="white-space: normal; float: left; width: 100%;" class="option388 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Community"><span class="menuText">Community Home</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option261 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Projects%20Using%20OGRE"><span class="menuText">Projects Using Ogre</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option279 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Recommended%20reading"><span class="menuText">Recommended Reading</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option286 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Contractors"><span class="menuText">Contractors</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option262 menuSection menuSection1 menuLevel1"><a class="sf-with-ul" style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Wiki"><span class="menuText">Wiki</span><span class="sf-sub-indicator"> »</span></a><ul style="left: 16em; float: none; width: 17.3636em; display: none; visibility: hidden;"><li style="white-space: normal; float: left; width: 100%;" class="option256 menuOption menuLevel2"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Immediate%20Wiki%20Tasklist"><span class="menuText">Immediate Wiki Tasklist</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option391 menuOption menuLevel2"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Wiki%20Ideas"><span class="menuText">Wiki Ideas</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option254 menuOption menuLevel2"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Wiki%20Guidelines"><span class="menuText">Wiki Guidelines</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option284 menuOption menuLevel2"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Article%20Writing%20Guidelines"><span class="menuText">Article Writing Guidelines</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option263 menuOption menuLevel2"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Wiki%20Styles"><span class="menuText">Wiki Styles</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option282 menuOption menuLevel2"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Wiki%20Tracker"><span class="menuText">Wiki Page Tracker</span></a></li></ul></li></ul></li></ul>
+</div><div class="role_navigation">
+			<ul id="cssmenu2" class="cssmenu_horiz menu50 sf-js-enabled sf-shadow"><li class="option396 menuSection menuSection0 menuLevel0"><a class="sf-with-ul" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Ogre%20Wiki%20Help"><span class="menuText">Ogre Wiki Help</span><span class="sf-sub-indicator"> »</span></a><ul style="float: none; width: 18.8182em; display: none; visibility: hidden;"><li style="white-space: normal; float: left; width: 100%;" class="option397 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Ogre%20Wiki%20Help"><span class="menuText">Ogre Wiki Help Overview</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option398 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Help%20-%20Basic%20Syntax"><span class="menuText">Help - Basic Syntax</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option399 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Help%20-%20Images"><span class="menuText">Help - Images</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option400 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Help%20-%20Pages%20and%20Structures"><span class="menuText">Help - Pages and Structures</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option401 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Help%20-%20Wiki%20Plugins"><span class="menuText">Help - Wiki Plugins</span></a></li></ul></li></ul>
+</div><div class="role_navigation">
+</div><div class="role_navigation">
+			<ul id="cssmenu4" class="cssmenu_horiz menu45 sf-js-enabled sf-shadow"><li class="option390 menuSection menuSection0 menuLevel0"><a class="sf-with-ul" href=""><span class="menuText">Toolbox</span><span class="sf-sub-indicator"> »</span></a><ul style="float: none; width: 11em; display: none; visibility: hidden;"><li style="white-space: normal; float: left; width: 100%;" class="option239 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-browse_freetags.php"><span class="menuText">Freetags</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option240 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=categories"><span class="menuText">Categories</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option241 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-listpages.php"><span class="menuText">List Pages</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option243 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-admin_structures.php"><span class="menuText">Structures</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option244 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-list_trackers.php"><span class="menuText">Trackers</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option260 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-list_file_gallery.php"><span class="menuText">List Galleries</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option281 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Ogre%20Lexicon"><span class="menuText">Ogre Lexicon</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option392 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Comments"><span class="menuText">Comments</span></a></li><li style="white-space: normal; float: left; width: 100%;" class="option394 menuOption menuLevel1"><a style="float: none; width: auto;" href="http://www.ogre3d.org/tikiwiki/tiki-shoutbox.php"><span class="menuText">Shoutbox</span></a></li></ul></li></ul>
+</div><div class="role_navigation">
+</div>
+	
+
+
+</div>				</div>
+			</div></div>
+			<div id="middle-shadow"><div class="clearfix" id="middle">
+				<div class="clearfix nofullscreen" id="c1c2">
+					<div class="clearfix" id="wrapper">
+						<div id="col1" class=" marginright">
+
+								<div class="clearfix" id="showhide_columns">
+												<div class="clearfix" style="text-align:right;float:right">
+									<a class="flip" href="#" onclick="toggleCols('col3','right'); return false"><img src="OGRE-Terrain-Scene-Manager_files/orightcol.png" alt="[Show/Hide Right Column]" class="colflip" style="border: none" title="[Show/Hide Right Column]" height="16" width="16"></a>
+								</div>
+										<br style="clear:both">
+							</div>
+	
+
+							<div id="tiki-center-shadow"><div class="site_notice"><b><i>Welcome to the new Ogre Wiki!</i></b><br>If you haven't done so already, be sure to visit the <a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Wiki">Wiki Portal</a> to read about how the wiki works. Especially the <a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Ogre+Wiki+Overview">Ogre Wiki Overview</a> page.</div>
+
+<div class="trackerBox"><div style=" text-align: center;" class="span"><strong>This page <a class="tablename" href="http://www.ogre3d.org/tikiwiki/tiki-view_tracker_item.php?itemId=138&amp;show=view&amp;cant=1&amp;filterfield=31&amp;exactvalue=Terrain%20Scene%20Manager&amp;trackerId=3">needs work</a></strong></div></div>
+<div id="tiki-center" class="clearfix content">
+							<div role="main" id="role_main">
+ 
+	
+ 
+
+
+
+ 
+
+	<div class="wikitopline clearfix" style="clear: both;">
+	<div class="content">
+				<div class="wikiinfo" style="float: left">
+
+	<a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Terrain%20Scene%20Manager" class="titletop">Terrain Scene Manager</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+
+Some information about the Terrain Scene Manager (historic)
+
+		</div>
+		<div class="wikiactions" style="float: right; padding-left:10px; white-space: nowrap">
+			<div class="icons" style="float: left;">
+									<a title="Print" href="http://www.ogre3d.org/tikiwiki/tiki-print.php?page_ref_id=1524&amp;page=Terrain%20Scene%20Manager"><img src="OGRE-Terrain-Scene-Manager_files/printer.png" alt="Print" style="border: none" title="Print" class="icon" height="16" width="16"></a>
+	
+								</div><!-- END of icons -->
+
+				<form action="tiki-index.php" method="get" style="display: block; float: left">
+				<select name="page" onchange="this.form.submit()" title="Backlinks">
+					<option selected="selected">Backlinks...</option>
+							<option value="-LOD" title="-LOD">
+					-LOD					</option>
+							<option value="3dsmax Heightmaps" title="3dsmax Heightmaps">
+					3dsmax Heightmaps					</option>
+							<option value="DCC Tools" title="DCC Tools">
+					DCC Tools					</option>
+							<option value="Mogre Basic Tutorial 3" title="Mogre Basic Tutorial 3">
+					Mogre Basic Tutorial 3					</option>
+							<option value="Mogre Basic Tutorial 3b" title="Mogre Basic Tutorial 3b">
+					Mogre Basic Tutorial 3b					</option>
+							<option value="Mogre Basic Tutorial VB 3" title="Mogre Basic Tutorial VB 3">
+					Mogre Basic Tutorial VB 3					</option>
+							<option value="Mogre New Basic Tutorial 3" title="Mogre New Basic Tutorial 3">
+					Mogre New Basic Tutorial 3					</option>
+							<option value="Myrddin Landscape Plugin" title="Myrddin Landscape Plugin">
+					Myrddin Landscape Plugin					</option>
+							<option value="Ogre Terrain System" title="Ogre Terrain System">
+					Ogre Terrain System					</option>
+							<option value="OgreDotNet Basic Tutorial 3" title="OgreDotNet Basic Tutorial 3">
+					OgreDotNet Basic Tutorial 3					</option>
+							<option value="Overhang Terrain Scene Manager" title="Overhang Terrain Scene Manager">
+					Overhang Terrain Scene Manager					</option>
+							<option value="Paging Scene Manager" title="Paging Scene Manager">
+					Paging Scene Manager					</option>
+							<option value="PyOgre Beginner Tutorial 3" title="PyOgre Beginner Tutorial 3">
+					PyOgre Beginner Tutorial 3					</option>
+							<option value="Ray query with MOGRE" title="Ray query with MOGRE">
+					Ray query with MOGRE					</option>
+							<option value="SceneManagersFAQ" title="SceneManagersFAQ">
+					SceneManagersFAQ					</option>
+							<option value="Terrain Alpha Splatting" title="Terrain Alpha Splatting">
+					Terrain Alpha Splatting					</option>
+							<option value="Terrain Howto" title="Terrain Howto">
+					Terrain Howto					</option>
+							<option value="Tutorial 7" title="Tutorial 7">
+					Tutorial 7					</option>
+							<option value="Basic Tutorial 3" title="Basic Tutorial 3">
+					Basic Tutorial 3					</option>
+						</select>
+			</form>
+	
+	
+			</div>
+ 
+ 
+	</div> 
+</div> 
+	
+
+
+	
+<div id="top" class="wikitext clearfix nopagetitle">
+			
+		
+		
+					<div class="tocnav">
+	<div class="clearfix">
+		<div style="float: left; width: 100px">
+  
+        	<a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Cookbook&amp;structure=Cookbook&amp;page_ref_id=5"><img src="OGRE-Terrain-Scene-Manager_files/house.png" alt="TOC" title="Cookbook" style="border: none" class="icon" height="16" width="16"></a>    
+        	<a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=SceneManagersFAQ&amp;structure=Cookbook">
+    		<img src="OGRE-Terrain-Scene-Manager_files/resultset_previous.png" alt="Previous page" title="SceneManagersFAQ" style="border: none" class="icon" height="16" width="16">
+    	</a>
+    
+        	<a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=SceneManagersFAQ&amp;structure=Cookbook">
+    		<img src="OGRE-Terrain-Scene-Manager_files/resultset_up.png" alt="Parent page" title="SceneManagersFAQ" style="border: none" class="icon" height="16" width="16">
+    	</a>
+    
+    <a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Portal+Connected+Zone+Scene+Manager&amp;structure=Cookbook"><img src="OGRE-Terrain-Scene-Manager_files/resultset_next.png" alt="Next page" title="Portal Connected Zone Scene Manager" style="border: none" class="icon" height="16" width="16"></a>
+		</div>
+  		<div style="float: left;">
+		</div>
+	</div>
+  	<div>
+  	<a title="Structure (14.1)" href="http://www.ogre3d.org/tikiwiki/tiki-edit_structure.php?page=Terrain+Scene+Manager&amp;page_ref_id=5"><img src="OGRE-Terrain-Scene-Manager_files/chart_organisation.png" alt="Structure" title="Structure (14.1)" style="border: none" class="icon" height="16" width="16"></a>&nbsp;&nbsp;
+          	  <a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Cookbook&amp;structure=Cookbook">
+              Cookbook
+	  	  </a>
+	      &nbsp;»&nbsp;	  <a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=SceneManagersFAQ&amp;structure=Cookbook">
+              SceneManagersFAQ
+	  	  </a>
+	      &nbsp;»&nbsp;	  <a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Terrain+Scene+Manager&amp;structure=Cookbook">
+              Terrain Scene Manager
+	  	  </a>
+		</div>
+</div>		
+		
+			 
+
+	
+			<p>Here is some information about the Terrain Scene Manager.
+</p>
+
+<p><strong>Note: The scene manager will work up to Ogre 1.7.</strong> Ogre 1.8 and newer versions won't support this scene manager, because of the new <a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Ogre+Terrain+System" title="Embed terrain to an Ogre application" class="wiki">Ogre Terrain System</a> with many improvements (which released with Ogre 1.7).
+</p>
+
+<p></p><div id="toc"><div id="toctitle"><h3>Table of contents</h3></div><ul class="toc"><ul><li><a href="#Configuration_Parameters" class="link">Configuration Parameters</a>
+<ul><li><a href="#Basic_Configuration_Parameters" class="link">Basic Configuration Parameters</a>
+</li><li><a href="#Advanced_Configuration_Parameters" class="link">Advanced Configuration Parameters</a>
+</li><li><a href="#More_Advanced_Parameters" class="link">More Advanced Parameters</a>
+</li></ul></li><li><a href="#Using_Custom_Materials" class="link">Using Custom Materials</a>
+</li><li><a href="#Dirty_notes" class="link">Dirty notes</a>
+</li><li><a href="#See_also" class="link">See also</a>
+</li></ul></ul><!--toc--></div>
+<p></p>
+
+<p>The shape and coloration of the terrain in your scene is computed from a <em>heightmap</em>, a <em>terrain texture</em> and a <em>detail texture</em>.
+ The heightmap is a simple greyscale image in which each pixel 
+represents a height value, where 0 is ground level and 255 (resp. 65535 
+at 16 bit) represents the highest point in your terrain. The samples 
+include a heightmap called <em>terrain.png</em> which you can use for experimentation.
+</p>
+
+<p>The terrain is textured with an image that is stretched over the terrain. These <em>terrain textures</em>
+ are typically mottled brown, green, white or grey for earth, grass, 
+snow or rock terrain. Since terrain textures are normally much smaller 
+than the terrain being covered, terrain normally appears blurred when 
+viewed close up. To help with this, a <em>detail texture</em> is used, 
+which is blended with the terrain texture when viewed from close 
+distances. The detail texture is not stretched as much as the terrain 
+texture, removing the blurriness of terrains viewed close up. The 
+samples include textures called <em>terrain_texture.jpg</em> and <em>terrain_detail.jpg</em> which you can use for experimentation.
+</p>
+
+<p>Terrains are divided into a grid of <em>terrain tiles</em>. Terrain tiles may be displayed by the scene manager at a differing <a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=-LOD" title="-LOD" class="wiki">level of detail</a>, depending on the topology of the tile and the distance from the viewer.
+</p>
+
+<p>The entire terrain is projected within a world coordinate space which specifies the dimensions of the terrain in 3-space.
+</p>
+
+<p>The -LOD calculation for the Terrain Scene Manager is based on <a class="wiki external" target="_blank" href="http://www.flipcode.com/articles/article_geomipmaps.pdf" rel="external nofollow">this paper</a><img src="OGRE-Terrain-Scene-Manager_files/external_link.gif" alt="(external link)" style="border: none" title="(external link)" class="icon" height="14" width="15">.
+</p>
+
+<p>Terrain Scene Manager uses <a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Mipmapping" title="Mipmapping" class="wiki">GeoMipmapping</a>. The <a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=-LOD" title="-LOD" class="wiki">-LOD</a>
+ of the terrain chunks are chosen based on camera distance, and they are
+ organised and culled inside an Octree (since the TerrainSceneManager 
+builds on the OctreeSceneManager).
+</p>
+
+<h2 class="showhide_heading" id="Configuration_Parameters"> Configuration Parameters</h2>
+<p>The Terrain Scene Manager is configured via the <em>terrain.cfg</em> script.
+</p>
+
+<h3 class="showhide_heading" id="Basic_Configuration_Parameters"> Basic Configuration Parameters</h3>
+
+<div style="float:right; margin-left:5px; width:802px; height:397px">
+	<img src="OGRE-Terrain-Scene-Manager_files/Terrain_texture_heightmap.jpg" alt="thumb|world texture + heightmap">
+</div>
+
+<div style="float:right; margin-left:5px; width:802px; height:398px">
+	<img src="OGRE-Terrain-Scene-Manager_files/Terrain_detail_comparison.jpg" alt="thumb|without / with detail texture">
+</div>
+
+<div style="float:right; margin-left:5px; width:102px; height:102px">
+	<img src="OGRE-Terrain-Scene-Manager_files/Texture_terrain_detail.jpg" alt="thumb|detail texture" height="100" width="100">
+</div>
+<p>&nbsp;
+<br>The basic parameters from this script are:
+</p>
+<ul><li> __WorldTexture''': Specifies the name of the terrain texture.
+</li><li> <em><strong></strong></em><strong>DetailTexture</strong>: Specifies the name of the detail texture.
+</li><li> <strong>DetailTile</strong>: This specifies the number of times that the detail texture will be repeated in each terrain tile. I.e., if the value is <strong><em></em></strong><em>n</em>, the detail texture will be displayed in an <em>n</em>x<em>n</em>
+ grid within each terrain tile. Setting this can involve some 
+experimentation. If this number is low, the terrain may appear blurry at
+ close distances. If this number is high, the terrain may appear to have
+ repeating patterns when viewed over a distance.
+</li><li> <em><strong></strong></em><strong>PageSource</strong>: Specifies the source of the heightmap. By default, <strong><em></em></strong><em>Heightmap</em>.
+</li><li> <em><strong></strong></em><strong>Heightmap.image</strong>: The image file from which the heightmap is drawn. Thus must be a square where each dimension is of size 2 ^ <strong><em></em></strong><em>n</em>+1, for some integer <em>n</em>.
+ The larger the size of the heightmap, the more detail the terrain will 
+have, but the more resources your application will consume (including 
+longer application start time.) 8 bits or 16 bits height maps are 
+supported. Important: The image format must be saved in <em>monochrome mode</em> - height maps in RGB mode (24bit) will throw an exception.
+</li><li> <em><strong></strong></em><strong>PageSize</strong>: The terrain will be <strong><em></em></strong><em>PageSize</em> x <em>PageSize</em> vertices large. <em>PageSize</em> must have the same value as the dimension of the heightmap image, and so must also have a value 2 ^ <em>n</em>+1 for some integer <em>n</em>.
+</li><li> <em><strong></strong></em><strong>TileSize</strong>: Terrain tiles have the dimension <strong><em></em></strong><em>TileSize</em> x <em>TileSize</em> vertices. <em> This number must be smaller than PageSize. TileSize must have a value 2 ^ </em>n<em>+1 for some integer </em>n''.
+ Making tile size too small impacts performance significantly while 
+making tiles too large may result in unnecessarily high detail in some 
+parts of the scene.
+</li><li> <strong>MaxPixelError</strong>: This specifies the maximum 
+error tolerated when determining which level of detail to use. Setting 
+this value too high can result in seams in the terrain. Setting the 
+value too low can impact performance. This is the main way to control 
+the distance at which the terrain displays LODs — it is not a distance 
+in world units but rather how much error can appear on the screen. The 
+more error allowed, the less detailed the LODs can become.
+</li><li> <strong>PageWorldX</strong>, <strong>PageWorldZ</strong>: This
+ sets the extents of the terrain in world coordinates. The larger the 
+terrain, the lower the detail will be in the terrain, as the number of 
+vertices used for the terrain is based on the heightmap, not the world 
+size. This can be used to scale the terrain to any size you want.
+</li><li> <strong>MaxHeight</strong>: The maximum height of the terrain 
+in world coordinates. The 0..255 (resp. 0..65535) range from the 
+heightmap is scaled to 0..MaxHeight in world coordinates.
+</li><li> <strong>MaxMipMapLevel</strong>: Specifies the number of 
+levels of detail that will be used in rendering the terrain. Terrain 
+that is distant or is relatively flat can be rendered with less detail.
+</li></ul><hr>
+<h3 class="showhide_heading" id="Advanced_Configuration_Parameters"> Advanced Configuration Parameters</h3>
+<p>Some heightmap generators save data in a raw format rather than an 
+image format. The following parameters describe the raw format.
+</p>
+<ul><li> <strong>Heightmap.raw.size</strong>: Specifies the dimension of one side of the heightmap. This must be a value 2 ^ <em>n</em>+1 for some integer <em>n</em>.
+</li><li> <strong>Heightmap.raw.bpp</strong>: Specifies the <em>bytes</em> per pixel in the file. (1 for 8 bits, 2 for 16 bits, maybe also 3 for 24 bits support?)
+</li><li> <strong>Heightmap.flip</strong>: When set to true, flips the heightmap. Required for <em>Terragen</em> heightmaps.
+</li></ul><p>&nbsp;
+<br>The following parameters control other aspects of the scene manager's operation. <em>Can someone fill in better descriptions for these?</em>
+</p>
+<ul><li> <strong>VertexNormals</strong>: This makes the 
+TerrainSceneManager calculate and set vertex normals in the hardware 
+buffer. If you use lighting or a GPU program that requires it, you 
+should turn this on.
+</li><li> <strong>VertexColours</strong>: This makes the 
+TerrainSceneManager calculate and set the vertex colors in the hardware 
+buffer. Turn this on if you use a GPU program that needs this 
+information.
+</li><li> <strong>UseTriStrips</strong>: When set to yes, optimizes the 
+order in which terrain triangles are sent to the GPU so that fewer 
+vertices are sent (though on most newer graphics cards this does not 
+make a difference in framerate). Because this causes "cracks" to appear 
+in some video cards and has little or no performance benefit, it is 
+recommended that you turn this off.
+</li><li> <strong>VertexProgramMorph</strong>: Use vertex program to morph <a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=-LOD" title="-LOD" class="wiki">-LOD</a>s, if available.
+</li><li> <strong>LODMorphStart</strong>: The proportional distance 
+range at which the -LOD morph starts to take effect. This is as a 
+proportion of the distance between the current LODs effective range, and
+ the effective range of the next lower LOD.
+</li></ul><p>&nbsp;
+</p>
+<h3 class="showhide_heading" id="More_Advanced_Parameters"> More Advanced Parameters</h3>
+<p>Instead of using the terrain and detail textures to shade the 
+terrain, you can provide your own shading routines, specified in your 
+own material. A typical use of this would be to provide vertex programs 
+in your material.
+<br>
+</p>
+<ul><li> <strong>MorphLODFactorParamName</strong>: This option is used if <em>VertexProgramMorph</em> is set to <em>yes</em> and your custom material includes a <em>high-level</em>
+ vertex program. This option specifies the name of the vertex program 
+parameter to which you wish to bind the morph LOD. This parameter is 0 
+when there is no adjustment (highest) to 1 when the morph takes it 
+completely to the same position as the next lower LOD.
+</li></ul><p>&nbsp;
+</p>
+<ul><li> <strong>MorphLODFactorParamIndex</strong>: This option is used if <em>VertexProgramMorph</em> is set to <em>yes</em> and your custom material includes an <em>assemler-level</em>
+ vertex program. This option represents the index of the vertex program 
+parameter to which you wish to bind the morph -LOD factor. This is 0 
+when there is no adjustment (highest) to 1 when the morph takes it 
+completely to the same position as the next lower LOD.
+</li></ul><p>&nbsp;
+</p>
+<ul><li> <strong>CustomMaterialName</strong>: The name of the material you will define to shade the terrain.
+</li></ul><p>&nbsp;
+</p>
+<h2 class="showhide_heading" id="Using_Custom_Materials"> Using Custom Materials</h2>
+<p>You can use custom materials to render your terrain. If your material
+ contains a vertex program, the following parameters are available:
+</p>
+<ul><li> positions
+</li><li> two sets of texture coordinates (index 0 is world texture, index 1 is detail texture)
+</li><li> Normals, if enabled
+</li><li> Per-vertex delta values, for morphing a higher <a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=-LOD" title="-LOD" class="wiki">-LOD</a>
+ tile into a lower -LOD tile. This is one float per vertex bound as 
+'blend weight'. If you want to use this you also have to provide the 
+name or index of the parameter you wish to receive the morph factor.
+</li></ul><p>&nbsp;
+</p>
+<h2 class="showhide_heading" id="Dirty_notes"> Dirty notes</h2>
+<p>Here are some plain notes. The style etc. has to be improved later. Also remove of redundancy.
+<br>
+<br>... some of my points got lost by a Firefox crash /-:
+</p>
+
+<ul><li> The image dimensions of <em>Heightmap.image</em> has to be equal to <em>PageSize</em>
+</li></ul><p>&nbsp;
+</p>
+<ul><li> The Terrain is constructed as a page of terrain tiles
+<ul><li> Terrain Scene Manager (TSM) has only one tile
+</li><li> <a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Paging+Scene+Manager" title="Paging Scene Manager" class="wiki">Paging Scene Manager</a> is an improved version of TSM (right??) that support different tiles
+</li></ul></li></ul><p>&nbsp;
+</p>
+<ul><li> Related to the last point is a strange thing:
+<ul><li> <em>TileSize</em> has to be defined and must be smaller than <em>PageSize</em>
+</li></ul></li></ul><p>&nbsp;
+</p>
+<div class="plugincode"><pre class="codelisting" dir="ltr" style="white-space:pre-wrap; white-space:-moz-pre-wrap !important; white-space:-pre-wrap; white-space:-o-pre-wrap; word-wrap:break-word;" id="codebox"># How large is a page of tiles <span style="">(</span>in vertices<span style="">)</span>? Must be <span style="">(</span><span style="">2</span> ~np~^~/np~ n<span style="">)</span>+<span style="">1</span>
+<span style="color: #000099;">PageSize</span><span style="color: #000066; font-weight:bold;">=</span><span style="color: #660066;">513</span>
+# How large is each tile? Must be <span style="">(</span><span style="">2</span> ~np~^~/np~ n<span style="">)</span>+<span style="">1</span> and be smaller than PageSize
+<span style="color: #000099;">TileSize</span><span style="color: #000066; font-weight:bold;">=</span><span style="color: #660066;">129</span></pre></div>
+<p>&nbsp;
+</p>
+<ul><li> The terrain is composed of  PageSize^2  <a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=-Vertex" title="-Vertex" class="wiki">vertices</a>
+<ul><li> This results in  (TileSize-1)^2 quads
+</li><li> Dependent to the <a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=-Camera" title="-Camera" class="wiki">camera</a> distance the remoter ones are conflated to apploximated bigger quads (by <a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=-LOD" title="-LOD" class="wiki">-LOD</a> algorithm)
+</li><li> For tiles it's the same
+</li></ul></li></ul><p>&nbsp;
+</p>
+<ul><li> World coordinates range from (0, 0, 0) to (<em>PageWorldX</em>, <em>MaxHeight</em>, <em>PageWorldZ</em>)
+</li></ul><p>&nbsp;
+</p>
+<ul><li> The <em>WorldTexture</em> is stretched over the entire world
+<ul><li> And for the <a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Paging+Scene+Manager" title="Paging Scene Manager" class="wiki">Paging Scene Manager</a> for each tile ?? (please fill in if you know)
+</li><li> Common used file formats are JPG and PNG
+</li></ul></li></ul><p>&nbsp;
+</p>
+<ul><li> <em>PageSource</em> can have any value that has been registered as a <em>TerrainPageSource</em>
+</li></ul><p>&nbsp;
+</p>
+<ul><li> TSM is a sub-class of OctreeSceneManager<a href="http://www.ogre3d.org/tikiwiki/tiki-editpage.php?page=OctreeSceneManager" title="Create page: OctreeSceneManager" class="wiki wikinew">?</a> and uses an octree for culling.
+</li></ul><p>&nbsp;
+</p>
+<dl></dl>
+<p>&nbsp;
+</p>
+<ul><li> <em>VertexNormals=yes</em> makes Ogre compute normals at each <a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=-Vertex" title="-Vertex" class="wiki">vertex</a> for use with dynamic lighting of the terrain
+</li><li> <em>VertexColours=yes</em> creates a vertex element for diffuse colours
+<ul><li> is implemented yet?
+</li><li> maybe <em>VertexColors</em> instead? (without U at colours)
+</li></ul></li><li> <em>UseTriStrips=yes</em> as it implies, whether to use tri strips for rendering the terrain
+</li></ul><p>&nbsp;
+</p>
+<ul><li> The terrain of TSM can't be used for collision detection in combination with Newton physics engine
+<ul><li> alternatively see <a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Using+PLSM2+with+Newton" title="Using PLSM2 with Newton" class="wiki">Using PLSM2 with Newton</a>
+</li></ul></li></ul><h2 class="showhide_heading" id="See_also"> See also</h2>
+<ul><li> <a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=SceneManagersFAQ" title="Overview of the various scene managers available for Ogre" class="wiki">SceneManagersFAQ</a>
+</li><li> <a class="wiki external" target="_blank" href="http://www.ogre3d.org/docs/api/html/classOgre_1_1TerrainSceneManager.html" rel="external nofollow">Ogre API</a><img src="OGRE-Terrain-Scene-Manager_files/external_link.gif" alt="(external link)" style="border: none" title="(external link)" class="icon" height="14" width="15"> for TerrainSceneManager
+</li><li> <a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Basic+Tutorial+3" title="Terrain, Sky, and Fog" class="wiki">Basic Tutorial 3</a> - about Terrain, Sky, Fog, and the Root object
+</li><li> <a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Terrain+Alpha+Splatting" title="Basic terrain shader with up to 8 splat textures" class="wiki">Terrain Alpha Splatting</a> - a working example using the standard terrain scenemanager, complete with CG shader
+<ul><li> its Terrain Configuration File<a href="http://www.ogre3d.org/tikiwiki/tiki-editpage.php?page=Terrain+Alphasplat+Terrain+Configuratin+File" title="Create page: Terrain Alphasplat Terrain Configuratin File" class="wiki wikinew">?</a> - an example configuration
+</li></ul></li><li> <a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Paging+Scene+Manager" title="Paging Scene Manager" class="wiki">Paging Scene Manager</a>
+</li><li> <a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Terrain+Howto" title="Terrain Howto" class="wiki">Terrain Howto</a>
+</li><li> <a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Ogre+Compatible+HeightMap" title="Get height of terrain at (x,z) positions on a server without firing up Ogre" class="wiki">Ogre Compatible HeightMap</a> - code snippet for function <em>getHeightAt(x,z)</em>
+</li></ul><p>&nbsp;
+<br>
+</p>
+<hr>
+<p>Alias: <a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Terrain_Scene_Manager" title="Terrain_Scene_Manager" class="wiki alias">Terrain_Scene_Manager</a>
+<br>
+</p>
+
+	
+	
+	<hr class="hrwikibottom"> 
+
+	
+	</div> 
+
+
+
+
+	<p class="editdate">
+			Contributors to this page: <a class="link titletips" title="User information - Click for more info|&lt;img src='img/icons/star_green.gif' height='11' width='11' alt='603 points' /&gt;&amp;nbsp;603&lt;br /&gt;Last seen on Sat 10 of Dec., 2011 [01:46 UTC]&lt;br /&gt;" href="http://www.ogre3d.org/tikiwiki/tiki-user_information.php?userId=647">Latin1</a><img src="OGRE-Terrain-Scene-Manager_files/star_green.gif" alt="603 points" height="11" width="11">&nbsp;
+						,
+				<span class="link">JustBoo</span>
+						,
+				<a class="link titletips" title="User information - Click for more info|&lt;table&gt;&lt;tr&gt;&lt;td&gt;&lt;img border='0' src='temp/public//avatar_jacmoe.jpg'  alt='jacmoe' /&gt;&lt;/td&gt;&lt;td&gt;Jacob Moen&lt;br /&gt;&lt;img src='img/icons/star_purple.gif' height='11' width='11' alt='180265 points' /&gt;&amp;nbsp;180265&lt;br /&gt;&lt;img src='img/flags/Denmark.gif' /&gt; Denmark&lt;br /&gt;Last seen on Mon 17 of Sep., 2012 [16:36 UTC]&lt;br /&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;" href="http://www.ogre3d.org/tikiwiki/tiki-user_information.php?userId=2"><i class="highlightgroup"><b>jacmoe</b></i></a><img src="OGRE-Terrain-Scene-Manager_files/star_purple.gif" alt="180265 points" height="11" width="11">&nbsp;
+						,
+				<a class="link titletips" title="User information - Click for more info|&lt;img src='img/icons/star_blue.gif' height='11' width='11' alt='245 points' /&gt;&amp;nbsp;245&lt;br /&gt;Last seen on Thu 31 of Mar., 2011 [05:23 UTC]&lt;br /&gt;" href="http://www.ogre3d.org/tikiwiki/tiki-user_information.php?userId=199">Harkathmaker</a><img src="OGRE-Terrain-Scene-Manager_files/star_blue.gif" alt="245 points" height="11" width="11">&nbsp;
+						,
+				<a class="link titletips" title="User information - Click for more info|&lt;img src='img/icons/star_grey.gif' height='11' width='11' alt='6 points' /&gt;&amp;nbsp;6&lt;br /&gt;Last seen on Tue 14 of Dec., 2010 [16:57 UTC]&lt;br /&gt;" href="http://www.ogre3d.org/tikiwiki/tiki-user_information.php?userId=391">eforen</a><img src="OGRE-Terrain-Scene-Manager_files/star_grey.gif" alt="6 points" height="11" width="11">&nbsp;
+			 
+			and
+				<a class="link titletips" title="User information - Click for more info|&lt;table&gt;&lt;tr&gt;&lt;td&gt;&lt;img border='0' src='temp/public//avatar_Beauty.jpg'  alt='Beauty' /&gt;&lt;/td&gt;&lt;td&gt;&lt;img src='img/icons/star_purple.gif' height='11' width='11' alt='14565 points' /&gt;&amp;nbsp;14565&lt;br /&gt;&lt;img src='img/flags/Germany.gif' /&gt; Germany&lt;br /&gt;Last seen on Mon 10 of Feb., 2014 [18:40 UTC]&lt;br /&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;" href="http://www.ogre3d.org/tikiwiki/tiki-user_information.php?userId=9"><i class="highlightgroup"><b>Beauty</b></i></a><img src="OGRE-Terrain-Scene-Manager_files/star_purple.gif" alt="14565 points" height="11" width="11">&nbsp;
+	.
+	<br>
+	Page last modified on Friday 05 of August, 2011 00:04:14 UTC by <a class="link titletips" title="User information - Click for more info|&lt;img src='img/icons/star_green.gif' height='11' width='11' alt='603 points' /&gt;&amp;nbsp;603&lt;br /&gt;Last seen on Sat 10 of Dec., 2011 [01:46 UTC]&lt;br /&gt;" href="http://www.ogre3d.org/tikiwiki/tiki-user_information.php?userId=647">Latin1</a><img src="OGRE-Terrain-Scene-Manager_files/star_green.gif" alt="603 points" height="11" width="11">&nbsp;. 
+	
+			</p><hr>
+		The content on this page is licensed under the terms of the <a href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Creative+Commons+Attribution-ShareAlike+License&amp;copyrightpage=Terrain%20Scene%20Manager">Creative Commons Attribution-ShareAlike License</a>.
+		<br>As an exception, any source code contributed within the content is released into the <a href="http://www.ogre3d.org/tikiwiki/tiki-index?page=Public%20Domain%20Unlicense">Public Domain</a>.
+	<hr>
+
+	<p></p>
+
+
+
+			
+<div class="clearfix" id="page-bar"><span class="button"><a href="http://www.ogre3d.org/tikiwiki/tiki-pagehistory.php?page=Terrain+Scene+Manager&amp;source=0">Source</a></span><span class="button"><a href="http://www.ogre3d.org/tikiwiki/tiki-pagehistory.php?page=Terrain+Scene+Manager">History</a></span></div><a name="attachments"></a>
+
+<a name="attachments"></a>
+
+	<div id="attzone" style="display:none;">
+
+	
+
+	
+	
+
+	</div>
+<a name="comments"></a>
+
+	<div id="comments">
+				
+	<div id="comzone" style="display: none;">
+
+
+	
+	
+
+	 
+
+
+
+</div>
+
+
+</div><!-- comzone end -->	
+</div>
+
+<div class="help" id="tikihelp">
+	<div class="help_sections ui-tabs ui-widget ui-widget-content ui-corner-all" id="help_sections" style="display:none">
+		<ul class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
+							<li class="ui-state-default ui-corner-top ui-tabs-selected ui-state-active">
+					<a href="#advanced_search_help">
+						Search Help
+					</a>
+				</li>
+					</ul>
+					<div id="advanced_search_help" class="ui-tabs-panel ui-widget-content ui-corner-bottom">
+										
+<h3>Non Advanced Search or Natural Search</h3><div class="help_section">The documents are returned sorted on relevance depending on order, proximity, frequency of terms.</div><h3>Advanced Search or Boolean Search</h3><div class="help_section"><h4>Default search behavior</h4><p>By default, all search terms are <em>optional</em>.&nbsp;It
+ behaves like an OR logic.&nbsp;Objects that contain the more terms are 
+rated higher in the results and will appear first in their type. For 
+example, <strong>wiki forum</strong> will find:</p><ul><li>objects that include both terms</li><li>objects that include the term <strong>wiki</strong></li><li>objects that include the term <strong>forum</strong></li></ul><h4>Requiring terms</h4><p>Add a plus sign ( + ) before a term to indicate that the term <em>must</em> appear in results.&nbsp;Example: <strong>+wiki forum</strong> will find objects containing at least <strong>wiki</strong>. Objects with both terms and many occurences of the terms will appear first.</p><h4 id="excluding">Excluding terms</h4><p>Add a minus sign ( - ) before a term to indicate that the term <em>must not</em> appear in the results.&nbsp;To reduce a term's value without completely excluding it, <a href="#reducing" title="Reducing a term's value">use a tilde</a>.&nbsp;Example: <strong>-wiki forum</strong> will find objects that do not contain <strong>wiki</strong> but contain <strong>forum</strong></p><h4>Grouping terms</h4><p>Use parenthesis ( ) to group terms into subexpressions.&nbsp;Example: <strong>+wiki +(forum blog)</strong> will find objects that contain <strong>wiki</strong> and <strong>forum</strong> or that contain <strong>wiki</strong> and <strong>blog</strong> in any order.</p><h4>Finding phrases</h4><p>Use double quotes ( " " ) around a phrase to find terms in the exact order, exactly as typed.&nbsp;Example: <strong>"Alex Bell"</strong> will not find <strong>Bell Alex</strong> or <strong>Alex G. Bell</strong>. </p><h4>Using wildcards</h4><p>Add an asterisk ( * ) after a term to find objects that include the root word. For example, <strong>run*</strong> will find:</p><ul><li>objects that include the term <strong>run</strong></li><li>objects that include the term <strong>runner</strong></li><li>objects that include the term <strong>running</strong></li></ul><h4 id="reducing">Reducing a term's value</h4><p>Add
+ a tilde ( ~ ) before a term to reduce its value indicate to the ranking
+ of the results.&nbsp;Objects that contain the term will appear lower 
+than other objects (unlike the <a href="#excluding" title="Excluding terms">minus sign</a>	which will completely exclude a term).&nbsp;Example: <strong>+wiki ~forum</strong> will rate an object with only <strong>wiki</strong> higher that an object with <strong>wiki</strong> and  <strong>forum</strong>.</p><h4>Changing relevance value</h4><p>Add
+ a less than ( &lt; ) or greater than ( &gt; ) sign before a term to 
+change the term's contribution to the overall relevance value assigned 
+to a object.&nbsp;Example: <strong>+wiki +(&gt;forum &lt; blog)</strong> will find objects that contain <strong>wiki</strong> and <strong>forum</strong> or <strong>wiki</strong> and <strong>blog</strong> in any order. <strong>wiki forum</strong> will be rated higher.</p></div>		
+		
+			</div>
+			</div>
+	</div>
+							</div><a href="javascript:toggle('wpfade-1')">Click this link to toggle the Report Page Issue Form</a><div id="wpfade-1" style="display:none"><b>You do not have permission to modify an item</b>
+</div>
+</div>						</div>
+					</div>
+
+					<hr class="hidden">
+					</div>
+					<div class="clearfix" id="col3" style="display: table-cell;">
+					<h2 class="hidden">Sidebar</h2>
+					<div class="content">
+							
+
+
+<div class="box-shadow">	<div class="box box-SearchTags cssmenubox">
+			<h3 class="box-title clearfix">
+						<span class="moduletitle">Search by Tags
+</span>
+						<!--[if IE]><br class="clear" style="height: 1px !important" /><![endif]--></h3>
+			<div id="mod-SearchTagsr0" style="display: block" class="clearfix box-data">
+
+<div id="SearchTags" style="display:block;">
+<div class="role_navigation">
+			<ul id="cssmenu0" class="cssmenu menu51"><li class="option405 menuOption menuLevel0"><a href="http://www.ogre3d.org/tikiwiki/tiki-browse_freetags.php"><span class="menuText">Search Wiki by Freetags</span></a></li></ul>
+</div>
+</div>
+
+
+		</div>
+		<div class="box-footer">
+
+		</div>
+	</div>
+</div>
+					
+
+
+
+<div class="box-shadow">	<div class="box box-last_modif_pages">
+			<h3 class="box-title clearfix">
+						<span class="moduletitle">Last changes</span>
+							<span class="moduleflip" id="moduleflip-last_modif_pagesr6">
+				<a title="Toggle module contents" class="flipmodtitle" href="javascript:icntoggle('mod-last_modif_pagesr6','module.png');">
+										<img src="OGRE-Terrain-Scene-Manager_files/module.png" alt="[toggle]" id="icnmod-last_modif_pagesr6" class="flipmodimage" style="border: none" title="[toggle]" height="16" width="16">
+				</a>
+			</span>
+							<!--[if IE]><br class="clear" style="height: 1px !important" /><![endif]--></h3>
+			<div id="mod-last_modif_pagesr6" style="display: block" class="clearfix box-data">
+<ol>			<li>
+			<a class="linkmodule" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=SummerOfCode+Project+Ideas" title="21:03 UTC, by spacegaier">
+							SummerOfCode Project Ideas
+						</a>
+		</li>
+			<li>
+			<a class="linkmodule" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=SummerOfCode2016" title="17:58 UTC, by spacegaier">
+							SummerOfCode2016
+						</a>
+		</li>
+			<li>
+			<a class="linkmodule" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Ogre3D+Steam+Games+Sales+Charts" title="16:15 UTC, by bronzebeard">
+							Ogre3D Steam Games Sales Charts
+						</a>
+		</li>
+			<li>
+			<a class="linkmodule" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=GSoC+ApplicationTemplate" title="00:18 UTC, by spacegaier">
+							GSoC ApplicationTemplate
+						</a>
+		</li>
+			<li>
+			<a class="linkmodule" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Home" title="00:05 UTC, by spacegaier">
+							Home
+						</a>
+		</li>
+			<li>
+			<a class="linkmodule" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=SummerOfCode2015" title="Wed 17 of Feb., 2016 23:43 UTC, by spacegaier">
+							SummerOfCode2015
+						</a>
+		</li>
+			<li>
+			<a class="linkmodule" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Shadows" title="Wed 17 of Feb., 2016 13:17 UTC, by hyyou">
+							Shadows
+						</a>
+		</li>
+			<li>
+			<a class="linkmodule" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Gorilla" title="Mon 01 of Feb., 2016 00:46 UTC, by c6burns">
+							Gorilla
+						</a>
+		</li>
+			<li>
+			<a class="linkmodule" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Building+Your+Projects+With+CMake" title="Sun 24 of Jan., 2016 13:33 UTC, by azmeuk">
+							Building Your Projects With CMake
+						</a>
+		</li>
+			<li>
+			<a class="linkmodule" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=MyGui+Quickstart+%28Working+Page%29" title="Fri 01 of Jan., 2016 07:20 UTC, by kaelidian">
+							MyGui Quickstart (Working Page)
+						</a>
+		</li>
+	</ol><a class="linkmodule" style="margin-left: 20px" href="http://www.ogre3d.org/tikiwiki/tiki-lastchanges.php">...more</a>
+
+
+
+		</div>
+		<div class="box-footer">
+
+		</div>
+	</div>
+</div>
+					
+
+
+
+<div class="box-shadow">	<div class="box box-search_box">
+			<h3 class="box-title clearfix">
+						<span class="moduletitle">Search box</span>
+							<span class="moduleflip" id="moduleflip-search_boxr6">
+				<a title="Toggle module contents" class="flipmodtitle" href="javascript:icntoggle('mod-search_boxr6','module.png');">
+										<img src="OGRE-Terrain-Scene-Manager_files/module.png" alt="[toggle]" id="icnmod-search_boxr6" class="flipmodimage" style="border: none" title="[toggle]" height="16" width="16">
+				</a>
+			</span>
+							<!--[if IE]><br class="clear" style="height: 1px !important" /><![endif]--></h3>
+			<div id="mod-search_boxr6" style="display: block" class="clearfix box-data">
+    <form class="forms" id="search-module-form" method="get" action="tiki-searchresults.php">
+    <input id="fuser" name="highlight" size="14" accesskey="s" type="text"> 
+		
+ 			<input name="where" value="wikis" type="hidden">
+    			<br><label for="boolean">Advanced search:<input id="boolean" name="boolean" checked="checked" type="checkbox"></label>
+
+				<a onclick="openEditHelp();return false;" href="http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Terrain+Scene+Manager"><img src="OGRE-Terrain-Scene-Manager_files/help.png" alt="Click for Help" style="border: none" title="Click for Help" class="icon" height="16" width="16"></a><br>
+	    <input class="wikiaction" name="search" value="Go" type="submit"> 
+    </form>
+
+
+
+		</div>
+		<div class="box-footer">
+
+		</div>
+	</div>
+</div>
+					
+
+
+
+<div class="box-shadow">	<div class="box box-who_is_there">
+			<h3 class="box-title clearfix">
+						<span class="moduletitle">Online users</span>
+							<span class="moduleflip" id="moduleflip-who_is_therer7">
+				<a title="Toggle module contents" class="flipmodtitle" href="javascript:icntoggle('mod-who_is_therer7','module.png');">
+										<img src="OGRE-Terrain-Scene-Manager_files/module.png" alt="[toggle]" id="icnmod-who_is_therer7" class="flipmodimage" style="border: none" title="[toggle]" height="16" width="16">
+				</a>
+			</span>
+							<!--[if IE]><br class="clear" style="height: 1px !important" /><![endif]--></h3>
+			<div id="mod-who_is_therer7" style="display: block" class="clearfix box-data">
+<div>
+33 
+online users
+</div>
+
+
+
+		</div>
+		<div class="box-footer">
+
+		</div>
+	</div>
+</div>
+							</div>
+				</div>
+				<br style="clear:both">
+			<!--[if IE 7]><br style="clear:both; height: 0" /><![endif]-->
+			</div></div>
+				<div id="footer-shadow"><div id="footer">
+				<div class="footerbgtrap">
+					<div class="content">
+		
+	<div id="power_icons">
+	<br>
+<a href="http://www.ogre3d.org/"><img src="OGRE-Terrain-Scene-Manager_files/ogre_logo.png" alt="Ogre3d.org" title="Go to Ogre3d.org" border="0"></a>
+<br><br>
+<span id="poweredby">Powered by</span> <a href="http://info.tikiwiki.org/" title="© 2002–2010 The TikiWiki Community">Tiki Wiki CMS Groupware</a>
+</div>
+
+
+ 					</div>
+				</div>
+			</div></div>	
+		</div></div>	</div> 
+
+
+
+	
+	
+	
+		
+<!-- Put JS at the end -->
+	
+<!-- jsfile external -->
+<!-- jsfile dynamic -->
+<script type="text/javascript" src="OGRE-Terrain-Scene-Manager_files/tiki-jsplugin.js"></script>
+<!-- jsfile 0 -->
+<script type="text/javascript" src="OGRE-Terrain-Scene-Manager_files/minified_7e70dc0e4dc84c147ac9fc9af11bcea9.js"></script>
+
+
+	
+<script type="text/javascript">
+<!--//--><![CDATA[//><!--
+// js 0 
+var tiki_cookie_jar=new Array();
+
+function inArray(item, array) {
+    for (var i in array) {
+        if (array[i] === item) {
+            return i;
+        }
+    }
+    return false;
+}
+var allTimeZoneCodes = ["ACST","ACT","ADDT","ADMT","ADT","AFT","AHDT","AHST","AKDT","AKST","AKTST","AKTT","ALMST","ALMT","AMST","AMT","ANAST","ANAT","ANT","AOT","APT","AQTST","AQTT","ARST","ART","ASHST","ASHT","AST","AWT","AZOMT","AZOST","AZOT","AZST","AZT","BAKST","BAKT","BDST","BDT","BEAT","BEAUT","BMT","BNT","BORTST","BORT","BOST","BOT","BRST","BRT","BST","BTT","BURT","CANT","CAPT","CAST","CAT","CAWT","CCT","CDDT","CDT","CEMT","CEST","CET","CGST","CGT","CHADT","CHAST","CHAT","CHDT","CHOST","CHOT","CHUT","CIT","CJT","CKHST","CKT","CLST","CLT","CMT","COST","COT","CPT","CST","CUT","CVST","CVT","CWST","CWT","CXT","CHST","DACT","DAVT","DDUT","DMT","DUSST","DUST","EASST","EAST","EAT","ECT","EDDT","EDT","EEST","EET","EGST","EGT","EHDT","EIT","EMT","EPT","EST","EWT","FFMT","FJST","FJT","FKST","FKT","FMT","FNST","FNT","FORT","FRUST","FRUT","GALT","GAMT","GBGT","GEST","GET","GFT","GHST","GILT","GMT","GST","GYT","HADT","HAST","HDT","HKST","HKT","HMT","HOVST","HOVT","HPT","HST","HWT","ICT","IDDT","IDT","IHST","IMT","IOT","IRDT","IRKST","IRKT","IRST","ISST","IST","JAVT","JDT","JMT","JST","KART","KAST","KDT","KGST","KGT","KIZST","KIZT","KMT","KOST","KRAST","KRAT","KST","KUYST","KUYT","KWAT","LHST","LINT","LKT","LMT","LONT","LRT","LST","MADMT","MADST","MADT","MAGST","MAGT","MALST","MALT","MART","MAWT","MDDT","MDST","MDT","MEST","MET","MHT","MIST","MMT","MOST","MOT","MPT","MSD","MSK","MST","MUST","MUT","MVT","MWT","MYT","NCST","NCT","NDDT","NDT","NEGT","NEST","NET","NFT","NMT","NOVST","NOVT","NPT","NRT","NST","NUT","NWT","NZDT","NZMT","NZST","OMSST","OMST","ORAST","ORAT","PDDT","PDT","PEST","PETST","PETT","PET","PGT","PHOT","PHST","PHT","PKST","PKT","PMDT","PMST","PMT","PNT","PONT","PPMT","PPT","PST","PWT","PYST","PYT","QMT","QYZST","QYZT","RET","RMT","ROTT","SAKST","SAKT","SAMST","SAMT","SAST","SBT","SCT","SDMT","SGT","SHEST","SHET","SJMT","SLST","SMT","SRT","SST","STAT","SVEST","SVET","SWAT","SYOT","TAHT","TASST","TAST","TBIST","TBIT","TBMT","TFT","TJT","TKT","TLT","TMT","TOST","TOT","TRST","TRT","TSAT","TVT","UCT","ULAST","ULAT","URAST","URAT","URUT","UTC","UYHST","UYST","UYT","UZST","UZT","VET","VLASST","VLAST","VLAT","VOLST","VOLT","VOST","VUST","VUT","WAKT","WARST","WART","WAST","WAT","WEMT","WEST","WET","WFT","WGST","WGT","WIT","WMT","WSDT","WST","YAKST","YAKT","YDDT","YDT","YEKST","YEKT","YERST","YERT","YPT","YST","YWT","A","B","C","D","E","F","G","H","I","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","ZZZ","Z"];
+var local_tz = "";
+var now = new Date();
+var now_string = now.toString();
+var m = now_string.match(/[ \(]([A-Z]{3,6})[ \)]?[ \d]*$/);	// try three or more char tz first at the end or just before the year
+if (!m) {
+	m = now_string.match(/[ \(]([A-Z]{1,6})[ \)]?[ \d]*$/);	// might be a "military" one if not
+}
+if (m) {
+	m = m[1];
+} else {	// IE (sometimes) gives UTC +offset instead of the abbreviation
+	// sadly this workaround will fail for non-whole hour offsets
+	var hours = - now.getTimezoneOffset() / 60;
+	m = "GMT" + (hours > 0 ? "+" : "") + hours;
+}
+if (inArray(m, allTimeZoneCodes)) {
+	local_tz = m;
+} else {
+	local_tz = "UTC";
+}
+setCookie("local_tz", local_tz);
+
+
+var openEditHelp = function() {
+	var opts, edithelp_pos = getCookie("edithelp_position");
+	opts = { width: 460, height: 500, title: "Help", autoOpen: false, beforeclose: function(event, ui) {
+		var off = $(this).offsetParent().offset();
+   		setCookie("edithelp_position", parseInt(off.left,10) + "," + parseInt(off.top,10) + "," + $(this).offsetParent().width() + "," + $(this).offsetParent().height());
+	}};
+	if (edithelp_pos) {edithelp_pos = edithelp_pos.split(",");}
+	if (edithelp_pos && edithelp_pos.length) {
+		opts["position"] = [parseInt(edithelp_pos[0],10), parseInt(edithelp_pos[1],10)];
+		opts["width"] = parseInt(edithelp_pos[2],10);
+		opts["height"] = parseInt(edithelp_pos[3],10);
+	}
+	try {
+		if ($("#help_sections").dialog) {
+			$("#help_sections").dialog("destroy");
+		}
+	} catch( e ) {
+		// IE throws errors destroying a non-existant dialog
+	}
+	$("#help_sections").dialog(opts).dialog("open");
+	
+};
+// js 100 
+
+// JS Object to hold prefs for jq
+var jqueryTiki = new Object();
+jqueryTiki.ui = true;
+jqueryTiki.ui_theme = "smoothness";
+jqueryTiki.tooltips = true;
+jqueryTiki.autocomplete = true;
+jqueryTiki.superfish = true;
+jqueryTiki.replection = false;
+jqueryTiki.tablesorter = true;
+jqueryTiki.colorbox = true;
+jqueryTiki.cboxCurrent = "{current} / {total}";
+jqueryTiki.sheet = false;
+jqueryTiki.carousel = false;
+jqueryTiki.jqs5 = false;
+jqueryTiki.validate = true;
+
+jqueryTiki.effect = "";				// Default effect
+jqueryTiki.effect_direction = "vertical";	// "horizontal" | "vertical" etc
+jqueryTiki.effect_speed = 400;	// "slow" | "normal" | "fast" | milliseconds (int) ]
+jqueryTiki.effect_tabs = "slide";		// Different effect for tabs
+jqueryTiki.effect_tabs_direction = "vertical";
+jqueryTiki.effect_tabs_speed = "fast";
+
+jqueryTiki.autosave = true;
+jqueryTiki.sefurl = false;
+
+
+//--><!]]>
+</script>
+<script type="text/javascript">
+<!--//--><![CDATA[//><!--
+$(document).ready(function(){
+// jq_onready 0 
+phplayersmenu_loaded = 1;
+ $(function() {$("#help_sections").tabs({});}); 
+});
+//--><!]]>
+</script>
+
+	
+</body></html>
