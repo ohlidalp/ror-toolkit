@@ -335,11 +335,12 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 	def export_terrain_project(self):
 		"""
 		Exports an terrain.project.TerrainProject object from currently active terrain.
+		:returns: Tuple: TerrainProject, dict (export data)
 		"""
 		import copy
 		import rortoolkit.terrain
 		project = rortoolkit.terrain.TerrainProject()
-		tsm_conf    = self.export_ogre17_terrain_config()
+		tsm_conf = self.export_ogre17_terrain_config()
 		
 		# Helper functions to read TerrainSceneManager config
 		def tsm_val(key):
@@ -384,7 +385,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		project.physics["global_gravity"          ] = None
 		project.physics["global_water_height"     ] = self.terrain.WaterHeight
 		project.physics["use_heightmap"           ] = True # Always true for .terrn
-		project.physics["_heightmap_filename"     ] = tsm_val("Heightmap.image") # Temporary, import only
 		project.physics["heightmap_size"          ] = tsm_int("Heightmap.raw.size")
 		project.physics["heightmap_bpp"           ] = tsm_int("Heightmap.raw.bpp")
 		project.physics["heightmap_flip"          ] = tsm_bool("Heightmap.flip")
@@ -406,6 +406,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 
 		# Objects
 		for entry in self.entries.values():
+			# Entry data
 			o = rortoolkit.terrain.TerrainObject()
 			o.position_xyz        = (entry.ogrePosition.x, entry.ogrePosition.y, entry.ogrePosition.z)
 			o.rotation_quaternion = (entry.ogreRotation.x, entry.ogreRotation.y, entry.ogreRotation.z, entry.ogreRotation.w)
@@ -414,7 +415,11 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			o.extra_options       = entry.data.additionalOptions
 			project.objects.append(o)
 
-		return project
+		# Gather export data
+		export_data = {}
+		export_data["heightmap_filename"] = tsm_val("Heightmap.image")
+
+		return project, export_data
 
 	def export_heightmap(self, src_filename, dst_path):
 		"""
