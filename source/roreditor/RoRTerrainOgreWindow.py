@@ -45,7 +45,6 @@ MAX_SMOOTH_ANGLE = 9
 PAUSE_PER_SECOND = 0
 
 
-	  
 class HistoryEntryClass(object):
 	uuid = None
 	position = None
@@ -119,7 +118,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		
 	def getselected(self):
 		return self._selected
-	   
+
 	def setselected(self, value):
 		self._selected = value
 	def delselected(self):
@@ -127,31 +126,30 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 
 	def getautoTracking(self):
 		return self._autoTracking
-	   
+
 	def setautoTracking(self, value):
 		self._autoTracking = value
 		self.entryChanged(self.selected.entry)
 		self.showOverlay('POCore/autotrack', value)
-	
 
 	def getcameraCollision(self):
 		if "_cameraCollision" in self.__dict__:
 			return self._cameraCollision
 		else: # May happen if exception is raised during startup
 			return False
-	   
+
 	def setcameraCollision(self, value):
 		self._cameraCollision = value
-	
+
 	def getplaceWithMouse(self):
 		return self._placeWithMouse
-		   
+
 	def setplaceWithMouse(self, value):
 		self._placeWithMouse = value
-	
+
 	def getcurrentStatusMsg(self):
 		return self._currentStatusMsg
-		   
+
 	def setcurrentStatusMsg(self, value):
 		self._currentStatusMsg = value
 		msg = ["", "" , "", ""]
@@ -166,11 +164,10 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 	
 	def _getroad(self):
 		return self.parent.RoadSystem
-		   
-	
+
 	def _getcameraBookmark(self):
 		return self.parent.cameraBookmark
-	
+
 	def _getusePopup(self):
 		if self._usepopup == None: 
 			p = rorSettings().getSetting(TOOLKIT, usePopupToSelect)
@@ -181,41 +178,39 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 				return False	
 		else:
 			return self._usepopup
-		
-		  
+
 	def _setusePopup(self, value):
 		if self._usepopup != value:
 			rorSettings().setSetting(TOOLKIT, usePopupToSelect, value)
 			self._usepopup = value
-	
-	
+
 	def _getcameraVel(self):
 		if self._cameraVel == None:
 			r = rorSettings().getSetting(TOOLKIT, cameraVelocity)
 			if r == "" : r = 0.5
 			self._cameraVel = float(r)
 		return self._cameraVel
-		   
+
 	def _setcameraVel(self, value):
 		if not value == self._cameraVel:
 			rorSettings().setSetting(TOOLKIT, cameraVelocity, value)
 		self._cameraVel = value		
-	
+
 	def _getcameraShiftVel(self):
 		if self._cameraShiftVel == None:
 			r = rorSettings().getSetting(TOOLKIT, cameraShiftVelocity)
 			if r == "" : r = 20.0
 			self._cameraShiftVel = float(r)
 		return self._cameraShiftVel
-		   
+
 	def _setcameraShiftVel(self, value):
 		if not value == self._cameraShiftVel:
 			rorSettings().setSetting(TOOLKIT, cameraShiftVelocity, value)
 		self._cameraShiftVel = value
-	
+
 	def _getsplineMode(self):
 		return self._splineMode
-			
+
 	def _setsplineMode(self, value):
 		self.showOverlay('POCore/spline', False)
 		self.showOverlay('POCore/splinepause', False)
@@ -226,27 +221,28 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 				self._setGuiCaption('POCore/splineKm', ' %.2f Km' % self.roadSystem.km)
 			else:
 				self.showOverlay('POCore/splinepause', True)
-		
+
 	def _delsplineMode(self):
 		del self._splineMode
-	
+
 	splineMode = property(_getsplineMode, _setsplineMode, _delsplineMode,
 					doc="")
 
 	cameraShiftVel = property(_getcameraShiftVel, _setcameraShiftVel,
 					 doc="""camera velocity factor when pressing Shift""")
-	
+
 	cameraVel = property(_getcameraVel, _setcameraVel,
 					 doc="""camera Velocity""")
-				   
+
 	cameraBookmark = property(_getcameraBookmark,
 					 doc=""" pointer to camera Bookmark window""")
+
 	road = property(_getroad,
 					 doc="""access to Road System (tool) Window""")
-	
+
 	currentStatusMsg = property(getcurrentStatusMsg, setcurrentStatusMsg,
 					 doc="""update Status Bar""")
-	
+
 	placeWithMouse = property(getplaceWithMouse, setplaceWithMouse,
 					 doc="""Object Preview set up this property to place
 							 objects directly on terrain 
@@ -272,14 +268,13 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 	selected = property(getselected, setselected, delselected,
 				 doc="""Selected Object or Terrain
 						 may be terrain, object, RoRCharacter or RoRCamera""")
-	   
+
 	ObjectTree = property(getObjectTree,
 						  doc=" Access to Object Tree, it is a pointer ;-)")
-	
+
 	ObjectInspector = property(getObjectInspector,
 				 doc=" Access to Object Inspector Frame, it is a pointer ;-)")
 
-		   
 	MapOptions = property(_getMapOptions,
 					 doc=""" Edit first 4 lines of terrn file""")
 
@@ -404,16 +399,39 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		project.ogre_legacy_tsm["vertex_program_morph"] = tsm_bool("VertexProgramMorph")
 		project.ogre_legacy_tsm["lod_morph_start"     ] = tsm_float("LODMorphStart")
 
-		# Objects
+		# Objects (only those successfully spawned)
 		for entry in self.entries.values():
-			# Entry data
-			o = rortoolkit.terrain.TerrainObject()
+			# Create
+			if entry.data.isBeam:
+				o = rortoolkit.terrain.TerrainRigObject()
+			else:
+				o = rortoolkit.terrain.TerrainStaticObject()
+			# Export data
 			o.position_xyz        = (entry.ogrePosition.x, entry.ogrePosition.y, entry.ogrePosition.z)
 			o.rotation_quaternion = (entry.ogreRotation.x, entry.ogreRotation.y, entry.ogreRotation.z, entry.ogreRotation.w)
+			o.rotation_rx_ry_rz   = entry.rotation
 			o.filename            = entry.data.fileWithExt
 			o.type                = entry.data.type
 			o.extra_options       = entry.data.additionalOptions
-			project.objects.append(o)
+			o.editor_settings["imported_from_terrn"] = True
+			# Persist
+			if entry.data.isBeam:
+				project.rig_objects.append(o)
+			else:
+				project.static_objects.append(o)
+
+		# Rigs (all, including failed)
+		for data in self.terrain.beamobjs:
+			if data not in self.entries.values():
+				o = rortoolkit.terrain.TerrainRigObject()
+				o.position_xyz        = (data.x, data.y, data.z)
+				o.rotation_rx_ry_rz   = (data.rotx, data.roty, data.rotz)
+				o.filename            = data.fileWithExt
+				o.type                = data.type
+				o.extra_options       = data.additionalOptions
+				o.editor_settings["imported_from_terrn"] = True
+				o.editor_settings["imported_from_terrn_offline"] = True
+				project.rig_objects.append(o)
 
 		# Gather export data
 		export_data = {}
@@ -863,8 +881,99 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			else:
 				self.currentStatusMsg = "saving Error"
 		return res
-			
-	def LoadTerrain(self, filename):
+	
+	def load_terrain_from_project(self, project_dir_name):
+		import rortoolkit.terrain
+		import rortoolkit.resources
+
+		# Close previously open terrain
+		if self.terrain is not None:
+			self.clear()
+			self._resetVariables()
+
+		# Load project
+		project = rortoolkit.terrain.load_project_from_directory(project_dir_name)
+
+		# Setup resources
+		project.export_ogre_tsm_config()
+		rortoolkit.resources.setup_terrain_project_resources(project)
+		rortoolkit.resources.load_builtin_resources()
+		rortoolkit.resources.init_all_installdir_resources()
+
+		# create editor context
+		self.terrain = rortoolkit.terrain.TerrainEditorContext.create_from_project(project)
+
+		# Configure legacy OGRE TerrainSceneManager
+		self.sceneManager.setWorldGeometry(rortoolkit.terrain.OGRE_TSM_CONFIG_FILENAME)
+
+		# Water
+		self.createWaterPlane()
+
+		# Sky box
+		if self.terrain.cubemap:
+			self.sceneManager.setSkyBox(True, self.terrain.cubemap, 0.6)
+
+		# Place rigs
+		for beam in self.terrain.beamobjs:
+			try:
+				self.addTruckToTerrain(data=beam)
+			except Exception as e:
+				log().error("Loading terrain: Failed to add truck {0} to terrain, message: {1}"
+						.format(beam.fileWithExt, str(e)))
+
+		# Place objects
+		for obj in self.terrain.objects:
+			try:
+				self.addObjectToTerrain(data=obj)
+			except Exception as e:
+				log().error("Loading terrain: Failed to add object {0} to terrain, message: {1}"
+					.format(obj.fileWithExt, str(e)))
+
+		# Creating cameramesh
+		if self.terrain.CameraStartPosition:
+			cam = self.newEntryEx("cam.mesh", "mysimple/terrainselect", False, True, True)
+			cam.OnSelecting.append(self.entryChanged) #only update interfaz
+			cam.OnPositionChanged.append(self.specialEntryChanged) #update terrain and camera bookmark
+			cam.data.scale = 0.1, 0.1, 0.1
+			cam.data.name = RORCAMERA
+			cam.allowRotation = False
+			cam.position = self.terrain.CameraStartPosition.asTuple
+			cam.rotation = 0, 90, 0
+			cam.heightFromGround = 0.1
+			cam.informPositionChanged() #create/modify a camera bookmark entry
+		
+		# Creating charactermesh
+		if self.terrain.CharacterStartPosition:
+			character = self.newEntryEx("character.mesh", "mysimple/terrainselect", False, True, True)
+			character.OnSelecting.append(self.entryChanged)
+			character.OnPositionChanged.append(self.specialEntryChanged)
+			character.data.scale = 0.02, 0.02, 0.02
+			character.data.name = RORCHARACTER
+			character.allowRotation = False
+			character.position = self.terrain.CharacterStartPosition.asTuple
+			character.rotation = 90, 0, 0
+			character.heightFromGround = 0.1
+			character.informPositionChanged()
+
+		# Creating Truckmesh
+		if self.terrain.TruckStartPosition:
+			truck = self.newEntryEx("truckstart.mesh", "mysimple/terrainselect", False, True, True)
+			truck.OnSelecting.append(self.entryChanged)
+			truck.OnPositionChanged.append(self.specialEntryChanged)
+			truck.data.scale = 0.8, 0.8, 0.8
+			truck.data.name = RORTRUCK
+			truck.allowRotation = False
+			truck.position = self.terrain.TruckStartPosition.asTuple
+			truck.rotation = 0, 0, 0
+			truck.heightFromGround = 0.1
+			truck.informPositionChanged()
+
+		self.camera.setPosition(self.terrain.CharacterStartPosition.asTuple)
+		self.camera.moveRelative(ogre.Vector3(0, 2, 0))
+		
+		self.MapOptions.updateData(self.terrain)
+
+	def load_terrain_from_terrn_file(self, filename):
 		if not self.terrain is None:
 			self.cameraBookmark.saveCamera()
 			self.clear()
@@ -872,11 +981,11 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.roadSystem = RoadSystemClass(self.road, self)
 		self.roadSystem.loadSplines(filename)
 		import rortoolkit.terrain
-		self.terrain = rortoolkit.terrain.TerrainEditorContext.create_from_file(filename)
+		self.terrain = rortoolkit.terrain.TerrainEditorContext.create_from_terrn_file(filename)
 		if self.terrain.errorSaving != "":
 			showInfo("info", "terrain loaded with the following error:\n" + self.terrain.errorSaving)
 		
-		self.cameraBookmark.loadCamera(filename)
+		self.cameraBookmark.load_from_pickle(filename)
 		
 		cfgfile = os.path.join(os.path.dirname(filename), self.terrain.TerrainConfig)
 		self.sceneManager.setWorldGeometry(cfgfile)
@@ -904,8 +1013,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			if self.terrain.TruckStartPosition.isZero():				
 				l[1] = self.getTerrainHeight(ogre.Vector3(l[0], l[1], l[2])) + 2
 				self.terrain.TruckStartPosition.asList = l
-			
-		
 
 		except Exception, err:
 			log().error("Error while setting initial camera:")
@@ -919,6 +1026,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			except Exception, err:
 				log().error("Error while adding a Beam Construction to the terrain. Name: %s" % beam.name)
 				log().error(str(err))
+
 		for obj in self.terrain.objects:
 			try:
 				newE = self.addObjectToTerrain(data=obj)
@@ -938,7 +1046,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			cam.data.scale = 0.1, 0.1, 0.1
 			cam.data.name = RORCAMERA
 			cam.allowRotation = False
-			cam.position = self.terrain.CameraStartPosition.asTuple 
+			cam.position = self.terrain.CameraStartPosition.asTuple
 			cam.rotation = 0, 90, 0
 			cam.heightFromGround = 0.1
 			cam.informPositionChanged() #create/modify a camera bookmark entry
@@ -950,7 +1058,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			character.OnPositionChanged.append(self.specialEntryChanged)
 			character.data.scale = 0.02, 0.02, 0.02
 			character.data.name = RORCHARACTER
-			character.allowRotation = False				 
+			character.allowRotation = False
 			character.position = self.terrain.CharacterStartPosition.asTuple
 			character.rotation = 90, 0, 0
 			character.heightFromGround = 0.1
@@ -1485,9 +1593,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			newrot = self.selected.entry.node.getOrientation()
 		
 		self.addObjectToHistory(self.selected.entry)
-		self.selected.entry.data.modified = True		
+		self.selected.entry.data.modified = True
 		self.selected.entry.ogreRotation = newrot
-		self.selected.axis.rotateNode.setOrientation(newrot)	   
+		self.selected.axis.rotateNode.setOrientation(newrot)
 
 	def addSelectedFromTO(self):
 		if self.parent.ObjectTree is None:
@@ -2147,7 +2255,7 @@ If you pressed F1 by mistake, don't press F1 nor F2 nor F3 keys.
 			totalObjects += self.knownObjects[k]["instanceCount"]
 			if k in ['road', 'roadborderleft', 'roadborderright', 'roadborderboth', 'roadbridge']:
 				totalMeters += 10 * self.knownObjects[k]["instanceCount"]
-		msg = "Map Statistics for  %s (%s): \n" % (self.terrain.TerrainName, self.terrain.filename)
+		msg = "Map Statistics for  %s (%s): \n" % (self.terrain.TerrainName, self.terrain.project_title)
 		msg += "\n\n %9.2f Km of roads\n" % (float(totalMeters / 1000.0))
 		msg += "%10d objects (without roads)\n" % (totalObjects - int(totalMeters / 10))
 		msg += "%10d different objects\n" % len(self.knownObjects.keys())

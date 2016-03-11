@@ -4,7 +4,7 @@ import ogre.renderer.OGRE as OGRE
 
 _resource_manager_singleton = None
 
-def resource_manager_init_singleton():
+def init():
 	"""
 	Inits resource manager singleton. Returns nothing.
 	"""
@@ -22,6 +22,7 @@ def resource_manager_init_singleton():
 		def __init__(self):
 			self._available_resources = {} # Key = group, Val = dict {path, type(FileSystem/Zip)}
 			self._initialized_groups = [] # List of OGRE resource group names
+			self._installdir_dirnames = ["materials", "meshes", "textures"]
 
 		def load_builtin_resources(self):
 			# aabb offset setup to zero
@@ -61,14 +62,13 @@ def resource_manager_init_singleton():
 					res_grp_name = "homedir_" + dirname
 					self._check_and_add_resource_location(res_grp_name, filepath)
 
-			installdir_zips = ["materials.zip", "meshes.zip", "textures.zip"]
-
 			# Add zips under installation dir
 			resources_dir = os.path.normpath( os.path.join(config_mgr.rorFolder, "resources") )
-			for zipfile in installdir_zips:
-				zip_path = os.path.join(resources_dir, zipfile)
-				res_grp_name = "installdir_" + zipfile
-				self._check_and_add_resource_location(res_grp_name, zip_path)
+			for dirname in self._installdir_dirnames:
+				dir_path = os.path.join(resources_dir, dirname)
+				res_grp_name = "installdir_" + dirname
+				self._check_and_add_resource_location(res_grp_name, dir_path)
+				self._check_and_add_resource_location(res_grp_name, dir_path + ".zip")
 
 		def _check_and_add_resource_location(self, group_name, filepath):
 			"""
@@ -77,15 +77,11 @@ def resource_manager_init_singleton():
 			"""
 			import os.path
 
-			if (os.path.isdir(filepath)):
+			if os.path.isdir(filepath):
 				self._add_resource(group_name, filepath, "FileSystem")
 				return True
-			elif (os.path.isfile(filepath)):
-				# TODO: Check zipfile validity
-				is_zipfile = filepath[-4:] == ".zip"
-				if is_zipfile:
-					self._add_resource(group_name, filepath, "Zip")
-					return True
+			elif os.path.isfile(filepath) and (filepath[-4:] == ".zip"):
+				self._add_resource(group_name, filepath, "Zip")
 			else:
 				return False
 		
@@ -115,6 +111,14 @@ def resource_manager_init_singleton():
 				self._add_ogre_resource_group(group_key, group_entries)
 			self._available_resources = {}
 
+		def init_all_installdir_resources(self):
+			for dirname in self._installdir_dirnames:
+				grp_name = "installdir_" + dirname
+				if grp_name in self._available_resources:
+					grp_itemlist = self._available_resources[grp_name]
+					self._add_ogre_resource_group(grp_name, grp_itemlist)
+					del self._available_resources[grp_name]
+
 		def search_importable_terrains(self):
 			"""
 			:returns: List of filenames
@@ -135,10 +139,9 @@ def resource_manager_init_singleton():
 
 	_resource_manager_singleton = ResourceManager()
 
-def resource_manager_get_singleton():
-	global _resource_manager_singleton
+def _get_singleton(fn_name):
 	if _resource_manager_singleton is None:
-		raise Exception("Programmer error: ResourceManager was not initialized")
+		raise Exception("rortoolkit.resources.{}(): Resource manager was not initialized!".format(fn_name))
 	return _resource_manager_singleton
 
 def open_ogre_resource(filename):
@@ -154,3 +157,36 @@ def get_resource_zip_path(filename):
 		return fileinfo[0].archive.Name
 	except:
 		return None
+
+def setup_terrain_project_resources(project):
+	import rortoolkit.terrain
+
+	ogre_mgr = OGRE.ResourceGroupManager.getSingleton()
+	# Project root
+	grp_name = rortoolkit.terrain.OGRE_RESOURCEGROUP_ROOT
+	ogre_mgr.addResourceLocation(project.get_project_directory(), "FileSystem", grp_name, False)
+	ogre_mgr.initialiseResourceGroup(grp_name)
+	# Project temp dir
+	grp_name = rortoolkit.terrain.OGRE_RESOURCEGROUP_TEMP
+	ogre_mgr.addResourceLocation(project.get_temp_directory(), "FileSystem", grp_name, False)
+	ogre_mgr.initialiseResourceGroup(grp_name)
+	# Project resource dir - recursive!
+	grp_name = rortoolkit.terrain.OGRE_RESOURCEGROUP_RESOURCES
+	ogre_mgr.addResourceLocation(project.get_resources_directory(), "FileSystem", grp_name, True) # Recursive!
+	ogre_mgr.initialiseResourceGroup(grp_name)
+
+def load_builtin_resources():
+	_get_singleton("load_builtin_resources").load_builtin_resources()
+
+def init_all_installdir_resources():
+	_get_singleton("init_all_installdir_resources").init_all_installdir_resources()
+
+def scan_for_available_resources():
+	_get_singleton("scan_for_available_resources").scan_for_available_resources()
+
+def init_all_known_resources():
+	_get_singleton("init_all_known_resources").init_all_known_resources()
+
+def search_importable_terrains():
+	return _get_singleton("search_importable_terrains").search_importable_terrains()
+

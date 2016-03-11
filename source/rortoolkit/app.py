@@ -36,7 +36,11 @@ class Application:
 			self._gui_panels["terrain_project_manager_window"] = window
 		def callback_import_fn():
 			self.enter_mode(AppMode.TERRAIN_IMPORT_SEARCH)
+		def callback_open_fn(dirname):
+			self._gui_panels["main_frame"].load_terrain_from_project(dirname)
+			self._mode = AppMode.TERRAIN_EDITOR
 		window.callback_import_button_pressed = callback_import_fn
+		window.callback_open_button_pressed = callback_open_fn
 		window.populate_project_list(self.list_terrain_projects())
 		window.Show()
 
@@ -77,10 +81,9 @@ class Application:
 			self._gui_panels["terrain_import_selector_window"] = window
 		window.Show()
 		# Init resources
-		res_mgr = rortoolkit.resources.resource_manager_get_singleton()
-		res_mgr.init_all_known_resources() # This inits OGRE resource groups
+		rortoolkit.resources.init_all_known_resources() # This inits OGRE resource groups
 		# Search for terrains
-		terrns = res_mgr.search_importable_terrains()
+		terrns = rortoolkit.resources.search_importable_terrains()
 		window.assign_terrains(terrns)
 		# Callbacks
 		def cancel_import_fn():
@@ -101,7 +104,8 @@ class Application:
 
 	def _import_terrn(self, filename):
 		"""
-		Imports .terrn and switches app to TERRAIN_EDITOR mode.
+		Performs an online import of .terrn: Opens the terrain,
+		exports a project from it and switches app to TERRAIN_EDITOR mode.
 		"""
 		import os
 		import os.path
@@ -114,11 +118,12 @@ class Application:
 		self._gui_panels["terrain_import_selector_window"].Hide()
 
 		# Fire legacy loading code
-		self._gui_panels["main_frame"].openTerrain(filename)
+		self._gui_panels["main_frame"].load_terrain_from_terrn_file(filename)
 
 		# Export project from editor
 		terrn_editor_win = self._gui_panels["main_frame"].terrainOgreWin
 		terrn_project, export_data = terrn_editor_win.export_terrain_project()
+		terrn_editor_win.cameraBookmark.save_to_terrain_project(terrn_project)
 
 		# Save JSON data
 		terrn_project.save_as_json()

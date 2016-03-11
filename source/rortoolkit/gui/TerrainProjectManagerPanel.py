@@ -15,6 +15,7 @@ class TerrainProjectManagerPanel(wx.Frame):
 		self._application = app
 		self._selected_project_dirname = None
 		self.callback_import_button_pressed = None
+		self.callback_open_button_pressed = None
 
 		grid = wx.GridBagSizer(2, 2)
 		grid.SetEmptyCellSize(wx.Size(110, 3))
@@ -68,7 +69,9 @@ class TerrainProjectManagerPanel(wx.Frame):
 			fn()
 
 	def _on_open_button_pressed(self, event):
-		pass # TODO
+		fn = self.callback_open_button_pressed
+		if fn is not None:
+			fn(self._selected_project_dirname)
 
 	def _on_close_window(self, event):
 		event.Veto() # Don't destroy the window!

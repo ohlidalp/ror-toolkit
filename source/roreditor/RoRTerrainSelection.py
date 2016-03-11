@@ -108,6 +108,7 @@ class simpleEntryClass(object):
 			
 	def _delOnSelecting(self):
 		del self._OnSelecting
+
 	def _getOnDeselecting(self):
 		return self._OnDeselecting
 			
@@ -442,7 +443,7 @@ class terrainEntryClass(simpleEntryClass):
 			return
 
 		return self.node._getDerivedOrientation()
-	   
+
 	def setogreRotation(self, value):
 		""" value is a Quaternion"""
 		if self.node is None or self.data is None:
@@ -497,7 +498,7 @@ class terrainEntryClass(simpleEntryClass):
 					msg += self.vector(" ") 
 				if self.ogreWindow:
 					if self.ogreWindow.terrain:
-						msg += " on terrain %s" % self.ogreWindow.terrain.filename
+						msg += " on terrain %s" % self.ogreWindow.terrain.project_title
 				log().info(msg)
 			else:
 				self._height = y - self._terrainHeight
@@ -1097,4 +1098,4 @@ class BoundBoxClass(object):
 		for v in vertices:
 			h.append(self.dots[v].heightFromGround)
 		h.sort(reverse=True)
-		return h[0]			 
+		return h[0]

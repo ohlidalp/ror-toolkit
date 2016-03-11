@@ -93,9 +93,13 @@ class MainFrame(wx.Frame):
 
 				wx.Frame.__init__(self, parent, id, title, pos, size, style)
 
+				import rortoolkit.resources
+				import rortoolkit.app
+				import ror.rorcommon
+				import wxogre
+
 				# Create application class
 				# TODO: Application should manage MainFrame, not the other way around!!
-				import rortoolkit.app
 				self.application = rortoolkit.app.Application()
 				self.application.init_set_main_frame(self)
 
@@ -112,7 +116,6 @@ class MainFrame(wx.Frame):
 				self.ConfigureSkin()
 				# Lepes: move starter here since rorSettings needs a MainApp launched
 				# before retrieving paths due wx.StandardPaths module
-				import ror.rorcommon
 				if not ror.rorcommon.checkRoRDirectory():
 					import ror.starter
 					log().debug("First time Toolkit is running.")
@@ -291,7 +294,6 @@ class MainFrame(wx.Frame):
 				self.ogreTimer.Start(25)
 
 				# Init OGRE
-				import wxogre
 				wxogre.OgreManager.getOgreManager() # Inits singleton
 				
 				# the terrain editor ogre window
@@ -302,12 +304,9 @@ class MainFrame(wx.Frame):
 				self._mgr.AddPane(self.terrainOgreWin, wx.aui.AuiPaneInfo().Name("ogre_terrain_content").CenterPane().Hide())
 
 				# Load essential media
-				import rortoolkit.resources
-				rortoolkit.resources.resource_manager_init_singleton()
-				resource_mgr = rortoolkit.resources.resource_manager_get_singleton()
-				resource_mgr.load_builtin_resources()
-				resource_mgr.scan_for_available_resources()
-				
+				rortoolkit.resources.init()
+				rortoolkit.resources.load_builtin_resources()
+				rortoolkit.resources.scan_for_available_resources()
 
 				self.terrainOgreWin.finalize_init() # Must be done after rortoolkit media were loaded
 
@@ -651,10 +650,13 @@ class MainFrame(wx.Frame):
 				getOgreManager().RenderAll()
 				pass
 
-		def openTerrain(self, filename):
-				log().debug("opening terrain %s" % filename)
-				self.changeEditorMode(1)
-				self.terrainOgreWin.LoadTerrain(filename)
+		def load_terrain_from_project(self, project_dirname):
+			self.changeEditorMode(1)
+			self.terrainOgreWin.load_terrain_from_project(project_dirname)
+
+		def load_terrain_from_terrn_file(self, filename):
+			self.changeEditorMode(1)
+			self.terrainOgreWin.load_terrain_from_terrn_file(filename)
 
 		def OnSaveTerrain(self, event=None):
 				if self.lastFilenameUsed == "":

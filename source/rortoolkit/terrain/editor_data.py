@@ -82,22 +82,22 @@ class EditorObject(object):
 
 	def getallposition(self):
 		return self.x, self.y, self.z
-	   
+
 	def setallposition(self, value):
 		self.x, self.y, self.z = value
 
 	def getallrotation(self):
 		return self.rotx, self.roty, self.rotz
-	   
+
 	def setallrotation(self, value):
 		self.rotx, self.roty, self.rotz = value
 
 	def getpositionRotation(self):
 		return position, rotation
-	   
+
 	def setpositionRotation(self, value):
 		self.x, self.y, self.z, self.rotx, self.roty, self.rotz = value
-   
+
 	def allowSection72(self):
 		""" return true if this entry allow custom
 		7-2 section of terrain, in example 'village Coldwater'
@@ -126,17 +126,17 @@ class EditorObject(object):
 			return True
 		else:
 			return False
-		
+
 	def getScale(self):
 		return self._scale
-	   
+
 	def setScale(self, value):
 		self._scale = value
-	
+
 	def _getfileWithExt(self):
 		if self.ext == "": return self._fileWithExt + '.odef' 
 		return self._fileWithExt
-		   
+
 	def _setfileWithExt(self, value):
 		""" can receive:  
 		chapel.odef
@@ -149,14 +149,16 @@ class EditorObject(object):
 		if self.ext != "":
 			if hardcoded['terrain']['objecttype'].has_key(self.ext.lower()):
 				self.type = hardcoded['terrain']['objecttype'][self.ext.lower()]
-	   
+
 	fileWithExt = property(_getfileWithExt, _setfileWithExt,
 					 doc="""Only Filename with Extension""")
+
 	scale = property(getScale, setScale,
 				 doc="sometimes used")
 
 	position = property(getallposition, setallposition,
 				 doc="Shortcuta to x, y, z variables")
+
 	rotation = property(getallrotation, setallrotation,
 				 doc="Shortcuta to rotx, roty, rotz")
 
@@ -165,16 +167,16 @@ class EditorObject(object):
 	
 	def setPosition(self, value):
 		setallposition(value)
-		
+
 	def setRotation(self, value):
 		setallrotation(value)
 
 	def __str__(self):
 		return "Terrain entry: " + self._fileWithExt
+
 	def vector(self, text):
 		return ("%12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %12.6f, %s" % (self.x, self.y, self.z, self.rotx, self.roty, self.rotz, text))
-		
-			   
+
 	def logPosRot(self, text):
 		log().info(self.vector(text))
 
@@ -184,7 +186,7 @@ class TerrainEditorContext(object):
 
 	def geterrorSaving(self):
 		return self._errorSaving
-	   
+
 	def seterrorSaving(self, value):
 		if value == "" or value == None:
 			self._errorSaving = ""
@@ -192,28 +194,99 @@ class TerrainEditorContext(object):
 			if self._errorSaving is "":
 				self._errorSaving = strErrors 
 			self._errorSaving += "\n- " + value 
-		
+
 	errorSaving = property(geterrorSaving, seterrorSaving,
 				 doc="string error with errors while saving")   
 
 	def __init__(self):
 		"""
-		Dummy constructor. Does nothing.
+		Constructor, does essential init.
 		"""
-		pass
+		import ror.lputils
+		self.TruckStartPosition     = ror.lputils.positionClass()
+		self.CameraStartPosition    = ror.lputils.positionClass()
+		self.CharacterStartPosition = ror.lputils.positionClass()
+
+		self.project       = None
+		self.objects       = []
+		self.beamobjs      = []
+		self.procroads     = []
+		# only filename with extension
+		self.filename      = ''
+		# name is filename without extension, useful for launching RoR command line
+		self.name          = ''
+		self.TerrainConfig = ''
+		#name to show on Menu
+		self.TerrainName   = ''
+		self.UsingCaelum   = False
+		self.WaterHeight   = None
+		self.SkyColor      = None
+		self.SkyColorLine  = None
+		self.worldX        = None
+		self.worldZ        = None
+		self.worldMaxY     = None
+		self.author        = []
+		self.cubemap       = None
 
 	@staticmethod
-	def create_from_file(filename):
+	def create_from_project(project):
+		"""
+		Factory method. Loads a terrain project.
+		"""
+		ctx = TerrainEditorContext()
+		ctx.project = project
+		ctx.project_title = project.header["name"]
+		ctx.TerrainName   = project.header["name"]
+		ctx.WaterHeight   = project.physics["global_water_height"]
+		ctx.cubemap       = project.visuals["cubemap_name"]
+		ctx.UsingCaelum   = project.visuals["use_caelum"]
+
+		def load_position(pos_class, xyz_list):
+			pos_class.x = xyz_list[0]
+			pos_class.y = xyz_list[1]
+			pos_class.z = xyz_list[2]
+
+		load_position(ctx.TruckStartPosition    , project.gameplay["spawn_pos_truck_xyz"])
+		load_position(ctx.CameraStartPosition   , project.gameplay["spawn_pos_camera_xyz"])
+		load_position(ctx.CharacterStartPosition, project.gameplay["spawn_pos_character_xyz"])
+
+		for project_obj in project.static_objects:
+			editor_obj = EditorObject()
+			editor_obj.type              = project_obj.type
+			editor_obj.fileWithExt       = project_obj.filename
+			editor_obj.additionalOptions = project_obj.extra_options
+			editor_obj.position          = project_obj.position_xyz
+			editor_obj.rotation          = project_obj.rotation_rx_ry_rz
+			editor_obj.strPosRot         = None # Str
+			editor_obj.line              = None # Str
+			editor_obj.modified          = False
+			editor_obj.spline            = None # Spline roads, obsolete
+			editor_obj.isBeam            = False
+			ctx.objects.append(editor_obj)
+
+		for project_rig in project.rig_objects:
+			editor_obj = EditorObject()
+			editor_obj.isBeam      = True
+			editor_obj.line        = None # str
+			editor_obj.fileWithExt = project_rig.filename
+			editor_obj.position    = project_rig.position_xyz
+			editor_obj.rotation    = project_rig.rotation_rx_ry_rz
+			editor_obj.strPosRot   = None # Str
+			editor_obj.modified    = False
+			ctx.beamobjs.append(editor_obj)
+
+		return ctx
+
+	@staticmethod
+	def create_from_terrn_file(filename):
 		"""
 		Classic constructor. Builds the terrain from .terrn file
 		Since 2016 used only for .terrn import.
 		"""
 		object = TerrainEditorContext()
-		object.initVariables()
-		object.filename = filename
+		object.project_title = filename
 		import os.path
 		object.name = os.path.split(filename)[1].split(".")[0]
-		object._errorSaving = ""
 		content = loadResourceFile(filename)
 		log().info("processing terrain file: %s" % filename)
 		if len(content) > 2:
@@ -223,33 +296,6 @@ class TerrainEditorContext(object):
 			log().error("valid terrain must have at least 3 lines")
 		log().info("processing of terrain finished!")
 		return object
-
-	def initVariables(self):
-		self.TruckStartPosition     = positionClass()
-		self.CameraStartPosition    = positionClass()
-		self.CharacterStartPosition = positionClass()
-
-#	def clear(self):
-		self.objects = []
-		self.beamobjs = [] # lepes: bug found, this line was missing so it loaded twice  // author and the following lines !!
-		self.procroads = []
-		# only filename with extension
-		self.filename = ''
-		# name is filename without extension, useful for launching RoR command line
-		self.name = ''
-		self.TerrainConfig = ''
-		#name to show on Menu
-		self.TerrainName = ''
-	
-		self.UsingCaelum = False
-		self.WaterHeight = None
-		self.SkyColor = None
-		self.SkyColorLine = None
-		self.worldX = None
-		self.worldZ = None
-		self.worldMaxY = None
-		self.author = []
-		self.cubemap = None	
 
 	def __del__(self):
 		del self.objects
@@ -537,10 +583,13 @@ class TerrainEditorContext(object):
 	def formatFloatR(self, fl):
 		return "%12s" % ("%0.6f" % round(float(fl), 1))
 	
+	""" 
+	OBSOLETE, TO BE REMOVED
+	Left around for reference
+
 	def save(self, filename=None):
-		self.errorSaving = ""
 		if filename is None:
-			self.errorSaving = "you must supply a filename to save"
+			ERR "you must supply a filename to save"
 			return False
 
 		log().debug("saving terrain as %s" % filename)
@@ -560,16 +609,14 @@ class TerrainEditorContext(object):
 			ar.append(str(self.TruckStartPosition.y))
 			ar.append(str(self.TruckStartPosition.z))
 		except Exception, err:
-			log().error(str(err))
-			self.errorSaving = "Bad Truck Start Position"
-			log().error(self.errorSaving)
+			ERR "Bad Truck Start Position"
 		try:
 			ar.append(str(self.CameraStartPosition.x))
 			ar.append(str(self.CameraStartPosition.y))
 			ar.append(str(self.CameraStartPosition.z))
 		except Exception, err:
 			log().error(str(err))
-			self.errorSaving = "Bad Camera Start Position"
+			ERR "Bad Camera Start Position"
 			
 		if not self.CharacterStartPosition is None:
 			try:
@@ -578,7 +625,7 @@ class TerrainEditorContext(object):
 				ar.append(str(self.CharacterStartPosition.z))
 			except Exception, err:
 				log().error(str(err))
-				self.errorSaving = "Bad Character Start Position"
+				ERR "Bad Character Start Position"
 		startline = ", ".join(ar) + "\n"
 		lines.append(startline)
 
@@ -614,13 +661,13 @@ class TerrainEditorContext(object):
 			f.close()
 		except Exception, err:
 			log().error(str(err))
-			self._errorSaving = ("Can not save Terrain, error accessing to disk file:\n %s \n\n Try with Save As...\n" + self._errorSaving) % filename
+			ERR  ("Can not save Terrain, error accessing to disk file:\n %s \n\n Try with Save As...\n" + self._errorSaving) % filename
 			# if exception ocourr, we assert to set modified to True, so it will saved when user choose save As
 			for truck in self.beamobjs:
 				truck.modified = True
 			for objectline in self.objects:
 				objectline.modified = True
 
-		return self.errorSaving == ""
+		"""
 
 		

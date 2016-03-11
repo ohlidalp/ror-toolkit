@@ -6,24 +6,18 @@
 # 
 # 
 #===============================================================================
-import math, glob
-import wx, os, os.path, copy
-import pickle
-import ogre.renderer.OGRE as ogre
+
+import wx, os, os.path
 from ShapedControls import *
 from ror.rorcommon import *
 from ror.settingsManager import rorSettings
-from ror.lputils import positionClass
 from ror.logger import log
 
 class CameraWindow(ShapedWindow):
 	
-	def __del__(self):
-		self.saveCamera()
-	
 	def __init__(self, parent, **kwargs):
 		ShapedWindow.__init__(self, parent, **kwargs)
-	   
+
 		self.parent = parent
 		self.rordir = rorSettings().rorFolder
 			
@@ -113,21 +107,23 @@ class CameraWindow(ShapedWindow):
 		grid.Add(pan,
 				 pos=wx.GBPosition(r, c),
 				 span=wx.GBSpan(1, 1))
-				 
+
 		# Bottom padding
 		r += 1
 		grid.AddSpacer(spacer_size, (r,c))
 		
 		self.SetSizerAndFit(grid)
 		self.updateSkin()
-		 
 
+	def load_from_pickle(self, terrnFile):
+		"""
+		Classic method, before terrain projects
+		"""
+		import pickle
 
-
-	def loadCamera(self, terrnFile):
 		self.cameraList = []
 		self.list.Set([])
-		barename, self.ext = os.path.splitext(os.path.basename(terrnFile))
+		barename, ext_unused_ = os.path.splitext(os.path.basename(terrnFile))
 		self._file = rorSettings().concatToToolkitHomeFolder(['cameras', '%s.txt' % barename], True)
 		
 		try:
@@ -143,27 +139,29 @@ class CameraWindow(ShapedWindow):
 			
 		self.lastcount = len(self.cameraList)
 		self.list.Set(self.getValues())
+
+	def load_from_terrain_project(self, project):
+		self.cameraList = []
+		self.list.Set([])
+		self.lastcount = 0
+
+		if "camera_bookmarks" not in project.editor_settings:
+			return
 		
+		self.cameraList = project.editor_settings["camera_bookmarks"]
+		self.lastcount = len(self.cameraList)
+		self.list.Set(self.getValues())
+
+	def save_to_terrain_project(self, project):
+		project.editor_settings["camera_bookmarks"] = self.cameraList
+
 	def getValues(self):
 		v = []
 		for i in range(0, len(self.cameraList)):
 			v.append(self.cameraList[i]['name'])
 		self.cameraName.ChangeValue("camera %03d" % self.lastcount)
 		return v
-		
-	def saveCamera(self, terrnFile=None):
-		if self.cameraList and (len(self.cameraList) > 0):
-			log().debug("saving %d cameras" % len(self.cameraList))
-			if terrnFile is not None:
-				barename, self.ext = os.path.splitext(os.path.basename(terrnFile))
-				self._file = rorSettings().concatToToolkitHomeFolder(['cameras', '%s.txt' % barename], True)
-			output = open(self._file, 'wb')
-			if output:
-				pickle.dump(self.cameraList, output, 0)
-				output.close()
-				log().debug("cameras saved to %s" % self._file)
 
-		
 	def OnLeftDown(self, event):
 		ShapedWindow.OnLeftDown(self, event)
 		event.Skip()
@@ -208,7 +206,7 @@ class CameraWindow(ShapedWindow):
 		# return key on camera Text control
 		self.Onadd(event)
 		event.Skip()
-			
+
 	def OnnormalVel(self, event):	
 		vel = ShapedWindow.checkValidChars(self, event.GetString())
 		self.parent.terrainOgreWin.cameraVel = vel
@@ -218,6 +216,7 @@ class CameraWindow(ShapedWindow):
 		vel = ShapedWindow.checkValidChars(self, event.GetString())
 		self.parent.terrainOgreWin.cameraShiftVel = vel
 		event.Skip()
+
 	def updateVelocity(self, normalVel, shiftVel):
 		if normalVel > 0.0:
 			self.normalVel.SetValue("%.1f" % normalVel)
