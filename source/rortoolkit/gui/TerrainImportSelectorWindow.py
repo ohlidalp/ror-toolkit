@@ -12,6 +12,8 @@ class TerrainImportSelectorWindow(wx.Frame):
 	"""
 
 	def __init__(self, parent, app, **kwargs):
+		import rortoolkit.gui
+
 		# Setup wxPython window
 		styles = wx.DEFAULT_FRAME_STYLE | wx.FRAME_FLOAT_ON_PARENT
 		title = "Import terrain | RoRToolkit"
@@ -27,30 +29,29 @@ class TerrainImportSelectorWindow(wx.Frame):
 		grid = wx.GridBagSizer(2, 2)
 		grid.SetEmptyCellSize(wx.Size(110, 3))
 		row = 0
+		max_width = 350
 		
 		# Window padding - sides
 		spacer_size = (6,6)
 		grid.AddSpacer(spacer_size, (row,0)) # Col 0
 		grid.AddSpacer(spacer_size, (row,2)) # Col 2
 
-		row += 1
-		lbl_text = "Searching..."
-		self._status_text_label = wx.StaticText(self, -1, lbl_text, size=wx.Size(0, 20))
-		grid.Add(self._status_text_label, pos=wx.GBPosition(row, 1))
-
 		# Project selector
-		# TODO: Use a better suited component
 		row += 1
 		tree_id = wx.NewId()
-		self._tree = wx.TreeCtrl(self, tree_id, size=(350, 360), style=wx.NO_BORDER | wx.TR_HIDE_ROOT)
+		self._tree = wx.TreeCtrl(self, tree_id, size=(max_width, 360), style=wx.NO_BORDER | wx.TR_HIDE_ROOT)
 		self.Bind(wx.EVT_TREE_SEL_CHANGED, self._on_tree_item_selected, self._tree)
 		grid.Add(self._tree, pos=wx.GBPosition(row, 1))
 		self._tree_root = self._tree.AddRoot("Terrains")
 
+		row += 1
+		self._status_text_label = wx.StaticText(self, -1, "")
+		grid.Add(self._status_text_label, pos=wx.GBPosition(row, 1))
+
 		# [Import] button
 		row += 1
 		self._import_terrn_button = wx.Button(self, -1, "Import selected terrain")
-		self._import_terrn_button.Enabled = False
+		self._import_terrn_button.Disable()
 		self._import_terrn_button.Bind(wx.EVT_BUTTON, self._on_import_button_pressed)
 		grid.Add(self._import_terrn_button, pos=wx.GBPosition(row, 1))
 
@@ -70,9 +71,9 @@ class TerrainImportSelectorWindow(wx.Frame):
 		self._status_text_label.SetLabel(text)
 
 	def assign_terrains(self, terrn_list):
-		import os.path
 		for terrn_filename in terrn_list:
 			self._tree.AppendItem(self._tree_root, terrn_filename)
+		self.set_status_text("Found {0} terrns".format(len(terrn_list)))
 
 	def _cancel_import(self):
 		self.Hide()
@@ -98,5 +99,4 @@ class TerrainImportSelectorWindow(wx.Frame):
 		item_text = self._tree.GetItemText(item_id)
 		self._selected_filename = item_text
 		self.set_status_text("Selected: " + item_text)
-
 

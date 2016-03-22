@@ -139,6 +139,12 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="source\rortoolkit\exceptions.py" />
+    <Compile Include="source\rortoolkit\gui\AutoGaugeWidget.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="source\rortoolkit\gui\ProgressWindow.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="source\rortoolkit\gui\StartupSettingsDialog.py" />
     <Compile Include="source\rortoolkit\gui\ImagePanelWidget.py" />
     <Compile Include="source\rortoolkit\gui\TerrainImportSelectorWindow.py">
