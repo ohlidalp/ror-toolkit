@@ -654,9 +654,10 @@ class MainFrame(wx.Frame):
 			self.changeEditorMode(1)
 			self.terrainOgreWin.load_terrain_from_project(project_dirname)
 
-		def load_terrain_from_terrn_file(self, filename):
+		def load_terrain_from_terrn_file(self, filename, progress_window):
+			progress_window.set_text("Setting editor mode...")
 			self.changeEditorMode(1)
-			self.terrainOgreWin.load_terrain_from_terrn_file(filename)
+			self.terrainOgreWin.load_terrain_from_terrn_file(filename, progress_window)
 
 		def OnSaveTerrain(self, event=None):
 				if self.lastFilenameUsed == "":

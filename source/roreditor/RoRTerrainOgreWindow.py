@@ -973,20 +973,24 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		
 		self.MapOptions.updateData(self.terrain)
 
-	def load_terrain_from_terrn_file(self, filename):
+	def load_terrain_from_terrn_file(self, filename, progress_window):
+		progress_window.set_text("Resetting editor...")
 		if not self.terrain is None:
 			self.cameraBookmark.saveCamera()
 			self.clear()
 			self._resetVariables()
+		progress_window.set_text("Creating legacy road system...")
 		self.roadSystem = RoadSystemClass(self.road, self)
 		self.roadSystem.loadSplines(filename)
+		progress_window.set_text("Creating editor context...")
 		import rortoolkit.terrain
-		self.terrain = rortoolkit.terrain.TerrainEditorContext.create_from_terrn_file(filename)
+		self.terrain = rortoolkit.terrain.TerrainEditorContext.create_from_terrn_file(filename, progress_window)
 		if self.terrain.errorSaving != "":
 			showInfo("info", "terrain loaded with the following error:\n" + self.terrain.errorSaving)
 		
 		self.cameraBookmark.load_from_pickle(filename)
 		
+		progress_window.set_text("Creating terrain...")
 		cfgfile = os.path.join(os.path.dirname(filename), self.terrain.TerrainConfig)
 		self.sceneManager.setWorldGeometry(cfgfile)
 		self.createWaterPlane()
@@ -1018,16 +1022,28 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			log().error("Error while setting initial camera:")
 			log().error(str(err))
 			if rorSettings().stopOnExceptions:
-				raise			 
+				raise
 		
+		total = len(self.terrain.beamobjs)
+		count = 0
 		for beam in self.terrain.beamobjs:
+			count += 1
+			progress_window.set_text("Placing rig objects\n({0}/{1})\n{2}".format(count, total, beam.fileWithExt))
+			progress_window.set_progress(count, total)
 			try:
 				self.addTruckToTerrain(data=beam)
 			except Exception, err:
 				log().error("Error while adding a Beam Construction to the terrain. Name: %s" % beam.name)
 				log().error(str(err))
 
+		total = len(self.terrain.objects)
+		count = 0
+		report_every = 25 # The reporting has quite an overhead
 		for obj in self.terrain.objects:
+			count += 1
+			if count % report_every == 0:
+				progress_window.set_text("Placing static objects\n({0}/{1})".format(count, total))
+				progress_window.set_progress(count, total)
 			try:
 				newE = self.addObjectToTerrain(data=obj)
 			except Exception, err:
@@ -1035,8 +1051,10 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 				log().error(str(err))
 				if rorSettings().stopOnExceptions:
 					raise 
-			
+		
 		self.currentStatusMsg = "Terrain loaded"
+		progress_window.set_text("Creating meshes...")
+		progress_window.pulse_mode()
 
 		# Creating cameramesh
 		if self.terrain.CameraStartPosition:

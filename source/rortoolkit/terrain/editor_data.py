@@ -278,13 +278,15 @@ class TerrainEditorContext(object):
 		return ctx
 
 	@staticmethod
-	def create_from_terrn_file(filename):
+	def create_from_terrn_file(filename, progress_window):
 		"""
 		Classic constructor. Builds the terrain from .terrn file
 		Since 2016 used only for .terrn import.
 		"""
 		object = TerrainEditorContext()
 		object.project_title = filename
+
+		progress_window.set_text("Processing file {0}".format(filename))
 		import os.path
 		object.name = os.path.split(filename)[1].split(".")[0]
 		content = loadResourceFile(filename)

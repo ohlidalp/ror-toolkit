@@ -37,7 +37,7 @@ class ProgressWindow(wx.Frame):
 		row += 1
 		self._progress_bar = rortoolkit.gui.AutoGaugeWidget(self, size = (max_width, 20))
 		grid.Add(self._progress_bar, pos = wx.GBPosition(row, 1))
-		self._progress_bar.start_auto_pulse(50)
+		self.progressbar_autopulse_start()
 		
 		# Bottom padding
 		row += 1
@@ -48,13 +48,20 @@ class ProgressWindow(wx.Frame):
 	def set_status_text(self, text):
 		self._status_text_label.SetLabel(text)
 
+	def progressbar_set_values(self, count, max):
+		self._is_pulsing = False
+		self._progress_bar.stop_auto_pulse()
+		self._progress_bar.SetRange(max)
+		self._progress_bar.SetValue(count)
+
 	def setup(self, title, text):
 		self.SetTitle(title)
 		self.set_status_text(text)
 		self._progress_bar.stop_auto_pulse()
 		self.SetSizerAndFit(self._sizer)
 
-	def progressbar_autopulse_start(self, interval_milisec):
+	def progressbar_autopulse_start(self, interval_milisec = 50):
+		self._is_pulsing = True
 		self._progress_bar.start_auto_pulse(interval_milisec)
 
 	def _on_close_window(self, event):

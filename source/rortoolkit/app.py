@@ -8,6 +8,7 @@ class AppMode:
 	MAIN_MENU             = 0
 	TERRAIN_IMPORT_SEARCH = 1
 	TERRAIN_EDITOR        = 2
+	TERRAIN_EDITOR_IMPORT = 3
 
 class Application:
 	"""
@@ -78,13 +79,14 @@ class Application:
 		self._mode = AppMode.TERRAIN_IMPORT_SEARCH
 		self._hide_all_windows()
 		# Show loading progress window
-		queue = multiprocessing.Queue()
-		process = multiprocessing.Process(target=mp_terrn_search_progress_window, args=(queue,))
-		process.start()
+		pwin_title = "Terrn import | RoRToolkit"
+		pwin_text = "Loading all resources.\nThis may take several minutes."
+		progress = ProgressWindowManager(pwin_title, pwin_text)
+		progress.start()
 
 		# Loading
 		rortoolkit.resources.init_all_known_resources() # This inits OGRE resource groups
-		queue.put({"command":"set_text", "text":"Searching for importable terrains..."})
+		progress.set_text("Searching for importable terrains...")
 		terrns = rortoolkit.resources.search_importable_terrains()
 
 		# Show terrn import window
@@ -101,8 +103,7 @@ class Application:
 			self._gui_panels["terrain_import_selector_window"] = window
 
 		window.assign_terrains(terrns)
-		queue.put({"command":"exit"})
-		process.join()
+		progress.exit_and_join()
 		window.Show()
 
 	def _hide_all_windows(self):
@@ -120,18 +121,23 @@ class Application:
 		"""
 		import os
 		import os.path
-		import rortoolkit.resources
 		import zipfile
+		import multiprocessing
+		import rortoolkit.resources
 
 		# Switch app state
-		self._mode = AppMode.TERRAIN_EDITOR
-		self._gui_panels["main_frame"].Show()
-		self._gui_panels["terrain_import_selector_window"].Hide()
+		self._mode = AppMode.TERRAIN_EDITOR_IMPORT
+
+		# Hide windows, show progress-window
+		self._hide_all_windows()
+		progress = ProgressWindowManager(title="Terrn import | RoRToolkit")
+		progress.start()
 
 		# Fire legacy loading code
-		self._gui_panels["main_frame"].load_terrain_from_terrn_file(filename)
+		self._gui_panels["main_frame"].load_terrain_from_terrn_file(filename, progress)
 
 		# Export project from editor
+		progress.set_text("Writing project files...")
 		terrn_editor_win = self._gui_panels["main_frame"].terrainOgreWin
 		terrn_project, export_data = terrn_editor_win.export_terrain_project()
 		terrn_editor_win.cameraBookmark.save_to_terrain_project(terrn_project)
@@ -141,10 +147,12 @@ class Application:
 		self._curr_terrn_editor_project = terrn_project
 
 		# Copy heightmap
+		progress.set_text("Copying heightmap...")
 		dst_path = os.path.join(terrn_project.get_project_directory(), terrn_project.get_heightmap_filename())
 		terrn_editor_win.export_heightmap(export_data["heightmap_filename"], dst_path)
 
 		# Copy resources
+		progress.set_text("Copying resources...")
 		res_dir = os.path.join(terrn_project.get_project_directory(), "resources")
 		if not os.path.isdir(res_dir):
 			os.mkdir(res_dir)
@@ -155,27 +163,66 @@ class Application:
 			"mesh", "odef",                             # Geometry + descriptors
 			"material", "program", "cg", "hlsl", "glsl" # Materials and shaders
 		]
+		resource_list = []
 		for filename in zip_stream.namelist():
 			segments = filename.split(".")
 			if segments[-1].lower() in ext_whitelist:
-				zip_stream.extract(filename, res_dir)
+				resource_list.append(filename)
 
-def mp_terrn_search_progress_window(ipc_queue):
+		count = 0
+		total = len(resource_list)
+		report_every = 10
+		for filename in resource_list:
+			count += 1
+			if count % report_every == 0:
+				progress.set_text("Copying resources\n{0}/{1}".format(count, total))
+				progress.set_progress(count, total)
+			zip_stream.extract(filename, res_dir)
+
+		# Close progress window, restore GUI
+		progress.exit_and_join()
+		self._gui_panels["main_frame"].Show()
+
+class ProgressWindowManager():
 	"""
-	Loading all resources + scanning takes long time. AND, Python lacks proper thread support.
+	Task such as loading all resources take long time. AND, Python lacks proper thread support.
 	Solution: Main process controls OGRE loading, this process displays responsive GUI.
 	"""
+	
+	def __init__(self, title = None, text = None):
+		import multiprocessing
+		self._queue = multiprocessing.Queue()
+		self._process = multiprocessing.Process(target=_progress_window_main, args=(self._queue, title, text))
+
+	def start(self):
+		self._process.start()
+
+	def exit_and_join(self):
+		self._queue.put({"command":"exit"})
+		self._process.join()
+
+	def set_text(self, text):
+		self._queue.put({"command":"set_text", "text":text})
+	
+	def set_progress(self, count, total):
+		self._queue.put({"command":"set_progress", "count":count, "total":total})
+	
+	def pulse_mode(self):
+		self.set_progress(-1, -1)
+
+def _progress_window_main(ipc_queue, title = None, text = None):
 	import rortoolkit.gui
 	import types
 
 	# Setup window
 	wx_app = wx.PySimpleApp(0)
 	window = rortoolkit.gui.ProgressWindow(parent=None)
-	window.setup(
-		title = "Terrn import | RoRToolkit",
-		text = "Loading all resources.\nThis may take several minutes."
-		)
-	window.progressbar_autopulse_start(50)
+	if title is None:
+		title = "RoRToolkit"
+	if text is None:
+		text = "Please wait."
+	window.setup(title, text)
+	window.progressbar_autopulse_start()
 	window.Show()
 
 	# Wait for further instructions from main process
@@ -195,6 +242,11 @@ def mp_terrn_search_progress_window(ipc_queue):
 			return True
 		elif cmd == "set_text":
 			window.set_status_text(message["text"])
+		elif cmd == "set_progress":
+			if message["total"] == -1 and message["count"] == -1:
+				window.progressbar_autopulse_start()
+			else:
+				window.progressbar_set_values(message["count"], message["total"])
 			return False
 
 	timer_id = wx.NewId()
@@ -203,3 +255,4 @@ def mp_terrn_search_progress_window(ipc_queue):
 	timer.Start(50)
 
 	wx_app.MainLoop()
+
