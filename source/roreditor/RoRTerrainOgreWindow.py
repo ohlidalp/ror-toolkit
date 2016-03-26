@@ -401,6 +401,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 
 		# Objects (only those successfully spawned)
 		for entry in self.entries.values():
+			# Filter
+			if entry.data.barename == "": # Generated object
+				continue
 			# Create
 			if entry.data.isBeam:
 				o = rortoolkit.terrain.TerrainRigObject()
@@ -979,9 +982,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			self.cameraBookmark.saveCamera()
 			self.clear()
 			self._resetVariables()
-		progress_window.set_text("Creating legacy road system...")
+
 		self.roadSystem = RoadSystemClass(self.road, self)
-		self.roadSystem.loadSplines(filename)
+
 		progress_window.set_text("Creating editor context...")
 		import rortoolkit.terrain
 		self.terrain = rortoolkit.terrain.TerrainEditorContext.create_from_terrn_file(filename, progress_window)

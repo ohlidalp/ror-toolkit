@@ -257,16 +257,17 @@ class RoadSystemClass(object):
 			self.linenode[i].attachObject(self.line[i])
 
 		self.internal = {}
-		self._createInternal('road')
-		self._createInternal('roadborderleft')
-		self._createInternal('roadborderright')
-		self._createInternal('roadborderboth')
-		self._createInternal('roadbridge')
-		
-		name = 'roadbridgenopillar' #fake object
-		self.internal[name] = {}
-		self.internal[name]['normalMaterialName']	 = self.internal['roadbridge']['normalMaterialName'] 
-		self.internal[name]["selMaterialName"] 		 = self.internal['roadbridge']['selMaterialName'] 
+		# Disabled for terrn import ~ only_a_ptr, 03/2016
+		#self._createInternal('road')
+		#self._createInternal('roadborderleft')
+		#self._createInternal('roadborderright')
+		#self._createInternal('roadborderboth')
+		#self._createInternal('roadbridge')
+		#
+		#name = 'roadbridgenopillar' #fake object
+		#self.internal[name] = {}
+		#self.internal[name]['normalMaterialName']	 = self.internal['roadbridge']['normalMaterialName'] 
+		#self.internal[name]["selMaterialName"] 		 = self.internal['roadbridge']['selMaterialName'] 
 		
 	def _createInternal(self, name):
 		r = self.ogreWindow.newEntryEx(name + '.mesh',
