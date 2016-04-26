@@ -88,10 +88,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 
 		# movement related
 		self.virtualMoveNode = None
-	
-		# selection related
-		self.selectionMaterial = None
-		self.selectionMaterialAnimState = 0
 
 		self._mouse_drag_start_screen_x = int(0)
 		self._mouse_drag_start_screen_y = int(0)
@@ -525,16 +521,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			v = localTupleOrVector
 		else:
 			raise Exception('coordenate is not vector3 or tuple')
-		return ogre.Quaternion(ogre.Degree(entry.ry), ogre.Vector3(0, 1, 0)) * v + entry.node._getDerivedPosition() 
-	
-	def animateSelection(self):
-		if not self.selectionMaterial is None:
-			self.selectionMaterialAnimState += 0.01
-			if self.selectionMaterialAnimState >= 0.2:
-				self.selectionMaterialAnimState = -0.2
-			val = 0.8 + abs(self.selectionMaterialAnimState)
-			self.selectionMaterial.setDiffuse(1, 0.3, 0, val)
-			self.selectionMaterial.setSpecular(1, 0.3, 0, val)
+		return ogre.Quaternion(ogre.Degree(entry.ry), ogre.Vector3(0, 1, 0)) * v + entry.node._getDerivedPosition()
 
 	def OnFrameStarted(self):
 		try:
@@ -748,9 +735,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.statisticsOn = False
 		self.entries = {}
 		self.raceMode = False
-		# selection related
-		self.selectionMaterial = None
-		self.selectionMaterialAnimState = 0
 	
 		self._mouse_drag_start_screen_x = int(0)
 		self._mouse_drag_start_screen_y = int(0)
