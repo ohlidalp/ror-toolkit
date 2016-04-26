@@ -86,12 +86,8 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 	
 		self.entries = {}
 
-		# movement related
-		self.virtualMoveNode = None
-
 		self._mouse_drag_start_screen_x = int(0)
 		self._mouse_drag_start_screen_y = int(0)
-		self.stickCurrentObjectToGround = False
 		self.cicle = 0
 		self.stickTo02 = False
 		self.knownObjects = {}
@@ -738,7 +734,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 	
 		self._mouse_drag_start_screen_x = int(0)
 		self._mouse_drag_start_screen_y = int(0)
-		self.stickCurrentObjectToGround = False
 		self.stickTo02 = False
 		self.knownObjects = {}	   
 		self.TerrainSelectNode = None
@@ -1589,10 +1584,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			rotxx = ogre.Radian(newrot.getPitch()).valueDegrees()
 			rotx = rotxx - (rotxx % stepsize)
 			print rotx, roty, rotz, rotxx, rotyy, rotzz
-			self.virtualMoveNode.resetOrientation()
-			self.virtualMoveNode.rotate(ogre.Vector3(0, 0, 1), ogre.Degree(rotz), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
-			self.virtualMoveNode.rotate(ogre.Vector3(0, 1, 0), ogre.Degree(roty), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
-			self.virtualMoveNode.rotate(ogre.Vector3(1, 0, 0), ogre.Degree(rotx), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
 		
 			newrot = self.selected.entry.node.getOrientation()
 		
