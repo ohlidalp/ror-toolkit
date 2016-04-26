@@ -1,9 +1,8 @@
 #Thomas Fischer 31/05/2007, thomas@thomasfischer.biz
 
-import wx, os, os.path, copy, traceback
+import wx, os, os.path
 from time import  *
-import ogre.renderer.OGRE as ogre 
-import ogre.io.OIS as OIS
+import ogre.renderer.OGRE as ogre
 from ror.truckparser import *
 from ror.terrainparser import *
 from ror.odefparser import *
@@ -78,35 +77,50 @@ class MyDropTarget(wx.PyDropTarget):
 		return d
 	
 class RoRTerrainOgreWindow(wxOgreWindow):
-	terrain = None
-	
-	commandhistory = []
-	historypointer = 0
-	
-	entries = {}
 
-	# movement related
-	virtualMoveNode = None
+	def __init__(self, parent, ID, size=wx.Size(200, 200), maininstance=None, **kwargs): 
+		self.terrain = None
 	
-	# selection related
-	selectionMaterial = None
-	selectionMaterialAnimState = 0
+		self.commandhistory = []
+		self.historypointer = 0
+	
+		self.entries = {}
 
-	_mouse_drag_start_screen_x = int(0)
-	_mouse_drag_start_screen_y = int(0)
-	stickCurrentObjectToGround = False
-	cicle = 0
-	stickTo02 = False
-	knownObjects = {}
-	""" dictionary that holds detailed info about
-		all objects that we have on Terrain.
+		# movement related
+		self.virtualMoveNode = None
+	
+		# selection related
+		self.selectionMaterial = None
+		self.selectionMaterialAnimState = 0
+
+		self._mouse_drag_start_screen_x = int(0)
+		self._mouse_drag_start_screen_y = int(0)
+		self.stickCurrentObjectToGround = False
+		self.cicle = 0
+		self.stickTo02 = False
+		self.knownObjects = {}
+		""" dictionary that holds detailed info about
+			all objects that we have on Terrain.
 		
-		It allow us to know Bounding Bounds Vertices of 
-		all objects without querying every time is needed and
-		On the other hand, it will allow to control how many 
-		instances we have on the map, useful to control SpawnZone
-		objects when added, so we can give and unique Name to them"""
-	
+			It allow us to know Bounding Bounds Vertices of 
+			all objects without querying every time is needed and
+			On the other hand, it will allow to control how many 
+			instances we have on the map, useful to control SpawnZone
+			objects when added, so we can give and unique Name to them"""
+
+		self._object_tree_window = None
+		self.roadSystem = None
+		log().debug(" Main terrain ogre window is being created")
+		self.maininstance = maininstance
+		if not maininstance is None:
+			self.sceneManager = maininstance.sceneManager
+
+		self.parent = parent
+		self.size = size
+		self.kwargs = kwargs
+		self.ID = ID
+		wxOgreWindow.__init__(self, self.parent, self.ID, "terrainEditor", size=self.size, **self.kwargs)
+
 	def getObjectInspector(self):
 		return self.parent.ObjectInspector
 	
@@ -280,21 +294,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 
 	usePopup = property(_getusePopup, _setusePopup,
 					 doc="""Use popup menu to show what objects are through the ray""")
-
-	def __init__(self, parent, ID, size=wx.Size(200, 200), rordir="", maininstance=None, **kwargs): 
-		self.rordir = rordir
-		self._object_tree_window = None
-		self.roadSystem = None
-		log().debug(" Main terrain ogre window is being created")
-		self.maininstance = maininstance
-		if not maininstance is None:
-			self.sceneManager = maininstance.sceneManager
-
-		self.parent = parent
-		self.size = size
-		self.kwargs = kwargs
-		self.ID = ID
-		wxOgreWindow.__init__(self, self.parent, self.ID, "terrainEditor", size=self.size, **self.kwargs)
 
 	def finalize_init(self):
 		"""

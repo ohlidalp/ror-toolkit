@@ -218,8 +218,7 @@ class MainFrame(wx.Frame):
 				#self.terraintoolbar.AddSeparator()		
 #				self.terraintoolbar.AddTool(ID_Quit, "Quit", wx.ArtProvider_GetBitmap(wx.ART_QUIT))
 
-				self.terraintoolbar.PositionAUI(self._mgr)			
-				self.rordir = rorSettings().rorFolder
+				self.terraintoolbar.PositionAUI(self._mgr)
 				log().debug("creating shaped windows")
 		
 				#self.dummyOgreWindow = ObjectPreviewOgreWindow(self, "ogre3DDummyWindow")
@@ -300,7 +299,7 @@ class MainFrame(wx.Frame):
 				# only_a_ptr, 02/2016: Must be the first 3D-rendering window created.
 				#                      to receive window-resize events.
 				#                      Observed on Windows 10, x64, OpenGL renderer, PyOGRE 1.7.1
-				self.terrainOgreWin = RoRTerrainOgreWindow(self, wx.ID_ANY, rordir=self.rordir)
+				self.terrainOgreWin = RoRTerrainOgreWindow(self, wx.ID_ANY)
 				self._mgr.AddPane(self.terrainOgreWin, wx.aui.AuiPaneInfo().Name("ogre_terrain_content").CenterPane().Hide())
 
 				# Load essential media
@@ -424,8 +423,8 @@ class MainFrame(wx.Frame):
 				self.Bind(wx.EVT_CLOSE, self.OnClose)
 
 				self.Bind(wx.EVT_MENU, self.OnFileMenuOpenTerrainProject, id=ID_OpenTerrainProject)
-				self.Bind(wx.EVT_MENU, self.OnSaveTerrain, id=ID_SaveTerrain)
-				self.Bind(wx.EVT_MENU, self.OnSaveTerrainAs, id=ID_SaveTerrainAs)
+				self.Bind(wx.EVT_MENU, self._on_save_terrain_btn_click, id=ID_SaveTerrain)
+				self.Bind(wx.EVT_MENU, self._on_save_terrain_as_btn_click, id=ID_SaveTerrainAs)
 				self.Bind(wx.EVT_MENU, self.OnViewHelp, id=ID_ViewHelp)
 				self.Bind(wx.EVT_MENU, self.OnmodTool, id=ID_ModTool)
 
@@ -482,6 +481,12 @@ class MainFrame(wx.Frame):
 					window.Hide()
 				else:
 					window.Show(True)
+
+		def _on_save_terrain_btn_click():
+			pass # TODO
+
+		def _on_save_terrain_as_btn_click():
+			pass # TODO
 
 		def hide_all_toolbar_windows(self):
 			# TODO: Toggle button states!
@@ -658,22 +663,6 @@ class MainFrame(wx.Frame):
 			progress_window.set_text("Setting editor mode...")
 			self.changeEditorMode(1)
 			self.terrainOgreWin.load_terrain_from_terrn_file(filename, progress_window)
-
-		def OnSaveTerrain(self, event=None):
-				if self.lastFilenameUsed == "":
-					default = ""
-					if self.rordir:
-							default = rorSettings().rorHomeFolder
-					dialog = wx.FileDialog(self, "Save Terrain as", default, "", "Terrain Files (*.terrn)|*.terrn", wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
-					if dialog.ShowModal() == wx.ID_OK:
-						self.lastFilenameUsed = dialog.GetPath()
-
-				if self.lastFilenameUsed != "":
-					self.terrainOgreWin.SaveTerrain(self.lastFilenameUsed)
-		def OnSaveTerrainAs(self, event):					
-			self.lastFilenameUsed = ""
-			self.OnSaveTerrain(event)
-			event.Skip()
 			
 		def OnClose(self, event):
 				self.OnExit(event)
