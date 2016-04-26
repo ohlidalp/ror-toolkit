@@ -89,7 +89,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self._mouse_drag_start_screen_x = int(0)
 		self._mouse_drag_start_screen_y = int(0)
 		self.cicle = 0
-		self.stickTo02 = False
 		self.knownObjects = {}
 		""" dictionary that holds detailed info about
 			all objects that we have on Terrain.
@@ -731,11 +730,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.statisticsOn = False
 		self.entries = {}
 		self.raceMode = False
-	
 		self._mouse_drag_start_screen_x = int(0)
 		self._mouse_drag_start_screen_y = int(0)
-		self.stickTo02 = False
-		self.knownObjects = {}	   
+		self.knownObjects = {}
 		self.TerrainSelectNode = None
 		self.preLoad = {}
 		self.axis = AxisClass(self, ['translation', 'rotation', 'terrain']) #before selectionClass

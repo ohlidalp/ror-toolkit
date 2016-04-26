@@ -76,7 +76,6 @@ ID_CopyPerspective = wx.NewId()
 ID_Settings = wx.NewId()
 ID_About = wx.NewId()
 ID_FirstPerspective = ID_CreatePerspective + 1000
-ID_StickTo02 = wx.NewId()
 ID_StartRoR = wx.NewId()
 ID_wxInspector = wx.NewId()
 ID_hideCaptions = wx.NewId()
@@ -188,7 +187,6 @@ class MainFrame(wx.Frame):
 				self.terraintoolbar.AddTool(ID_SaveTerrain, "Save Terrain", wx.ArtProvider_GetBitmap(wx.ART_FILE_SAVE))
 				self.terraintoolbar.AddTool(ID_SaveTerrainAs, "Save Terrain As", wx.ArtProvider_GetBitmap(wx.ART_FILE_SAVE_AS))
 				self.terraintoolbar.AddSeparator()
-#				self.terraintoolbar.AddLabelTool(ID_StickTo02, "Stick to 0.2 m",wx.ArtProvider_GetBitmap(wx.ART_GO_DOWN),
 #									shortHelp="Stick New Objects to 0.2 from ground")
 #				self.terraintoolbar.AddLabelTool(ID_Inspector, "Object Inspector",wx.ArtProvider_GetBitmap(wx.ART_GO_DOWN),
 #									shortHelp="Stick New Objects to 0.2 from ground")				
@@ -431,7 +429,6 @@ class MainFrame(wx.Frame):
 				self.Bind(wx.EVT_MENU, self.OnwxInspector, id=ID_wxInspector)
 				self.Bind(wx.EVT_MENU, self.OnselectSkin, id=ID_selectSkin)
 				self.Bind(wx.EVT_MENU, self.Onterraintoolbar, id=ID_hideCaptions)
-				self.Bind(wx.EVT_TOOL, self.OnStickTo02Click, id=ID_StickTo02)
 				self.Bind(wx.EVT_TOOL, self.OnStartRoRClick, id=ID_StartRoR)
 				self.Bind(wx.EVT_TOOL, self.OnfindObject, id=ID_FindObject)
 				
@@ -546,11 +543,7 @@ class MainFrame(wx.Frame):
 			for ii in xrange(len(all_panes)):
 					if not all_panes[ii].IsToolbar():
 							all_panes[ii].Hide()
-			
 		
-		def OnStickTo02Click(self,
-							 doc=" Stick new objects to 0.2 meters from ground"):
-			self.terrainOgreWin.stickTo02 = not self.terrainOgreWin.stickTo02
 		def OnStartRoRClick(self,
 							   doc=" "):
 			if self.terrainOgreWin:
