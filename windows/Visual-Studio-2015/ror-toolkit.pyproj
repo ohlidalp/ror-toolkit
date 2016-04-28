@@ -111,7 +111,6 @@
     <Compile Include="source\roreditor\MainFrame_Tools_Pivot.py" />
     <Compile Include="source\roreditor\MainFrame_Tools_Preview.py" />
     <Compile Include="source\roreditor\MainFrame_Tools_Race.py" />
-    <Compile Include="source\roreditor\MainFrame_Tools_RoadSystem.py" />
     <Compile Include="source\roreditor\odefSelection.py" />
     <Compile Include="source\roreditor\RoRConstants.py" />
     <Compile Include="source\roreditor\rorFrame.py" />
@@ -119,7 +118,6 @@
     <Compile Include="source\roreditor\rorNotepad.py" />
     <Compile Include="source\roreditor\RoRObjectPreviewOgreWindow.py" />
     <Compile Include="source\roreditor\RoROdefEditorOgreWindow.py" />
-    <Compile Include="source\roreditor\RoRRoadSystem.py" />
     <Compile Include="source\roreditor\RoRScrolledText.py" />
     <Compile Include="source\roreditor\RoRSkinSelection.py" />
     <Compile Include="source\roreditor\RoRTerrainOgreWindow.py" />

@@ -98,7 +98,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			objects when added, so we can give and unique Name to them"""
 
 		self._object_tree_window = None
-		self.roadSystem = None
 		log().debug(" Main terrain ogre window is being created")
 		self.maininstance = maininstance
 		if not maininstance is None:
@@ -210,26 +209,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		if not value == self._cameraShiftVel:
 			rorSettings().setSetting(TOOLKIT, cameraShiftVelocity, value)
 		self._cameraShiftVel = value
-
-	def _getsplineMode(self):
-		return self._splineMode
-
-	def _setsplineMode(self, value):
-		self.showOverlay('POCore/spline', False)
-		self.showOverlay('POCore/splinepause', False)
-		self._splineMode = value
-		if value is not None:
-			if value:
-				self.showOverlay('POCore/spline', True)
-				self._setGuiCaption('POCore/splineKm', ' %.2f Km' % self.roadSystem.km)
-			else:
-				self.showOverlay('POCore/splinepause', True)
-
-	def _delsplineMode(self):
-		del self._splineMode
-
-	splineMode = property(_getsplineMode, _setsplineMode, _delsplineMode,
-					doc="")
 
 	cameraShiftVel = property(_getcameraShiftVel, _setcameraShiftVel,
 					 doc="""camera velocity factor when pressing Shift""")
@@ -520,13 +499,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		try:
 			if self.cameraCollision:
 				self.cameraLandCollision()
-			if self.roadSystem is not None:
-				if self.roadSystem.AnimState is not None:
-					if self.roadSystem.AnimState.hasEnded(): # I don't know when an animation will finish  :-|
-						self.roadSystem.walkOnRoads = False
-					elif self.roadSystem.AnimState.getEnabled():
-						self.roadSystem.AnimState.addTime(0.5)
-						self.camera.lookAt(self.roadSystem.dotwalk.node.getPosition())
 	
 			# axes size related to camera distance
 			if self.selected.entry is not None and self.selected.entry != self.selected.axis.arrow:
@@ -590,8 +562,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.Bind(wx.EVT_KEY_UP, self.onKeyUp) 
 		self.Bind(wx.EVT_MOUSE_EVENTS, self.onMouseEvent)
 
-		
-		self.splineMode = None
 		log().debug("SceneInitialization finished")
 		self.populateScene()
 		
@@ -750,7 +720,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.boundBox = BoundBoxClass(self)
 		self.boundBox.mainEntry.beginUpdate() # never inform
 		self.cameraQuick = False
-		self._splineMode = None
 		self.selectionBox = None
 		self.sphere = None
 		self.movingEntry = False
@@ -789,7 +758,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.entries.clear()
 		del self.entries
 		del self.boundBox
-		del self.roadSystem
 		del self.terrain
 		del self.selected #before Axis Class
 		del self.axis
@@ -833,9 +801,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 					entry.data.rotation = rotx, roty, rotz
 	
 	def SaveTerrain(self, fn=None):
-		if self.splineMode is not None:
-			self.roadSystem.finishSpline()
-		self.roadSystem.saveSplines(fn)
+
 		if self.lua.modified:
 			self.lua.save(fn) #temp file 
 		self.updateDataStructures()
@@ -946,8 +912,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			self.cameraBookmark.saveCamera()
 			self.clear()
 			self._resetVariables()
-
-		self.roadSystem = RoadSystemClass(self.road, self)
 
 		progress_window.set_text("Creating editor context...")
 		import rortoolkit.terrain
@@ -1066,25 +1030,11 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.camera.moveRelative(ogre.Vector3(0, 2, 0))
 		
 		self.MapOptions.updateData(self.terrain)
-		self.checkSplineLine()
 
 		self.lua = luaClass(filename, self)
 		self.race = self.parent.race
 		self.race.luaParser = self.lua
-		
-	
-	def checkSplineLine(self):
-		userNames = []
-		uuid = []
-		for k in self.roadSystem.splines.keys():
-			name = self.roadSystem.splines[k]['name']
-			if name is not None and name != '':
-				userNames.append(name)
-			else :
-				userNames.append(k)
-			uuid.append(k)
-		self.road.splines = [uuid, userNames]
-		
+
 	def replaceSelectionWith(self, newOdefFilename):
 		
 		if self.selected.entry and self.selected.entry.data:
@@ -1772,9 +1722,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		# ignore selected arrow if control key is pressed
 		if not event.ControlDown() and 	self.selected.axis.arrow is not None:
 			self._onSelectionControlArrowsMouseEvent(event)
-		
-		#here was spline
-	
 		if event.RightDown() and self._RMBHere: #Precedes dragging 
 			self.StartDragX, self.StartDragY = event.GetPosition() #saves position of initial click 
 			self.autoTracking = False
@@ -1805,15 +1752,6 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			self._mouse_drag_start_screen_x, self._mouse_drag_start_screen_y = event.GetPosition() #saves position of initial click 
 			if event.ShiftDown():
 				log().info('distance : %.3f' % (oldPos.distance(self.selected.coords.asVector3)))
-		if (event.LeftDown()) and self.splineMode:
-# if a big object represent a city /sky etc, every click in splineMode will make splineline to stick to 
-# this object... not good
-#			if self.selected.entry is not None:
-#				frompoint = self.selected.entry.node.getPosition()
-#			else:
-			frompoint = self.getPointedPosition(event)
-																
-			self.roadSystem.createSplineLine(startAt=frompoint)
 			
 		if not event.Dragging() and event.LeftIsDown() and (not self.selected.entry is None) and event.ControlDown():
 			self.selected.mouseOffset = self.getPointedPosition(event) - self.selected.entry.node.getPosition()
@@ -1939,32 +1877,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 					p.y += 0.11
 				e = self.addGeneralObject('road.odef', (p.x, p.y, p.z), (rx, ry, rz))
 				log().debug('ry %.3f' % ry) 
-				
 
-# works too
-#			e.y += 0.2
-#			ry = 0.0
-#			for i in range (0,25):
-#				p = e.node.getPosition()
-#				self.boundBox.dockTo(e)
-#				p = self.boundBox.realPos((3,0,0))
-#				rx, ry, rz = e.roadLookAt(p, -10)
-#				ry -= 10
-#				e = self.addGeneralObject('road.odef',(p.x, p.y,p.z), (rx, ry, rz)) 
-#				
-#			next = ogre.Vector3(x, 0, x)
-			# works
-#			for i in range(0, 25):
-#				rx, ry, rz = e.rotation
-#
-#				p = self.boundBox.realPos((3, 0, 0))
-#				ry += 10
-#				e = self.addGeneralObject('road.odef', (p.x, p.y, p.z), (rx, ry, rz))
-#				self.boundBox.dockTo(e)
-				
-#			self.showOverlay('POCore/workingSpline', True)
-#			self.roadSystem.walkOnRoads = not self.roadSystem.walkOnRoads
-#			pass
 		if event.m_keyCode == WXK_A: #  A, wx.WXK_LEFT:
 			self.keyPress.x = -d
 		elif event.m_keyCode == wx.WXK_INSERT:
@@ -1975,18 +1888,12 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			# delete key
 			if self.deleteObjectFromFile(self.selected.entry):
 				uid = str(self.selected.entry.uuid)
-				if self.selected.entry.data.name.find('splinePoint_') > -1:
-					pos = int (self.selected.entry.data.name.split('_')[1])
-					self.selected.entry.visible = False
-					self.selected.entry = None
-					self.roadSystem.insertPoint(pos, None)
-				else:
-					self.selected.entry = None
-					e = self.entries.pop(uid)
-					e.visible = False
-					e.autoRemoveFromScene = True
-					e.deleted = True #inform on deleting
-					del e
+				self.selected.entry = None
+				e = self.entries.pop(uid)
+				e.visible = False
+				e.autoRemoveFromScene = True
+				e.deleted = True #inform on deleting
+				del e
 				
 			
 		elif event.m_keyCode == WXK_D: # D, wx.WXK_RIGHT:

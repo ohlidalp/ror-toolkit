@@ -41,7 +41,6 @@ from MainFrame_Tools_ODefEditor import *
 from MainFrame_Tools_ObjectInspector import ObjectInspector
 from MainFrame_Tools_Preview import RoRPreviewCtrl
 from MainFrame_Tools_MapOptions import MapOptionWindow
-from MainFrame_Tools_RoadSystem import RoadSystemWindow
 from MainFrame_Tools_Pivot import PivotControlWindow
 from MainFrame_Tools_CameraPos import CameraWindow
 from MainFrame_Tools_Race import Race
@@ -223,9 +222,6 @@ class MainFrame(wx.Frame):
 				#self.dummyOgreWindow.Hide() 
 				# add a bunch of panes
 				# Lepes: Shaped window 
-				self.RoadSystem = RoadSystemWindow(self, title="Road")
-				self.RoadSystem.Show(False)
-				self.RoadSystem.perspective = 1
 #				self.Preview = RoRPreviewCtrl(self, 
 #											  title = "Object Preview",
 #											  pos = (self.GetScreenPosition().x,self.GetScreenPosition().y + shapedtop))
