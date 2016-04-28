@@ -71,7 +71,7 @@ class RoRTruckUVOgreWindow(wxOgreWindow):
 	def OnFrameEnded(self):
 		pass
 
-	def SceneInitialisation(self):
+	def initialize_scene(self):
 	
 		#get the scenemanager
 		self.sceneManager = getOgreManager().createSceneManager(ogre.ST_GENERIC)
@@ -98,10 +98,10 @@ class RoRTruckUVOgreWindow(wxOgreWindow):
 		self.Bind(wx.EVT_MOUSE_EVENTS, self.onMouseEvent)
 
 		#create objects
-		self.populateScene()
+		self._prepare_scene()
 
 
-	def populateScene(self):
+	def _prepare_scene(self):
 		self.sceneManager.AmbientLight = ogre.ColourValue(0.7, 0.7, 0.7 )
 
 		fadeColour = (0.8, 0.8, 0.8)

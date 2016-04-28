@@ -290,7 +290,7 @@ class RoRObjectTreeCtrl(ShapedWindow):
 	#		wx.TreeEvent.Allow(event)
 	
 	def replaceSelection(self, event):
-		self.parent.terrainOgreWin.replaceSelectionWith(self.selectedfn)
+		self.parent.terrainOgreWin.replace_selection_with(self.selectedfn)
 		
 	def onTreeSelectionChange(self, event=None):
 		if "Meta Files (click to load)" == self.tree.GetItemText(self.tree.GetSelection()):

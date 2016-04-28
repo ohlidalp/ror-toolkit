@@ -45,9 +45,9 @@ class RoRTerrainSelectedObjectTopOgreWindow(wxOgreWindow):
             self.camera.setFarClipDistance(camHeight * 10)
             self.camera.setPosition(pos - ogre.Vector3(0, 0.1, camHeight))
             self.camera.lookAt(pos)
-        wxOgreWindow.OnFrameStarted(self)
+        wxOgreWindow.on_frame_started(self)
 
-    def SceneInitialisation(self):
+    def initialize_scene(self):
         # create a camera
         self.camera = self.sceneManager.createCamera('SharedCamera' + self.rand) 
         

@@ -53,7 +53,7 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
 		self.radius = 40
 		self.dragging = False
 		self.mode = None
-		self.logovisible = True
+		self.logovisible = False
 		self.wheelRadius = 0
 		self.sceneManager = None
 		wxOgreWindow.__init__(self, parent, -1, name, **kwargs)
@@ -64,7 +64,7 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
 #		self.SetDropTarget(droptarget)
 		log().debug("ObjectPreviewOgreWindow created")
 
-	def SceneInitialisation(self):
+	def initialize_scene(self):
 		log().debug("SceneInitialisation")
 		self.createSceneManager()
 
@@ -91,10 +91,9 @@ class ObjectPreviewOgreWindow(wxOgreWindow):
 		self.viewport.setOverlaysEnabled(False) #disable terrain Editor overlays on this viewport
 
 		#create objects
-		self.populateScene()
+		self._prepare_scene()
 		
-	def populateScene(self):
-		log().debug("populating Scene")
+	def _prepare_scene(self):
 		self.sceneManager.AmbientLight = ogre.ColourValue(0.7, 0.7, 0.7)
 		self.sceneManager.setShadowTechnique(ogre.ShadowTechnique.SHADOWTYPE_STENCIL_ADDITIVE);
 		self.sceneManager.setSkyDome(True, 'mysimple/terraineditor/previewwindowsky', 4.0, 8.0)

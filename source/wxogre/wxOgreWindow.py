@@ -36,7 +36,7 @@ class wxOgreWindow(wx.PyWindow):
 		except:
 			self.sceneManager = None
 		
-		self.SceneInitialisation() 
+		self.initialize_scene() 
 		self.SetFocus()
 	
 	def _OnSize(self, event):
@@ -74,21 +74,21 @@ class wxOgreWindow(wx.PyWindow):
 		"""
 		return True 
 	
-	def SceneInitialisation(self): 
+	def initialize_scene(self): 
 		"""
 		default, base function, that has to be overwritten in the inherited class. It gets called after create the window, and should select a scenemanger.
 		@return: none
 		"""
 		pass
 
-	def OnFrameStarted(self): 
+	def on_frame_started(self): 
 		"""
 		default, base function, that has to be overwritten in the inherited class. gets called before rendering a frame.
 		@return: none
 		"""
 		return 
 	
-	def OnFrameEnded(self): 
+	def on_frame_ended(self): 
 		"""
 		default, base function, that has to be overwritten in the inherited class. gets called after rendering a frame.
 		@return: none
@@ -117,7 +117,7 @@ class wxOgreWindow(wx.PyWindow):
 
 	def createFrameListener(self):
 		"""Creates the FrameListener."""
-		self.frameListener = RoRFrameListener(self.renderWindow, self.camera, OnFrameStarted=self.OnFrameStarted)
+		self.frameListener = RoRFrameListener(self.renderWindow, self.camera, OnFrameStarted=self.on_frame_started)
 #		self.frameListener.showDebugOverlay(True)
 		getOgreManager().getRoot().addFrameListener(self.frameListener)
 
@@ -138,7 +138,7 @@ class wxOgre3D(wxOgreWindow):
 	def __init__(self, parent, ID, name, size=wx.Size(200, 200), **kwargs):		
 		wxOgreWindow.__init__(self, parent, ID, name, size, **kwargs)
 
-	def smNewNode(self, strName,
+	def mk_scene_node(self, strName,
 					doc=""" Scene Manager New Node:
 					Create a new SceneNode with given Name """):
 		n = self.sceneManager.getRootSceneNode().createChildSceneNode(strName)

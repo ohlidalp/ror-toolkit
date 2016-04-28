@@ -170,7 +170,7 @@ class CameraWindow(ShapedWindow):
 		# add new bookmark
 		s = self.cameraName.GetValue().strip()
 
-		p, d = self.parent.terrainOgreWin.getCamera()
+		p, d = self.parent.terrainOgreWin.get_ogre_camera()
 		self.cameraAdd(s, p, d)  #replace selection
 		event.Skip()				
 
@@ -197,7 +197,7 @@ class CameraWindow(ShapedWindow):
 		s = event.GetString().strip()
 		for i in range (0, len(self.cameraList)):
 			if s == self.cameraList[i]['name']:
-				self.parent.terrainOgreWin.setCamera(self.cameraList[i]['pos'], \
+				self.parent.terrainOgreWin.set_ogre_camera(self.cameraList[i]['pos'], \
 														self.cameraList[i]['dir'])
 			
 		event.Skip()

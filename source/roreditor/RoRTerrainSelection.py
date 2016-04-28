@@ -706,7 +706,7 @@ class selectionClass(object):
 		self.entries = [] #holds selected entries
 		self._mouseOffset = ogre.Vector3(0, 0, 0)
 		self.axis = self._ogreWindow.axis
-		self.multiselectNode = ogreWindow.smNewNode("multiselectNode")
+		self.multiselectNode = ogreWindow.mk_scene_node("multiselectNode")
 		 
 	def _getentry(self):
 		if self._entry is None:
@@ -785,7 +785,7 @@ class selectionClass(object):
 		self.remove()
 		for e in tmp:
 			if e.data.fileWithExt != '.odef':  #FIXED ENTRIES: RORCAMERA...
-				new = self._ogreWindow.addGeneralObject(e.data.fileWithExt, (e.position), (e.rotation))
+				new = self._ogreWindow.add_general_object_to_terrain(e.data.fileWithExt, (e.position), (e.rotation))
 				self.add(new)
 
 		

@@ -400,7 +400,7 @@ class ObjectInspector(ShapedWindow):
 		if self.parent.terrainOgreWin.selected.entry:
 			self.parent.terrainOgreWin.selected.entry.visible = self.chkVisible.GetValue()
 		if not self.chkVisible.GetValue():
-			self.parent.terrainOgreWin.selectTerrain()
+			self.parent.terrainOgreWin._select_terrain()
 	
 	def OnmakeVisible(self, event):		
 		

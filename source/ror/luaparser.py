@@ -270,7 +270,7 @@ class raceClass(object):
 				
 			for i in range(len(self.points)):
 				if self.points[i]['entry'] is None and value:
-					self.points[i]['entry'] = self.owner._ogreWin.addGeneralObject(self.points[i]['gate'] + '.odef',
+					self.points[i]['entry'] = self.owner._ogreWin.add_general_object_to_terrain(self.points[i]['gate'] + '.odef',
 																				 self.points[i]['pos'].asTuple,
 																				 self.points[i]['rot'].asTuple)
 					#set up callback, just a pointer to the method

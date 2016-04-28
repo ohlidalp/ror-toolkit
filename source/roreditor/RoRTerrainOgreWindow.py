@@ -131,7 +131,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 
 	def setautoTracking(self, value):
 		self._autoTracking = value
-		self.entryChanged(self.selected.entry)
+		self.entry_changed(self.selected.entry)
 		self.showOverlay('POCore/autotrack', value)
 
 	def getcameraCollision(self):
@@ -271,7 +271,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		import rortoolkit.mouse_3d 
 		self._mouse_world_transforms = rortoolkit.mouse_3d.MouseWorldTransforms(self.camera, self.renderWindow)
 
-		self._resetVariables()
+		self._reset_variables()
 		if self.cameraBookmark:
 			self.cameraBookmark.updateVelocity(self.cameraVel, self.cameraShiftVel)
 
@@ -432,18 +432,18 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			raise Exception("Terrn import failed, cannot read extracted heightmap:" + str(extracted_path))
 		shutil.move(extracted_path, dst_path)
 	
-	def newEntry(self, bAssignEvent=False, bAutouuid=False):
+	def new_entry(self, bAssignEvent=False, bAutouuid=False):
 		""" bAssignEvent -> Assign ogreWindow property
 			bAutouuid -> auto generate uuid to this entry"""
 		n = terrainEntryClass(self)
 		if bAssignEvent:
-			n.OnSelecting.append(self.entryChanged)
-			n.OnPositionChanging.append(self.entryChanged)
+			n.OnSelecting.append(self.entry_changed)
+			n.OnPositionChanging.append(self.entry_changed)
 		if bAutouuid:
 			n.uuid = randomID()
 		return n
 
-	def newEntryEx(self, strMeshName, strMaterialName=None, bAssignEvent=False, bAddToEntries=False, bCreateData=False, parentNode=None, suffix=''):
+	def new_entry_ex(self, strMeshName, strMaterialName=None, bAssignEvent=False, bAddToEntries=False, bCreateData=False, parentNode=None, suffix=''):
 		""" strMeshName, strMaterialName = None, bAssignEvent = False, bAddToEntries = False, bCreateData = False, parentNode = None
 		Create a New Entry, that is:
 				   - node
@@ -453,12 +453,12 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 				   - Create object Data (
 				   - add to self.entries """
 				   
-		n = self.newEntry(bAssignEvent, True)
+		n = self.new_entry(bAssignEvent, True)
 		if parentNode is None:
-			n.node = self.smNewNode(suffix + str(n.uuid) + "node")
+			n.node = self.mk_scene_node(suffix + str(n.uuid) + "node")
 		else:
 			n.node = parentNode.createChildSceneNode(suffix + str(n.uuid) + "node")
-		n.entity = self.smNewEntity(suffix + str(n.uuid) + "Entity", strMeshName)
+		n.entity = self.mk_entity(suffix + str(n.uuid) + "Entity", strMeshName)
 		if bCreateData:
 			import rortoolkit.terrain
 			n.data = rortoolkit.terrain.EditorObject()
@@ -469,12 +469,12 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			self.entries[n.uuid] = n
 		return n
 
-	def smNewNode(self, strName,
+	def mk_scene_node(self, strName,
 					doc=""" Scene Manager New Node:
 					Create a new SceneNode with given Name """):
 		return  self.sceneManager.getRootSceneNode().createChildSceneNode(strName)
 
-	def smNewEntity(self, strName, strMesh, strMaterialName=None,
+	def mk_entity(self, strName, strMesh, strMaterialName=None,
 					doc=""" strName, strMesh, strMaterialName =None 
 					Scene Manager New Entity:
 					Create a new entity with: 
@@ -486,19 +486,10 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			e.setMaterialName(strMaterialName)
 		return e
 
-	def localPosToWorld(self, entry, localTupleOrVector):
-		if isinstance(localTupleOrVector, TupleType):
-			v = ogre.Vector3(localTupleOrVector[0], localTupleOrVector[1], localTupleOrVector[2])
-		elif isinstance(localTupleOrVector, ogre.Vector3):
-			v = localTupleOrVector
-		else:
-			raise Exception('coordenate is not vector3 or tuple')
-		return ogre.Quaternion(ogre.Degree(entry.ry), ogre.Vector3(0, 1, 0)) * v + entry.node._getDerivedPosition()
-
-	def OnFrameStarted(self):
+	def on_frame_started(self):
 		try:
 			if self.cameraCollision:
-				self.cameraLandCollision()
+				self.update_camera_land_collision()
 	
 			# axes size related to camera distance
 			if self.selected.entry is not None and self.selected.entry != self.selected.axis.arrow:
@@ -520,13 +511,13 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			log().error('terrainOgreWindow.OnFrameStarted')
 			raise
 	
-	def OnFrameEnded(self): 
+	def on_frame_ended(self): 
 		return True
 		
-	def getOgreSceneManager(self):
+	def get_ogre_scene_manager(self):
 		return self.sceneManager
 	
-	def cameraLandCollision(self):
+	def update_camera_land_collision(self):
 		try:
 			camPos = self.camera.getPosition()
 			terrainHeight = self.getTerrainHeight(camPos)
@@ -536,8 +527,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			if rorSettings().stopOnExceptions:
 				raise 
 
-	def SceneInitialisation(self):
-		log().debug("terrain SceneInitialization started")
+	def initialize_scene(self):
 		self.sceneManager = getOgreManager().createSceneManager(ogre.ST_EXTERIOR_CLOSE)
 
 		# create a camera
@@ -562,21 +552,20 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.Bind(wx.EVT_KEY_UP, self.onKeyUp) 
 		self.Bind(wx.EVT_MOUSE_EVENTS, self.onMouseEvent)
 
-		log().debug("SceneInitialization finished")
-		self.populateScene()
+		self._prepare_scene()
 		
-	def updateWaterPlane(self, fLevel=0.0):
+	def update_water_plane(self, fLevel=0.0):
 		""" receives a float number where water plane should be"""
 		self.terrain.WaterHeight = fLevel
-		if self.waterentity is None:
-			self.createWaterPlane()
-		self.waterentity.setVisible(fLevel != 0.0)
+		if self._waterplane_entity is None:
+			self.create_water_plane()
+		self._waterplane_entity.setVisible(fLevel != 0.0)
 		#BUGFIX: plane node is centered, but plane mesh no!
 		x = ifNone(self.terrain.worldX, 1500, self.terrain.worldX / 2)
 		z = ifNone(self.terrain.worldZ, 1500, self.terrain.worldZ / 2)
-		self.waternode.setPosition(x, fLevel + 200, z)
+		self._waterplane_scenenode.setPosition(x, fLevel + 200, z)
 	
-	def createWaterPlane(self):
+	def create_water_plane(self):
 		if self.terrain.WaterHeight is None:
 			return
 		plane = ogre.Plane() 
@@ -589,11 +578,11 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 													ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY,
 													ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY,
 													True, True)
-		self.waterentity = self.smNewEntity("waterPlane" + waterid + "entity", "waterPlane" + waterid, 'mysimple/water')
-		self.waternode = self.smNewNode('waterNode')
-		self.waternode.attachObject(self.waterentity) 
+		self._waterplane_entity = self.mk_entity("waterPlane" + waterid + "entity", "waterPlane" + waterid, 'mysimple/water')
+		self._waterplane_scenenode = self.mk_scene_node('waterNode')
+		self._waterplane_scenenode.attachObject(self._waterplane_entity) 
 	
-	def getPositionRotation(self, obj):
+	def get_position_rotation(self, obj):
 		""" obj is a Scenenode
 		"""
 		scale = obj.getScale()
@@ -609,47 +598,28 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		roty = ogre.Radian(rot.getRoll(False)).valueDegrees()
 		rotz = -ogre.Radian(rot.getYaw(False)).valueDegrees() 
 		return pos.x, pos.y, pos.z, rotx, roty, rotz
-	
-	def zoomCamera(self, fromVector, toVector):
-		""" move camera relatively toVector -> fromVector and
-			keep camera distance from ground"""
-		p = self.camera.getPosition()
-		sum = self.getTerrainHeight(p)
-		if sum:
-			hcamera = p.y - sum
-		else:
-			hcamera = 0
-		r = (toVector - fromVector)
-		f = p + r
-		sum = self.getTerrainHeight(f)
-		if sum is None:
-			log().info("can not move camera")
-		else:
-			f.y = hcamera + self.getTerrainHeight(f)
-			self.camera.setPosition(f)
-		return
 
-	def getRoRName(self, entity):
+	def get_ror_name(self, entity):
 		key = entity.getName()[:-len("entity")]
 		if self.entries.has_key(key): 
 			if self.entries[key].data:
 				return self.entries[key].data.name
 		return ""
 
-	def getEntry(self, entity):
+	def get_entry(self, entity):
 		key = entity.getName()[:-len("entity")]
 		if self.entries.has_key(key):
 			return self.entries[key]
 		else:
 			return None
 	
-	def changeSelection(self, newnode,
+	def change_selection(self, newnode,
 						doc=" receive an Entity "):
 		self.deselectSelection()
 		key = newnode.getName()[:-len("entity")]
 		self.selected.entry = self.entries[key]
 	
-	def entryChanged(self, entry):
+	def entry_changed(self, entry):
 		"""Update Object Inspector and statusBar
 		value may be None to disable ObjectInspector"""
 		
@@ -661,7 +631,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			if self.autoTracking:
 				self.camera.setAutoTracking(True, entry.node)
 
-	def specialEntryChanged(self, entry):
+	def special_entry_changed(self, entry):
 		""" Asigned to:
 		- TrucStartPosition
 		- cameraStartPosition
@@ -688,7 +658,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 											self.terrain.TruckStartPosition.asTuple,
 											(0, 0, 0))
 
-	def _resetVariables(self):
+	def _reset_variables(self):
 		self.terrain = None
 		self.commandhistory = []
 		self.historypointer = 0
@@ -711,24 +681,24 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self._cameraCollision = False
 		self.update_mouse_placement_mode()
 		self._currentStatusMsg = ""
-		self.loadMisplacedObjects()
-		self.waterentity = None
+		self._load_misplaced_objects()
+		self._waterplane_entity = None
 		self._usepopup = None
 		self._cameraVel = None
 		self._cameraShiftVel = None
 		self._RMBHere = False
 		self.boundBox = BoundBoxClass(self)
 		self.boundBox.mainEntry.beginUpdate() # never inform
-		self.cameraQuick = False
-		self.selectionBox = None
-		self.sphere = None
-		self.movingEntry = False
+		self._is_camera_fast = False
+		self._selection_box = None
+		self._ogre_sphere = None
+		self._is_entry_being_moved = False
 		
 	def update_mouse_placement_mode(self):
 		if self._object_tree_window is not None: # The 'ObjectTree' window is created later than this class.
 			self._placeWithMouse = self._object_tree_window.chkMousePlacement.IsChecked()
 
-	def loadMisplacedObjects(self):
+	def _load_misplaced_objects(self):
 		file = rorSettings().concatToToolkitHomeFolder(['config', 'editorConf.txt'], True)
 		self.preLoad = {}
 		# TODO: allow to load multiple files, so community can share these files.
@@ -770,12 +740,12 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			self.sceneManager.destroyQuery(self.terrainRaySceneQuery)
 		rorcommon.deleteFilelist()
 
-	def getCamera(self):
+	def get_ogre_camera(self):
 		p = self.camera.getPosition()
 		d = self.camera.getDirection()
 		return (p.x, p.y, p.z), (d.x, d.y, d.z)
 	
-	def setCamera(self, position, direction, minusZ=0):
+	def set_ogre_camera(self, position, direction, minusZ=0):
 		""" called by CameraBookmark toolwindow
 		position - Tuple
 		direction - Tuple
@@ -788,33 +758,18 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.camera.setPosition(x, y, z)
 		self.camera.setDirection(direction)
 		
-	def updateDataStructures(self):
+	def update_data_structures(self):
 		for uuid in self.entries.keys():
 			entry = self.entries[uuid]
 			if entry.data:
 				# avoid imprecision of rotation angles issue
 				if entry.data.modified:
-					x, y, z, rotx, roty, rotz = self.getPositionRotation(entry.node)
+					x, y, z, rotx, roty, rotz = self.get_position_rotation(entry.node)
 					if entry.data.ext.lower() in noRotateExt:
 						rotx -= 90
 					entry.data.position = x, y, z
 					entry.data.rotation = rotx, roty, rotz
-	
-	def SaveTerrain(self, fn=None):
 
-		if self.lua.modified:
-			self.lua.save(fn) #temp file 
-		self.updateDataStructures()
-		res = False
-		if not self.terrain is None:
-			self.cameraBookmark.saveCamera(fn)
-			res = self.terrain.save(fn)
-			if res: 
-				self.currentStatusMsg = "Terrain saved"
-			else:
-				self.currentStatusMsg = "saving Error"
-		return res
-	
 	def load_terrain_from_project(self, project_dir_name):
 		import rortoolkit.terrain
 		import rortoolkit.resources
@@ -822,7 +777,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		# Close previously open terrain
 		if self.terrain is not None:
 			self.clear()
-			self._resetVariables()
+			self._reset_variables()
 
 		# Load project
 		project = rortoolkit.terrain.load_project_from_directory(project_dir_name)
@@ -840,7 +795,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.sceneManager.setWorldGeometry(rortoolkit.terrain.OGRE_TSM_CONFIG_FILENAME)
 
 		# Water
-		self.createWaterPlane()
+		self.create_water_plane()
 
 		# Sky box
 		if self.terrain.cubemap:
@@ -849,7 +804,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		# Place rigs
 		for beam in self.terrain.beamobjs:
 			try:
-				self.addTruckToTerrain(data=beam)
+				self._add_rig_to_terrain(data=beam)
 			except Exception as e:
 				log().error("Loading terrain: Failed to add truck {0} to terrain, message: {1}"
 						.format(beam.fileWithExt, str(e)))
@@ -857,16 +812,16 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		# Place objects
 		for obj in self.terrain.objects:
 			try:
-				self.addObjectToTerrain(data=obj)
+				self.add_object_to_terrain(data=obj)
 			except Exception as e:
 				log().error("Loading terrain: Failed to add object {0} to terrain, message: {1}"
 					.format(obj.fileWithExt, str(e)))
 
 		# Creating cameramesh
 		if self.terrain.CameraStartPosition:
-			cam = self.newEntryEx("cam.mesh", "mysimple/terrainselect", False, True, True)
-			cam.OnSelecting.append(self.entryChanged) #only update interfaz
-			cam.OnPositionChanged.append(self.specialEntryChanged) #update terrain and camera bookmark
+			cam = self.new_entry_ex("cam.mesh", "mysimple/terrainselect", False, True, True)
+			cam.OnSelecting.append(self.entry_changed) #only update interfaz
+			cam.OnPositionChanged.append(self.special_entry_changed) #update terrain and camera bookmark
 			cam.data.scale = 0.1, 0.1, 0.1
 			cam.data.name = RORCAMERA
 			cam.allowRotation = False
@@ -877,9 +832,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		
 		# Creating charactermesh
 		if self.terrain.CharacterStartPosition:
-			character = self.newEntryEx("character.mesh", "mysimple/terrainselect", False, True, True)
-			character.OnSelecting.append(self.entryChanged)
-			character.OnPositionChanged.append(self.specialEntryChanged)
+			character = self.new_entry_ex("character.mesh", "mysimple/terrainselect", False, True, True)
+			character.OnSelecting.append(self.entry_changed)
+			character.OnPositionChanged.append(self.special_entry_changed)
 			character.data.scale = 0.02, 0.02, 0.02
 			character.data.name = RORCHARACTER
 			character.allowRotation = False
@@ -890,9 +845,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 
 		# Creating Truckmesh
 		if self.terrain.TruckStartPosition:
-			truck = self.newEntryEx("truckstart.mesh", "mysimple/terrainselect", False, True, True)
-			truck.OnSelecting.append(self.entryChanged)
-			truck.OnPositionChanged.append(self.specialEntryChanged)
+			truck = self.new_entry_ex("truckstart.mesh", "mysimple/terrainselect", False, True, True)
+			truck.OnSelecting.append(self.entry_changed)
+			truck.OnPositionChanged.append(self.special_entry_changed)
 			truck.data.scale = 0.8, 0.8, 0.8
 			truck.data.name = RORTRUCK
 			truck.allowRotation = False
@@ -911,7 +866,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		if not self.terrain is None:
 			self.cameraBookmark.saveCamera()
 			self.clear()
-			self._resetVariables()
+			self._reset_variables()
 
 		progress_window.set_text("Creating editor context...")
 		import rortoolkit.terrain
@@ -924,7 +879,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		progress_window.set_text("Creating terrain...")
 		cfgfile = os.path.join(os.path.dirname(filename), self.terrain.TerrainConfig)
 		self.sceneManager.setWorldGeometry(cfgfile)
-		self.createWaterPlane()
+		self.create_water_plane()
 		if self.terrain.cubemap:
 			self.sceneManager.setSkyBox(True, self.terrain.cubemap, 0.6)
 		#ok let's go fix camera / Truck / character StartPosition if posible!!
@@ -933,7 +888,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		defaultz = ifNone(self.terrain.worldZ, 0) / 2
 		defaulty = ifNone(self.getTerrainHeight(ogre.Vector3(defaultx, defaulty, defaultz)), 0) + 2
 		if self.terrain.WaterHeight:
-			self.updateWaterPlane(self.terrain.WaterHeight)
+			self.update_water_plane(self.terrain.WaterHeight)
 			if defaulty < self.terrain.WaterHeight:
 				defaulty = self.terrain.WaterHeight
 		l = [defaultx, defaulty, defaultz]
@@ -962,7 +917,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			progress_window.set_text("Placing rig objects\n({0}/{1})\n{2}".format(count, total, beam.fileWithExt))
 			progress_window.set_progress(count, total)
 			try:
-				self.addTruckToTerrain(data=beam)
+				self._add_rig_to_terrain(data=beam)
 			except Exception, err:
 				log().error("Error while adding a Beam Construction to the terrain. Name: %s" % beam.name)
 				log().error(str(err))
@@ -976,7 +931,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 				progress_window.set_text("Placing static objects\n({0}/{1})".format(count, total))
 				progress_window.set_progress(count, total)
 			try:
-				newE = self.addObjectToTerrain(data=obj)
+				newE = self.add_object_to_terrain(data=obj)
 			except Exception, err:
 				log().error("Error while adding an object to the terrain: Name: %s " % obj.name)
 				log().error(str(err))
@@ -989,9 +944,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 
 		# Creating cameramesh
 		if self.terrain.CameraStartPosition:
-			cam = self.newEntryEx("cam.mesh", "mysimple/terrainselect", False, True, True)
-			cam.OnSelecting.append(self.entryChanged) #only update interfaz
-			cam.OnPositionChanged.append(self.specialEntryChanged) #update terrain and camera bookmark
+			cam = self.new_entry_ex("cam.mesh", "mysimple/terrainselect", False, True, True)
+			cam.OnSelecting.append(self.entry_changed) #only update interfaz
+			cam.OnPositionChanged.append(self.special_entry_changed) #update terrain and camera bookmark
 			cam.data.scale = 0.1, 0.1, 0.1
 			cam.data.name = RORCAMERA
 			cam.allowRotation = False
@@ -1002,9 +957,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		
 		# Creating charactermesh
 		if self.terrain.CharacterStartPosition:
-			character = self.newEntryEx("character.mesh", "mysimple/terrainselect", False, True, True)
-			character.OnSelecting.append(self.entryChanged)
-			character.OnPositionChanged.append(self.specialEntryChanged)
+			character = self.new_entry_ex("character.mesh", "mysimple/terrainselect", False, True, True)
+			character.OnSelecting.append(self.entry_changed)
+			character.OnPositionChanged.append(self.special_entry_changed)
 			character.data.scale = 0.02, 0.02, 0.02
 			character.data.name = RORCHARACTER
 			character.allowRotation = False
@@ -1016,9 +971,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 
 		# Creating Truckmesh
 		if self.terrain.TruckStartPosition:
-			truck = self.newEntryEx("truckstart.mesh", "mysimple/terrainselect", False, True, True)
-			truck.OnSelecting.append(self.entryChanged)
-			truck.OnPositionChanged.append(self.specialEntryChanged)
+			truck = self.new_entry_ex("truckstart.mesh", "mysimple/terrainselect", False, True, True)
+			truck.OnSelecting.append(self.entry_changed)
+			truck.OnPositionChanged.append(self.special_entry_changed)
 			truck.data.scale = 0.8, 0.8, 0.8
 			truck.data.name = RORTRUCK
 			truck.allowRotation = False
@@ -1035,20 +990,20 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.race = self.parent.race
 		self.race.luaParser = self.lua
 
-	def replaceSelectionWith(self, newOdefFilename):
+	def replace_selection_with(self, newOdefFilename):
 		
 		if self.selected.entry and self.selected.entry.data:
 			if self.selected.entry.data.name in FIXEDENTRIES:
 				rorSettings().mainApp.MessageBox("info", "good try !!, but you didn't success :-P ")
 				return
 		struid = str(self.selected.entry.uuid)
-		newE = self.addGeneralObject(newOdefFilename, coords=(0, 0, 0), rot=(0, 0, 0))
+		newE = self.add_general_object_to_terrain(newOdefFilename, coords=(0, 0, 0), rot=(0, 0, 0))
 		self.selected.entry.copyDetailsTo(newE)
 		self.selected.entry = newE
 		self.entries[struid].removeFromScene()
 		self.entries.pop(struid)
 
-	def addGeneralObject(self, filename, coords=None, rot=None):
+	def add_general_object_to_terrain(self, filename, coords=None, rot=None):
 		""" main routine to add any object / truck / load ... to the terrain
 		filename - string with extension
 		coords = None - Tuple
@@ -1072,9 +1027,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			
 		onlyfilename, extension = os.path.splitext(os.path.basename(filename))
 		if extension.lower() in VALIDSTRUCKS:
-				entry = self.addTruckToTerrain(truckFilename=filename, coords=coords, rot=rot)
+				entry = self._add_rig_to_terrain(truckFilename=filename, coords=coords, rot=rot)
 		elif extension.lower() == '.odef':
-				entry = self.addObjectToTerrain(odefFilename=filename, coords=coords, rot=rot)
+				entry = self.add_object_to_terrain(odefFilename=filename, coords=coords, rot=rot)
 		
 		if entry is None:
 			msg = " Unknown object to add to the terrain.\nPlease note you can only add an object from 'Objects' and\n 'Beam Objects' categories to the terrain.\n"
@@ -1082,7 +1037,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		
 		return entry
 
-	def addObjectToTerrain(self, data=None, odefFilename=None, coords=None, rot=None,
+	def add_object_to_terrain(self, data=None, odefFilename=None, coords=None, rot=None,
 						   doc=""" - if data != None, data is a pointer to the Object readed from .terrn file
 									 - if data is None ror Editor is adding a new object to terrain from Object Tree
 									 self.terrain.XXXXX.append(data) will tell RorTerrain class that it should 
@@ -1127,13 +1082,13 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 					raise 
 				return None
 
-		entry = self.newEntryEx(odefDef.meshName, None, True, True, False)
+		entry = self.new_entry_ex(odefDef.meshName, None, True, True, False)
 		entry.data = data
-		self.checkKnownDimension(entry, odefDef)
+		self._check_known_dimension(entry, odefDef)
 		if len(odefDef.meshMaterial) > 0:
 			entry.entity.setMaterialName(odefDef.meshMaterial[0])
 		entry.position = coords
-		self.applyMisplacement(entry)
+		self._apply_misplacement(entry)
 		entry.rotation = rot
 		if self.raceMode and not self.lua.showingcheckpoints:
 			self.lua.races[self.lua.raceIndex].addCheckpoint(entry.data.name, coords, rot, entry)
@@ -1146,7 +1101,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 #
 # If we have 2.000 roads objects, all of them share the same KnownObjects definition 
 #===============================================================================
-	def checkKnownDimension(self, entry, odefDef=None): 
+	def _check_known_dimension(self, entry, odefDef=None): 
 		""" Load on the fly object dimension.
 		if user was modding or changing anything in files
 		always get syncrhonise. So, we won't never save 
@@ -1211,14 +1166,14 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 								entry.data.additionalOptions.append(h[event])
 								entry.data.additionalOptions.append("spawnZone_%s_%d" % (entry.data.name, k["instanceCount"]))
 
-	def deleteObjectFromFile(self, entry):
+	def _delete_object_from_file(self, entry):
 		if entry:
 			if entry.data.name in FIXEDENTRIES:
 				raise showedError("This object is always needed. You can not delete it") 
 			return True
 		return False
 
-	def addTruckToTerrain(self, data=None, truckFilename=None, coords=None, rot=None):
+	def _add_rig_to_terrain(self, data=None, truckFilename=None, coords=None, rot=None):
 		if coords is None:
 			coords = self.selected.coords.asTuple
 		if rot is None:
@@ -1250,7 +1205,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			log().error(str(err))
 			raise 
 
-		entry = self.newEntry(True, False)
+		entry = self.new_entry(True, False)
 		entry.uuid = theuid		
 		entry.manualobject = themanualobject
 		entry.node = thenode
@@ -1261,13 +1216,13 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		# RORBUGFIX: RoR trucks and trailers can not be rotated or rear are reversed (reverse gear are fordward movement and main gears goes backwards
 		entry.rotation = 0, 0, 0
 #		print "rotation data of truck "  + str(entry.data.rotation)
-		self.checkKnownDimension(entry)
+		self._check_known_dimension(entry)
 		self.entries[entry.uuid] = entry
 		if not entry.data in self.terrain.beamobjs:
 			self.terrain.beamobjs.append(entry.data)
 		return entry
 
-	def getPointedPosition(self, event,
+	def _get_mouse_terrain_position(self, event,
 						doc=""" return Vector3 """):
 		x, y = event.GetPosition() 
 		width = self.renderWindow.getWidth()
@@ -1284,7 +1239,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.sceneManager.destroyQuery(myRaySceneQuery)
 		return final
 
-	def populateScene(self):
+	def _prepare_scene(self):
 		self.sceneManager.AmbientLight = ogre.ColourValue(0.7, 0.7, 0.7)
 
 		fadeColour = (0.8, 0.8, 0.8)
@@ -1302,17 +1257,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		plane.d = 5000
 		plane.normal = -ogre.Vector3(0, 1, 0)
 
-	def stickVectorToGround(self, nPos):
-		nRay = ogre.Ray(ogre.Vector3(nPos.x, 5000, nPos.z), ogre.Vector3(0, -1, 0))
-		self.terrainRaySceneQuery.setRay(nRay)
-		#Perform the scene query
-		result = self.terrainRaySceneQuery.execute()
-		if len(result) > 0 and not result[0] is None and not result[0].worldFragment is None:
-			terrainHeight = result[0].worldFragment.singleIntersection.y
-			return ogre.Vector3(nPos.x, terrainHeight, nPos.z)
-		return nPos
-
-	def ObjectResetRotation(self, rotx=False, roty=False, rotz=False):
+	def _object_reset_rotation(self, rotx=False, roty=False, rotz=False):
 		if self.selected.entry:
 			rx, ry, rz = self.selected.entry.rotation
 			if rotx:	rx = 0
@@ -1323,17 +1268,11 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			self.RotateNode.resetOrientation()
 			self.RotateNode.setOrientation(self.selected.entry.node.getOrientation())
 
-	def selectTerrain(self):
+	def _select_terrain(self):
 		self.selected.type = "terrain"
 		self.selected.entry = None
-		
 
-	def _getCameraToViewportRay(self, screen_x, screen_y):
-		width  = self.renderWindow.getWidth()
-		height = self.renderWindow.getHeight()
-		return self.camera.getCameraToViewportRay((screen_x / float(width)), (screen_y / float(height)))	
-
-	def _updateMapSelection(self, event):
+	def _update_map_selection(self, event):
 		x, y = event.GetPosition() 
 
 		width = self.renderWindow.getWidth()
@@ -1357,7 +1296,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			self.ignorearray = []
 		self.ignorearray.append("circlepointer")
 		if not self.terrain.WaterHeight is None:
-			self.ignorearray.append(self.waterentity.getName())
+			self.ignorearray.append(self._waterplane_entity.getName())
 		menu = wx.Menu()
 		self.popupSelection = {}
 		try:
@@ -1380,11 +1319,11 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 										continue
 							if not self.selected.entry is None and self.selected.entry.entity.getName() == name:
 								continue
-							rorname = self.getRoRName(r.movable)
+							rorname = self.get_ror_name(r.movable)
 							if rorname != '':
 								item = menu.Append(wx.ID_ANY, rorname)
 								self.Bind(wx.EVT_MENU, self.go, item)
-								self.popupSelection[str(item.GetId())] = self.getEntry(r.movable)
+								self.popupSelection[str(item.GetId())] = self.get_entry(r.movable)
 							if not self.usePopup:
 								break 
 				except:
@@ -1400,7 +1339,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			if self.selected.entry is None or not self.addtomultiselect: self.selected.entry = self.popupSelection[str(item.GetId())]
 			elif self.addtomultiselect: self.selected.add(self.popupSelection[str(item.GetId())])
 		elif menu.GetMenuItemCount() == 0 :
-			self.selectTerrain()
+			self._select_terrain()
 		if self.usePopup and menu.GetMenuItemCount() > 1:			
 			item = menu.Append(wx.ID_ANY, "Ground")
 			self.Bind(wx.EVT_MENU, self.go, item)
@@ -1413,15 +1352,14 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 	def go(self, event):
 		selkey = str(event.GetId())
 		if self.popupSelection[selkey] is None:
-			self.selectTerrain()
+			self._select_terrain()
 		else:
-			if self.selected.entry is None or not self.addtomultiselect: self.selected.entry = self.popupSelection[selkey]
-			elif self.addtomultiselect: self.selected.add(self.popupSelection[selkey])
+			if self.selected.entry is None or not self.addtomultiselect:
+				self.selected.entry = self.popupSelection[selkey]
+			elif self.addtomultiselect:
+				self.selected.add(self.popupSelection[selkey])
 
-	def controlSelectedObject(self, action, value):
-		pass
-
-	def addObjectToHistory(self, entry):
+	def _add_object_to_history(self, entry):
 		if len(self.commandhistory) > 0:
 			if self.historypointer < len(self.commandhistory):
 				del self.commandhistory[self.historypointer:]
@@ -1442,7 +1380,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.commandhistory.append(hentry)
 		self.historypointer = len(self.commandhistory)
 
-	def undoHistory(self):
+	def _undo_history(self):
 		if self.historypointer == 0:
 			self.currentStatusMsg = "nothing to undo"
 			return
@@ -1457,7 +1395,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		# update node positions
 		self.currentStatusMsg = "undo step %d of %d" % (self.historypointer + 1, len(self.commandhistory))
 		
-	def redoHistory(self):
+	def _redo_history(self):
 		if self.historypointer + 1 >= len(self.commandhistory):
 			self.currentStatusMsg = "nothing to redo"
 			return
@@ -1471,7 +1409,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.selected.entry = self.entries[hentry.uuid]
 		self.currentStatusMsg = "redo step %d of %d" % (self.historypointer + 1, len(self.commandhistory))
 
-	def _translateSelected(self, axis_ogre, mouse_x1, mouse_y1, mouse_x2, mouse_y2):
+	def _translate_selected(self, axis_ogre, mouse_x1, mouse_y1, mouse_x2, mouse_y2):
 		"""
 		Translates selected object based on mouse input.
 		:param string axis_str: X/Y/Z - OGRE world space (Y = up)
@@ -1491,9 +1429,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		# Post-process
 		self.selected.entry.data.modified = True
 		self.selected.axis.attachTo(self.selected.entry.node)
-		self.addObjectToHistory(self.selected.entry)
+		self._add_object_to_history(self.selected.entry)
 
-	def rotateSelected(self, axis, amount, steps=True):
+	def _rotate_selected(self, axis, amount, steps=True):
 		if not self.selected.entry:
 			return
 		if len(self.selected.entries) > 0 : 
@@ -1518,12 +1456,12 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		
 			newrot = self.selected.entry.node.getOrientation()
 		
-		self.addObjectToHistory(self.selected.entry)
+		self._add_object_to_history(self.selected.entry)
 		self.selected.entry.data.modified = True
 		self.selected.entry.ogreRotation = newrot
 		self.selected.axis.rotateNode.setOrientation(newrot)
 
-	def addSelectedFromTO(self):
+	def _add_selected_from_tree_object(self):
 		if self.parent.ObjectTree is None:
 			NoObjecTreeCreated = 'No Object tree created yet!!'
 			raise logTerrainEditorError(NoObjecTreeCreated)
@@ -1535,7 +1473,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		oFilename = self.parent.ObjectTree.selectedfn
 		# allow to use block mode with beam objects and statics objects
 		# we do creating a child node so rotation and position will match with the selected one.
-		entry = self.addGeneralObject(oFilename)
+		entry = self.add_general_object_to_terrain(oFilename)
 		if entry is None: return
 
 		entry.changeParentTo(self.selected.entry.node)
@@ -1547,7 +1485,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		entry.node.showBoundingBox(True)
 		entry.node._updateBounds()
 		entry.node.translate(self.selected.entry.details["aabb"]["farMiddle"] - entry.details["aabb"]["nearMiddle"])
-		self.applyMisplacement(entry) #applied on addGeneralObject but reseted here !!!
+		self._apply_misplacement(entry) #applied on addGeneralObject but reseted here !!!
 #		entry.logPosRot("before parent")
 		p = entry.node._getDerivedPosition()
 		o = entry.node._getDerivedOrientation()
@@ -1556,12 +1494,11 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 #		self.sceneManager.getRootSceneNode().addChild(entry.node)
 		entry.position = p.x, theY, p.z 
 		entry.ogreRotation = o
-#		self.zoomCamera(self.selected.entry.node.getPosition(), p)
 		entry.node._updateBounds()
 		self.selected.entry = entry
 		return True
 
-	def applyMisplacement(self, entry):
+	def _apply_misplacement(self, entry):
 		if entry.details["misPlace"]:
 			if not entry.details["misPlace"].isZero():
 				mx = 0.0
@@ -1581,7 +1518,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		entry.node._updateBounds()
 		main = entry.node.createChildSceneNode()
 		for v in entry.details["aabb"].keys():
-			p = self.newEntryEx("ellipsoid.mesh", "TruckEditor/NodeExhaustReference", True, True , True, main)
+			p = self.new_entry_ex("ellipsoid.mesh", "TruckEditor/NodeExhaustReference", True, True , True, main)
 			p.data.scale = 0.12, 0.32, 0.12
 			p.data.name = "point_%s" % v
 			p.allowRotation = False
@@ -1593,7 +1530,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		return toReturn
 
 	def createDotAt(self, x, y, z, color=CLBLUE, sufix='', parentNode=None):
-		p = self.newEntryEx("ellipsoid.mesh", color, True, True , True, parentNode, sufix)
+		p = self.new_entry_ex("ellipsoid.mesh", color, True, True , True, parentNode, sufix)
 		p.data.scale = 1, 1, 1
 		p.allowRotation = False
 		if sufix == '':
@@ -1606,7 +1543,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 
 	def createDot(self, entry, corner="", color=CLBLUE):
 		""" create a dot on the corner of entry"""
-		p = self.newEntryEx("ellipsoid.mesh", "TruckEditor/NodeExhaustReference", True, True , True, entry.node)
+		p = self.new_entry_ex("ellipsoid.mesh", "TruckEditor/NodeExhaustReference", True, True , True, entry.node)
 		p.data.scale = 0.12, 0.32, 0.12
 		p.data.name = "point_%s" % str(p.uuid)
 		p.allowRotation = False
@@ -1648,7 +1585,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		LockSteps = event.AltDown()
 		forceDegree = ogre.Degree(forcex).valueRadians()
 		
-		self.movingEntry = True
+		self._is_entry_being_moved = True
 		arrow_name = self.selected.axis.arrow.getName()
 		translate_axis = None
 		if arrow_name == self.selected.axis.arrowNames[0]:
@@ -1658,11 +1595,11 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		elif arrow_name == self.selected.axis.arrowNames[2]:
 			translate_axis = "Z"
 		elif arrow_name == self.selected.axis.arrowNames[3]:
-			self.rotateSelected(ogre.Vector3(0, 1, 0), forceDegree, LockSteps)
+			self._rotate_selected(ogre.Vector3(0, 1, 0), forceDegree, LockSteps)
 		elif arrow_name == self.selected.axis.arrowNames[4]:
-			self.rotateSelected(ogre.Vector3(1, 0, 0), forceDegree, LockSteps)
+			self._rotate_selected(ogre.Vector3(1, 0, 0), forceDegree, LockSteps)
 		elif arrow_name == self.selected.axis.arrowNames[5]:
-			self.rotateSelected(ogre.Vector3(0, 0, 1), forceDegree, LockSteps)
+			self._rotate_selected(ogre.Vector3(0, 0, 1), forceDegree, LockSteps)
 			
 		if translate_axis is not None:
 			# Fix axis -> OGRE world space
@@ -1671,7 +1608,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			elif translate_axis == "Y":
 				translate_axis = "Z"
 		
-			self._translateSelected(translate_axis, 
+			self._translate_selected(translate_axis, 
 				self._mouse_drag_start_screen_x, 
 				self._mouse_drag_start_screen_y,
 				screen_x, screen_y)
@@ -1705,8 +1642,8 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		height = self.renderWindow.getHeight()
 
 		if event.MiddleDown() and self._placeWithMouse:
-			self.selected.coords.asVector3 = self.getPointedPosition(event) + ogre.Vector3(0, 0.1, 0)
-			self.addGeneralObject(self._object_tree_window.selectedfn)
+			self.selected.coords.asVector3 = self._get_mouse_terrain_position(event) + ogre.Vector3(0, 0.1, 0)
+			self.add_general_object_to_terrain(self._object_tree_window.selectedfn)
 
 		if self.selected.axis.arrow is None and event.GetWheelRotation() != 0:
 			dir = 5
@@ -1746,22 +1683,22 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		if event.LeftDown() and not event.ControlDown():
 			if event.ShiftDown(): #get distance from previous entry to the new
 				oldPos = self.selected.coords.asVector3
-			self.selected.coords.asVector3 = self.getPointedPosition(event)	
+			self.selected.coords.asVector3 = self._get_mouse_terrain_position(event)	
 			self.addtomultiselect = event.ShiftDown()
-			self._updateMapSelection(event)
+			self._update_map_selection(event)
 			self._mouse_drag_start_screen_x, self._mouse_drag_start_screen_y = event.GetPosition() #saves position of initial click 
 			if event.ShiftDown():
 				log().info('distance : %.3f' % (oldPos.distance(self.selected.coords.asVector3)))
 			
 		if not event.Dragging() and event.LeftIsDown() and (not self.selected.entry is None) and event.ControlDown():
-			self.selected.mouseOffset = self.getPointedPosition(event) - self.selected.entry.node.getPosition()
+			self.selected.mouseOffset = self._get_mouse_terrain_position(event) - self.selected.entry.node.getPosition()
 		#freedom movement
 		if event.Dragging() and event.LeftIsDown() and (not self.selected.entry is None) and event.ControlDown(): 
-			mousepos = self.getPointedPosition(event)
+			mousepos = self._get_mouse_terrain_position(event)
 			if not mousepos is None:
-				self.movingEntry = True
+				self._is_entry_being_moved = True
 				self.autoTracking = False
-				self.addObjectToHistory(self.selected.entry)
+				self._add_object_to_history(self.selected.entry)
 				objpos = self.selected.entry.ogrePosition
 				oldHG = self.selected.entry.heightFromGround
 				# mouse is not pointing to (0,0,0) object coordenate, so an offset is required
@@ -1771,10 +1708,10 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 				self.selected.entry.data.modified = True
 				self.selected.entry.heightFromGround = oldHG 
 #				self.axis.attachTo(self.selected.entry.node)
-		if event.LeftUp() and self.movingEntry:
+		if event.LeftUp() and self._is_entry_being_moved:
 			if self.selected.entry is not None:
 				self.selected.entry.informPositionChanged()
-			self.movingEntry = False
+			self._is_entry_being_moved = False
 		elif event.Dragging() and event.LeftIsDown() and not event.ControlDown() and self.axis.arrow is None and event.ShiftDown():
 			""" a selectionbox is created and it is the selected entry
 			the rest of objects are child of self.selected.multiselectNode.
@@ -1784,35 +1721,35 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			selecting with SHIFT key works properly
 			selecting with sphere doesn't work properly
 			"""
-			if self.sphere is None:
+			if self._ogre_sphere is None:
 				p = self.selected.coords.asVector3
-				self.selectionBox = self.createDotAt(p.x, p.y, p.z, CLBLUE, "multiselectDot")
-				self.selectionBox.allowRotation = True
-				self.selectionBox.entity.setMaterialName('mysimple/translucientred')
-				self.selectionBox.OnPositionChanged.append(self.moveSelection)
+				self._selection_box = self.createDotAt(p.x, p.y, p.z, CLBLUE, "multiselectDot")
+				self._selection_box.allowRotation = True
+				self._selection_box.entity.setMaterialName('mysimple/translucientred')
+				self._selection_box.OnPositionChanged.append(self.moveSelection)
 #				self.selectionBox.OnDeselecting.append(self.hideSelectionBox)
-				self.sphere = ogre.Sphere()
-				self.sphereQuery = self.sceneManager.createSphereQuery(self.sphere)
+				self._ogre_sphere = ogre.Sphere()
+				self.sphereQuery = self.sceneManager.createSphereQuery(self._ogre_sphere)
 			
-			if self.selected.entry <> self.selectionBox : 
-				self.selectionBox.ogrePosition = self.selected.coords.asVector3
-				self.selected.entry = self.selectionBox
+			if self.selected.entry <> self._selection_box : 
+				self._selection_box.ogrePosition = self.selected.coords.asVector3
+				self.selected.entry = self._selection_box
 
-			self.selectionBox.visible = True
+			self._selection_box.visible = True
 			
-			s = self.getPointedPosition(event).distance(self.selected.coords.asVector3) / 2	
-			center = self.getPointedPosition(event).midPoint(self.selected.coords.asVector3)
+			s = self._get_mouse_terrain_position(event).distance(self.selected.coords.asVector3) / 2	
+			center = self._get_mouse_terrain_position(event).midPoint(self.selected.coords.asVector3)
 			self.ignorearray = []
 			self.ignorearray.append('circlepointer')
 			self.ignorearray.append('waterPlane')
 			self.ignorearray.extend(self.axis.arrowNames)
-			self.ignorearray.append(str(self.selectionBox.uuid))
-			self.selectionBox.node.setScale(s, s, s)
-			self.selectionBox.node.setPosition(center)
-			self.selectionBox.node._updateBounds()
-			self.sphere.setCenter(center)
-			self.sphere.setRadius(s)
-			self.sphereQuery.setSphere(self.sphere)
+			self.ignorearray.append(str(self._selection_box.uuid))
+			self._selection_box.node.setScale(s, s, s)
+			self._selection_box.node.setPosition(center)
+			self._selection_box.node._updateBounds()
+			self._ogre_sphere.setCenter(center)
+			self._ogre_sphere.setRadius(s)
+			self.sphereQuery.setSphere(self._ogre_sphere)
 #			self.selected.add(self.selectionBox)
 #			self.log(' radius at, point at', [s, center.x, center.y, center.z])
 			result = None
@@ -1847,7 +1784,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			return
 
 		d = self.cameraVel 
-		if self.cameraQuick:
+		if self._is_camera_fast:
 			d *= (self.cameraShiftVel / 2)
 		forceDegree = ogre.Degree(1).valueRadians()
 		LockSteps = False
@@ -1855,11 +1792,11 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		if event.ShiftDown():
 			d *= self.cameraShiftVel
 		elif event.m_keyCode == wx.WXK_CAPITAL:
-			self.cameraQuick = not self.cameraQuick
-			self.showOverlay('POCore/run', self.cameraQuick)
+			self._is_camera_fast = not self._is_camera_fast
+			self.showOverlay('POCore/run', self._is_camera_fast)
 
 		elif event.m_keyCode == WXK_B: # B
-			e = self.addGeneralObject('road.odef', self.selected.coords.asTuple, (0, 0, 0))
+			e = self.add_general_object_to_terrain('road.odef', self.selected.coords.asTuple, (0, 0, 0))
 			e.y += 0.1
 			ry = 0.0
 			y = 0.0
@@ -1875,18 +1812,18 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 				else:
 					ry += angle
 					p.y += 0.11
-				e = self.addGeneralObject('road.odef', (p.x, p.y, p.z), (rx, ry, rz))
+				e = self.add_general_object_to_terrain('road.odef', (p.x, p.y, p.z), (rx, ry, rz))
 				log().debug('ry %.3f' % ry) 
 
 		if event.m_keyCode == WXK_A: #  A, wx.WXK_LEFT:
 			self.keyPress.x = -d
 		elif event.m_keyCode == wx.WXK_INSERT:
 			if self.selected:
-				e = self.addGeneralObject(self._object_tree_window.selectedfn)
+				e = self.add_general_object_to_terrain(self._object_tree_window.selectedfn)
 		
 		elif event.m_keyCode == wx.WXK_DELETE:
 			# delete key
-			if self.deleteObjectFromFile(self.selected.entry):
+			if self._delete_object_from_file(self.selected.entry):
 				uid = str(self.selected.entry.uuid)
 				self.selected.entry = None
 				e = self.entries.pop(uid)
@@ -1907,9 +1844,9 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		elif event.m_keyCode == WXK_V: # V
 			self.keyPress.y = -d
 		elif event.m_keyCode == wx.WXK_PAGEUP: 
-			self.undoHistory()
+			self._undo_history()
 		elif event.m_keyCode == wx.WXK_PAGEDOWN: 
-			self.redoHistory()
+			self._redo_history()
 			
 		elif event.m_keyCode == WXK_Q: 
 			self.autoTracking = not self.autoTracking
@@ -1938,29 +1875,29 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		elif event.m_keyCode == WXK_C:
 			self.cameraCollision = not self.cameraCollision
 		elif event.m_keyCode == wx.WXK_SPACE:
-			self.addSelectedFromTO()
+			self._add_selected_from_tree_object()
 			sleep(PAUSE_PER_SECOND / 10)
 		# rotating with keyboard
 		elif event.m_keyCode == WXK_U:
-			self.rotateSelected(ogre.Vector3(0, 1, 0), -forceDegree, LockSteps)
+			self._rotate_selected(ogre.Vector3(0, 1, 0), -forceDegree, LockSteps)
 		elif event.m_keyCode == WXK_I:
-			self.ObjectResetRotation(rotz=True)
+			self._object_reset_rotation(rotz=True)
 		elif event.m_keyCode == WXK_O:
-			self.rotateSelected(ogre.Vector3(0, 1, 0), forceDegree, LockSteps)
+			self._rotate_selected(ogre.Vector3(0, 1, 0), forceDegree, LockSteps)
 
 		elif event.m_keyCode == WXK_J:
-			self.rotateSelected(ogre.Vector3(0, 0, 1), forceDegree, LockSteps)
+			self._rotate_selected(ogre.Vector3(0, 0, 1), forceDegree, LockSteps)
 		elif event.m_keyCode == WXK_K:
-			self.ObjectResetRotation(roty=True)
+			self._object_reset_rotation(roty=True)
 		elif event.m_keyCode == WXK_L:
-			self.rotateSelected(ogre.Vector3(0, 0, 1), -forceDegree, LockSteps)
+			self._rotate_selected(ogre.Vector3(0, 0, 1), -forceDegree, LockSteps)
 		
 		elif event.m_keyCode == WXK_DOT:
-			self.rotateSelected(ogre.Vector3(1, 0, 0), forceDegree, LockSteps)
+			self._rotate_selected(ogre.Vector3(1, 0, 0), forceDegree, LockSteps)
 		elif event.m_keyCode == WXK_COMMA:
-			self.ObjectResetRotation(rotx=True)			
+			self._object_reset_rotation(rotx=True)			
 		elif event.m_keyCode == WXK_M:
-			self.rotateSelected(ogre.Vector3(1, 0, 0), -forceDegree, LockSteps)
+			self._rotate_selected(ogre.Vector3(1, 0, 0), -forceDegree, LockSteps)
 
 		elif event.m_keyCode == wx.WXK_F4:  # print all info of the object 
 			if self.selected.entry:

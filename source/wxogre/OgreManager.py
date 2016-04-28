@@ -116,7 +116,7 @@ class OgreManager(object):
 	def RenderAll(self):
 		for ogrewin in self.renderWindows.keys():
 			try:
-				ogrewin.OnFrameStarted()
+				ogrewin.on_frame_started()
 			except ogre.OgreException, e:
 				log().debug('fail to render targetwindow %s' % ogrewin.renderWindowName)
 				log().debug(str(e))
@@ -131,7 +131,7 @@ class OgreManager(object):
 
 		for ogrewin in self.renderWindows.keys():
 			try:
-				ogrewin.OnFrameEnded()
+				ogrewin.on_frame_ended()
 			except:
 				continue
 

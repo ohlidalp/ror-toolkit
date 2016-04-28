@@ -200,14 +200,14 @@ class AxisClass(object):
 			log().debug("SelectionAxis._createArrows: Axes are already created !!")
 			showedError("Axes already created")
 		# main node is always required
-		n = self._ogrewindow.smNewNode("movearrowsnode" + randomID()) 
+		n = self._ogrewindow.mk_scene_node("movearrowsnode" + randomID()) 
 		n.setScale(0, 0, 0)
 		n.setPosition(0, 0, 0)
 		self.translateNode = n
 		
 		#translation nodes
 		if 'translation' in self._allowedToShow:
-			scene_mgr = self._ogrewindow.getOgreSceneManager()
+			scene_mgr = self._ogrewindow.get_ogre_scene_manager()
 			self._axis_arrows = {}
 			self._axis_arrows["X"] = AxisTranslationArrow(n, "X", self.arrowNames[0], scene_mgr)
 			self._axis_arrows["Y"] = AxisTranslationArrow(n, "Y", self.arrowNames[1], scene_mgr)
@@ -217,17 +217,17 @@ class AxisClass(object):
 		if 'rotation' in self._allowedToShow:
 			offset = 7
 			
-			nr = self._ogrewindow.smNewNode("rotatearrowsnode" + randomID()) 
+			nr = self._ogrewindow.mk_scene_node("rotatearrowsnode" + randomID()) 
 			nr.setScale(0, 0, 0)
 			nrx = nr.createChildSceneNode("rotatearrowsnodeX" + randomID())
-			erx = self._ogrewindow.smNewEntity(self.arrowNames[3], "roundarrow.mesh", "mysimple/transred") 
+			erx = self._ogrewindow.mk_entity(self.arrowNames[3], "roundarrow.mesh", "mysimple/transred") 
 			nrx.rotate(ogre.Vector3(1, 0, 0), ogre.Degree(-90).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
 			nrx.setScale(1, 1, 1)
 			nrx.setPosition(0, 0, offset)
 			nrx.attachObject(erx)
 	
 			nry = nr.createChildSceneNode("rotatearrowsnodeY" + randomID())
-			ery = self._ogrewindow.smNewEntity(self.arrowNames[4], "roundarrow.mesh", "mysimple/transblue") 
+			ery = self._ogrewindow.mk_entity(self.arrowNames[4], "roundarrow.mesh", "mysimple/transblue") 
 			nry.rotate(ogre.Vector3(1, 0, 0), ogre.Degree(180).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
 			nry.rotate(ogre.Vector3(0, 1, 1), ogre.Degree(90).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
 			nry.setInheritOrientation(True)
@@ -237,7 +237,7 @@ class AxisClass(object):
 		
 		
 			nrz = nr.createChildSceneNode("rotatearrowsnodeZ" + randomID())
-			erz = self._ogrewindow.smNewEntity(self.arrowNames[5], "roundarrow.mesh", "mysimple/transgreen") 
+			erz = self._ogrewindow.mk_entity(self.arrowNames[5], "roundarrow.mesh", "mysimple/transgreen") 
 
 			nrz.setScale(1, 1, 1)
 			nrz.attachObject(erz)
@@ -247,15 +247,15 @@ class AxisClass(object):
 		
 		# terrain selection node
 		if 'terrain' in self._allowedToShow:
-			nt = self._ogrewindow.smNewNode("terrainselectnode" + randomID()) 
-			et = self._ogrewindow.smNewEntity("circlepointer-" + randomID(), "cylinder.mesh", "mysimple/terrainselect") 
+			nt = self._ogrewindow.mk_scene_node("terrainselectnode" + randomID()) 
+			et = self._ogrewindow.mk_entity("circlepointer-" + randomID(), "cylinder.mesh", "mysimple/terrainselect") 
 			nt.rotate(ogre.Vector3(1, 0, 0), ogre.Degree(90).valueRadians(), relativeTo=ogre.Node.TransformSpace.TS_WORLD)
 			nt.attachObject(et)
 			self.terrainNode = nt
 		
 		if 'pointer3d' in self._allowedToShow:
 #												strMeshName, strMaterialName = None, bAssignEvent = False, bAddToEntries = False, bCreateData = False, parentNode=None):
-			p3d = self._ogrewindow.newEntryEx("torus.mesh", "mysimple/terrainselect", False, True)
+			p3d = self._ogrewindow.new_entry_ex("torus.mesh", "mysimple/terrainselect", False, True)
 			self.pointer3d = p3d.node			
 			self.pointer3d.setScale(0.05, 0.05, 0.05)
 	

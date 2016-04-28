@@ -500,7 +500,7 @@ class MainFrame(wx.Frame):
 				x = float(l[0])
 				y = float(l[1])
 				z = float(l[2])
-				self.terrainOgreWin.setCamera((x, y, z), (0, 0, 0), 0)
+				self.terrainOgreWin.set_ogre_camera((x, y, z), (0, 0, 0), 0)
 			
 			evt.Skip()
 		def OnselectSkin(self, evt):
@@ -612,7 +612,7 @@ class MainFrame(wx.Frame):
 		
 		def addObjectToTerrain(self, filename):
 				self.changeEditorMode(1)
-				self.terrainOgreWin.addGeneralObject(filename)
+				self.terrainOgreWin.add_general_object_to_terrain(filename)
 
 		
 		def previewObject(self, filename):

@@ -120,7 +120,7 @@ class RoRTruckOgreWindow(wxOgre3D):
 	def OnFrameEnded(self):
 		pass
 
-	def SceneInitialisation(self):
+	def initialize_scene(self):
 
 		#get the scenemanager
 		if self.sceneManager is None:
@@ -146,7 +146,7 @@ class RoRTruckOgreWindow(wxOgre3D):
 		self.Bind(wx.EVT_MOUSE_EVENTS, self.onMouseEvent)
 
 		#create objects
-		self.populateScene()
+		self._prepare_scene()
 		
 	def updateEntryPos(self, entry, tuplepos):
 		entry.ogrePosition = ogre.Vector3(tuplepos[0], tuplepos[1], tuplepos[2])
@@ -220,15 +220,15 @@ class RoRTruckOgreWindow(wxOgre3D):
 		self.selected = selectionClass(self)
 		
 		
-		self.p3d = self.newEntryEx("torus.mesh", "mysimple/terrainselect", False, True) 
+		self.p3d = self.new_entry_ex("torus.mesh", "mysimple/terrainselect", False, True) 
 		self.p3d.node.setScale(0.01, 0.01, 0.01)
 
 		self.terrainAxis = AxisClass(self, ['translation']) # to see the origin of the map
 		self.terrainAxis.entryShow = ['translation']
 		self.terrainAxis.arrowScaleFactor = 0.01
-		self.terrainAxis.attachTo(self.smNewNode(randomID()))
+		self.terrainAxis.attachTo(self.mk_scene_node(randomID()))
 
-		self.node0 = self.smNewNode(randomID())
+		self.node0 = self.mk_scene_node(randomID())
 		self.createGroundPlane()
 #		self.createWalls()
 
@@ -444,7 +444,7 @@ class RoRTruckOgreWindow(wxOgre3D):
 			for i in range(len(mystr)):
 				if number.has_key(mystr[i]):
 					subn = nNumber.createChildSceneNode(str(randomID()), ogre.Vector3(0.5 * i, 0, 0))
-					sube = self.smNewEntity(str(randomID()), "%s.mesh" % number[mystr[i]], CLYELLOW)
+					sube = self.mk_entity(str(randomID()), "%s.mesh" % number[mystr[i]], CLYELLOW)
 					subn.attachObject(sube)
 			setattr(dot, 'nodeNumber', nNumber)
 			if self.isNodeAt(dot.ogrePosition):
@@ -677,7 +677,7 @@ class RoRTruckOgreWindow(wxOgre3D):
 		AddtoEntries - bool
 		material name - string 
 		"""
-		entry = self.newEntryEx("beam.mesh", matname, True, addToEntries)
+		entry = self.new_entry_ex("beam.mesh", matname, True, addToEntries)
 		entry.links = []
 		midPoint = pos0.midPoint(pos1) 
 
@@ -794,7 +794,7 @@ class RoRTruckOgreWindow(wxOgre3D):
 		box1.setCastShadows(False)
 
 
-	def populateScene(self):
+	def _prepare_scene(self):
 #		self.sceneManager.AmbientLight = ogre.ColourValue(0.7, 0.7, 0.7)
 
 		fadeColour = (0.1, 0.1, 0.1)
@@ -891,19 +891,19 @@ class RoRTruckOgreWindow(wxOgre3D):
 #		return p.tree
 
 	def createWalls(self):
-		n = self.newEntryEx('beam.mesh', 'tracks / IngameEditor / Grid1', False, True, suffix="XYwall") #CLRED
+		n = self.new_entry_ex('beam.mesh', 'tracks / IngameEditor / Grid1', False, True, suffix="XYwall") #CLRED
 		n.allowTranslation = True
 		n.canBeSelected = True
 		n.node.setScale(10, 10, 0)
 #		n.node.setPosition(-15, -15, 0)
 		
-		n2 = self.newEntryEx('beam.mesh', 'tracks / IngameEditor / Grid1', False, True, suffix="YZwall") #CLGREEN
+		n2 = self.new_entry_ex('beam.mesh', 'tracks / IngameEditor / Grid1', False, True, suffix="YZwall") #CLGREEN
 		n2.allowTranslation = True
 		n2.canBeSelected = True
 		n2.node.setScale(0, 10, 10)
 #		n2.node.setPosition(0, -15, -15)
 		
-		n3 = self.newEntryEx('beam.mesh', 'tracks / IngameEditor / Grid1', False, True, suffix="XZwall") #CLGREEN
+		n3 = self.new_entry_ex('beam.mesh', 'tracks / IngameEditor / Grid1', False, True, suffix="XZwall") #CLGREEN
 		n3.allowTranslation = True
 		n3.canBeSelected = True
 		n3.node.setScale(10, 0.1, 10)
@@ -984,7 +984,7 @@ class RoRTruckOgreWindow(wxOgre3D):
 		center = (enode1.ogrePosition + enode2.ogrePosition) / 2.0
 		axis = (enode1.ogrePosition - enode2.ogrePosition)
 		axis.normalise()
-		rim = self.newEntryEx(obj.meshname, None, True, True, suffix='MeshRim')
+		rim = self.new_entry_ex(obj.meshname, None, True, True, suffix='MeshRim')
 		rim.ogrePosition = center
 		
 		raxis = axis
@@ -1058,7 +1058,7 @@ class RoRTruckOgreWindow(wxOgre3D):
 		
 		"""
 		#FIXME: how to create all meshes related to this obj, maybe a mesh, wheelmesh, airfol...
-		mesh = self.newEntryEx(obj.mesh, None, True, True, False, None)
+		mesh = self.new_entry_ex(obj.mesh, None, True, True, False, None)
 		mesh.allowRotation = True
 		mesh.allowTranslation = True
 		setattr(obj, 'entry', mesh)
@@ -1639,7 +1639,7 @@ class RoRTruckOgreWindow(wxOgre3D):
 #		node.lookAt(vector3, ogre.Node.TransformSpace.TS_WORLD, ogre.Vector3(0, 1, 0))
 		node.lookAt(vector3, ogre.Node.TransformSpace.TS_WORLD, ogre.Vector3(0, 0, 1))
 		
-	def newEntry(self, bAssignEvent=False, bAutouuid=False): 
+	def new_entry(self, bAssignEvent=False, bAutouuid=False): 
 		""" bAssignEvent -> Assign ogreWindow property
 			bAutouuid -> auto generate uuid to this entry"""		
 		n = simpleEntryClass(self)
@@ -1651,7 +1651,7 @@ class RoRTruckOgreWindow(wxOgre3D):
 		n.allowTranslation = False #no translation axes
 		return n
 
-	def newEntryEx(self, strMeshName, strMaterialName=None, bAssignEvent=False, bAddToEntries=False, bCreateData=False, parentNode=None, suffix=""):
+	def new_entry_ex(self, strMeshName, strMaterialName=None, bAssignEvent=False, bAddToEntries=False, bCreateData=False, parentNode=None, suffix=""):
 		""" strMeshName, strMaterialName = None, bAssignEvent = False, bAddToEntries = False, bCreateData = False, parentNode = None
 		Create a New Entry, that is:
 				   - node
@@ -1661,12 +1661,12 @@ class RoRTruckOgreWindow(wxOgre3D):
 				   - Create object Data (
 				   - add to self.entries """
 				   
-		n = self.newEntry(bAssignEvent, True)
+		n = self.new_entry(bAssignEvent, True)
 		if parentNode is None:
-			n.node = self.smNewNode(str(n.uuid) + "node")
+			n.node = self.mk_scene_node(str(n.uuid) + "node")
 		else:
 			n.node = parentNode.createChildSceneNode(str(n.uuid) + "node")
-		n.entity = self.smNewEntity(suffix + str(n.uuid) + "Entity", strMeshName)
+		n.entity = self.mk_entity(suffix + str(n.uuid) + "Entity", strMeshName)
 		if strMaterialName:
 			n.entity.setMaterialName(strMaterialName)
 		n.node.attachObject(n.entity)
@@ -1674,7 +1674,7 @@ class RoRTruckOgreWindow(wxOgre3D):
 			self.entries[suffix + str(n.uuid)] = n
 		return n
 
-	def smNewEntity(self, strName, strMesh, strMaterialName=None,
+	def mk_entity(self, strName, strMesh, strMaterialName=None,
 					doc=""" strName, strMesh, strMaterialName =None 
 					Scene Manager New Entity:
 					Create a new entity with: 
@@ -1687,7 +1687,7 @@ class RoRTruckOgreWindow(wxOgre3D):
 		return e
 
 	def createDotAt(self, x, y, z, color=CLBLUE, sufix='', parentNode=None):
-		p = self.newEntryEx("ellipsoid.mesh", color, True, True)
+		p = self.new_entry_ex("ellipsoid.mesh", color, True, True)
 		p.node.setPosition(x, y, z)
 		p.node.setScale(RoRConstants.DOT_SCALE, RoRConstants.DOT_SCALE, RoRConstants.DOT_SCALE)
 		p.name = sufix

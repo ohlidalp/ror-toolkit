@@ -27,21 +27,7 @@ def tempName():
 import ogre.renderer.OGRE as ogre
 from wxogre.OgreManager import *
 
-#   ERROR 
-#21:15:42: OverlayElementFactory for type Panel registered.
-#21:15:42: OverlayElementFactory for type BorderPanel registered.
-#21:15:42: OverlayElementFactory for type TextArea registered.
-#
-#21:15:52: OGRE EXCEPTION(5:ItemIdentityException): Cannot locate factory for element type Panel in OverlayManager::createOverlayElement at ..\src\OgreOverlayManager.cpp (line 568)
-#Traceback (most recent call last):
-#  File "I:\Archivos de programa\Rigs of Rods 0.35\TOOLKIT\Rigs of Rods 0.34 Toolkit\lib_common\roreditor\RoRTerrainOgreWindow.py", line 1751, in onMouseEvent
-#	self.selectnew(event)
-#  File "I:\Archivos de programa\Rigs of Rods 0.35\TOOLKIT\Rigs of Rods 0.34 Toolkit\lib_common\roreditor\RoRTerrainOgreWindow.py", line 1223, in selectnew
-#	self.changeSelection(r.movable)
-#  File "I:\Archivos de programa\Rigs of Rods 0.35\TOOLKIT\Rigs of Rods 0.34 Toolkit\lib_common\roreditor\RoRTerrainOgreWindow.py", line 629, in changeSelection
-#	OgreText(self.selected.entry.entity, self.camera, "myText")
-#  File "I:\Archivos de programa\Rigs of Rods 0.35\TOOLKIT\Rigs of Rods 0.34 Toolkit\lib_common\roreditor\text_draw.py", line 41, in __init__
-#	self.container = c = ovm.createOverlayElement("Panel", tempName())
+
 
 class OgreText(object):
 	"""Class for displaying text in Ogre above a Movable."""

@@ -136,7 +136,7 @@ class MapOptionWindow(ShapedWindow):
 			level = self.checkValidChars(level)
 		if not self.chkWaterLevel.GetValue():
 			level = 0.0
-		self.parent.terrainOgreWin.updateWaterPlane(level)
+		self.parent.terrainOgreWin.update_water_plane(level)
 		return level
 		
 	def OnCheckWater(self, event):

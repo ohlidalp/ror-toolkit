@@ -47,9 +47,9 @@ class RoRTerrainSelectedObjectOgreWindow(wxOgreWindow):
             if self.camalpha >= 360:
                 self.camalpha = 0
         self.cameraCollision()
-        wxOgreWindow.OnFrameStarted(self)
+        wxOgreWindow.on_frame_started(self)
 
-    def SceneInitialisation(self):
+    def initialize_scene(self):
         # create a camera
         self.camera = self.sceneManager.createCamera('SharedCamera' + self.rand) 
         self.camera.lookAt(ogre.Vector3(0, 0, 0)) 

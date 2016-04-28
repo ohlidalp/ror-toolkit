@@ -11,7 +11,7 @@ class RoROgreWindow(wxOgreWindow):
         wxOgreWindow.__init__(self, parent, ID, size = size, renderSystem = renderSystem, **kwargs) 
         self.parent = parent
 
-    def SceneInitialisation(self):
+    def initialize_scene(self):
         # only init things in the main window, not in shared ones!
         # setup resources 
         ogre.ResourceGroupManager.getSingleton().addResourceLocation("media/packs/OgreCore.zip", "Zip", "Bootstrap", False)
@@ -51,9 +51,9 @@ class RoROgreWindow(wxOgreWindow):
         self.Bind(wx.EVT_MOUSE_EVENTS, self.onMouseEvent)
         
         #create objects
-        self.populateScene()
+        self._prepare_scene()
     
-    def populateScene(self):
+    def _prepare_scene(self):
         self.sceneManager.AmbientLight = ogre.ColourValue(0.7, 0.7, 0.7 )
         self.sceneManager.setShadowTechnique(ogre.ShadowTechnique.SHADOWTYPE_STENCIL_ADDITIVE);
         self.sceneManager.setSkyDome(True, 'Examples/CloudySky', 4.0, 8.0) 

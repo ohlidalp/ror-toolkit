@@ -119,7 +119,7 @@ class ODefEditorOgreWindow(wxOgreWindow):
 		self.boundBox = BoundBoxClass(self)
 		self.bbresize = BoundBoxClass(self, CLRED)
 		
-	def newEntry(self, bAssignEvent=False, bAutouuid=False): 
+	def new_entry(self, bAssignEvent=False, bAutouuid=False): 
 		""" Create an odefEntryClass
 			bAssignEvent -> Assign ogreWindow property
 			bAutouuid -> auto generate uuid to this entry"""		
@@ -130,7 +130,7 @@ class ODefEditorOgreWindow(wxOgreWindow):
 			n.uuid = randomID()
 		return n
 
-	def newEntryEx(self, strMeshName, strMaterialName=None, bAssignEvent=False, bAddToEntries=False, parentNode=None):
+	def new_entry_ex(self, strMeshName, strMaterialName=None, bAssignEvent=False, bAddToEntries=False, parentNode=None):
 		""" strMeshName, strMaterialName = None, bAssignEvent = False, bAddToEntries = False, parentNode=None
 		 Create a New Entry, that is:
 				   - node
@@ -139,13 +139,13 @@ class ODefEditorOgreWindow(wxOgreWindow):
 				   - Assign material and mesh to the entity
 				   - add to self.entries """
 				   
-		n = self.newEntry(bAssignEvent, True)
+		n = self.new_entry(bAssignEvent, True)
 		if parentNode is None:
-			n.node = self.smNewNode(str(n.uuid) + "node")
+			n.node = self.mk_scene_node(str(n.uuid) + "node")
 		else:
 			n.node = parentNode.createChildSceneNode(str(n.uuid) + "node")
 		
-		n.entity = self.smNewEntity(str(n.uuid) + "Entity", strMeshName)
+		n.entity = self.mk_entity(str(n.uuid) + "Entity", strMeshName)
 		if strMaterialName:
 			n.entity.setMaterialName(strMaterialName)
 		n.node.attachObject(n.entity)
@@ -153,18 +153,18 @@ class ODefEditorOgreWindow(wxOgreWindow):
 			self.entries[n.uuid] = n
 		return n
 	
-	def smNewNode(self, strName,
+	def mk_scene_node(self, strName,
 					doc=""" Scene Manager New Node:
 					Create a new SceneNode with given Name """):
 		n = self.sceneManager.getRootSceneNode().createChildSceneNode(strName)
 		return n
 
 	
-	def getOgreSceneManager(self):
+	def get_ogre_scene_manager(self):
 		return self.sceneManager
 	
 	
-	def smNewEntity(self, strName, strMesh, strMaterialName=None,
+	def mk_entity(self, strName, strMesh, strMaterialName=None,
 					doc=""" Scene Manager New Entity:
 					Create a new entity with: 
 					- Entity Name
@@ -176,14 +176,14 @@ class ODefEditorOgreWindow(wxOgreWindow):
 		return e
 	
 	def createDotAt(self, x, y, z, color=CLBLUE, sufix='', parentNode=None):
-		p = self.newEntryEx("ellipsoid.mesh", color, False, True, parentNode)
+		p = self.new_entry_ex("ellipsoid.mesh", color, False, True, parentNode)
 		p.node.setPosition(x, y, z)
 		p.name = sufix
 		return p
 		
 	def createDot(self, entry, corner="", color=CLBLUE, sufix=''):
 		""" create a dot on the corner of entry"""
-		p = self.newEntryEx("ellipsoid.mesh", color, False, True, entry.node)
+		p = self.new_entry_ex("ellipsoid.mesh", color, False, True, entry.node)
 		p.data.name = "point_%s" % str(randomID())
 		p.name = sufix
 		if not entry.details["aabb"].has_key(corner):
@@ -205,12 +205,12 @@ class ODefEditorOgreWindow(wxOgreWindow):
 			matname = "mysimple/odefeditor/transgreen"
 		matname = self.getNewMat(matname)
 		if odefbox.isMesh:
-			entry = self.newEntryEx(odefbox.meshName, matname, True, True)
+			entry = self.new_entry_ex(odefbox.meshName, matname, True, True)
 			entry.position = 0, 0, 0
 			entry.rotation = -90, 0, 0
 			entry.canBeSelected = False
 		else:
-			entry = self.newEntryEx("beam.mesh", matname, True, True)
+			entry = self.new_entry_ex("beam.mesh", matname, True, True)
 			entry.box = odefbox
 	
 			midPoint = entry.box.coord0.asVector3.midPoint(entry.box.coord1.asVector3) 
@@ -228,7 +228,7 @@ class ODefEditorOgreWindow(wxOgreWindow):
 			self.mainOdef.boxes.append(odefbox)
 		return entry
 
-	def SceneInitialisation(self):
+	def initialize_scene(self):
 
 		#get the scenemanager
 		self.sceneManager = getOgreManager().createSceneManager(ogre.ST_GENERIC)
@@ -261,7 +261,7 @@ class ODefEditorOgreWindow(wxOgreWindow):
 		#self.Bind(wx.EVT_KEY_UP, self.onKeyUp)
 		self.Bind(wx.EVT_MOUSE_EVENTS, self.onMouseEvent)
 		#create objects
-		self.populateScene()
+		self._prepare_scene()
 
 	def loadFile(self, filename):
 		self.filename = filename
@@ -388,8 +388,7 @@ class ODefEditorOgreWindow(wxOgreWindow):
 		self.entries.clear()
 		self.sceneManager.clearScene()
 		self.initVariables()
-#		self.SceneInitialisation()
-		self.populateScene()
+		self._prepare_scene()
 		#FIXME: ground and sky plane are loose??
 # Lepes comment it out
 #		for box in self.boxes:
@@ -421,7 +420,7 @@ class ODefEditorOgreWindow(wxOgreWindow):
 #		del self.sceneManager
 		pass
 
-	def populateScene(self):
+	def _prepare_scene(self):
 		self.sceneManager.AmbientLight = ogre.ColourValue(201, 201, 173) #0.7, 0.7, 0.7 )
 		self.sceneManager.setShadowTechnique(ogre.ShadowTechnique.SHADOWTYPE_STENCIL_ADDITIVE);
 		self.sceneManager.setSkyDome(True, 'mysimple/terraineditor/previewwindowsky', 4.0, 8.0)
@@ -514,7 +513,7 @@ class ODefEditorOgreWindow(wxOgreWindow):
 				#print r.movable.getMovableType(), r.movable.getName()
 				self.selected.type = "object"
 				selectedSomething = True
-				self.changeSelection(r.movable)
+				self.change_selection(r.movable)
 				break
 		if not selectedSomething:
 			self.selected.coords.asVector3 = self.axis.pointer3d.getPosition()
