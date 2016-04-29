@@ -3,21 +3,22 @@
 :author: Petr Ohlidal 'only_a_ptr' 01/2016
 """
 
-import ogre.renderer.OGRE as ogre
+import ogre.renderer.OGRE as OGRE
 
-class MouseWorldTransforms:
+class Mouse3D:
 	"""
 	Utility class for computing mouse transforms in 3d world.
 	
 	:author: Petr Ohlidal 'only_a_ptr' 01/2016
 	"""
 
-	def __init__(self, ogre_camera, ogre_renderwindow):
+	def __init__(self, ogre_camera, ogre_renderwindow, ogre_scene_manager):
 		"""
 		"""
 		self._ogre_camera = ogre_camera
 		self._ogre_renderwindow = ogre_renderwindow
-		self._ogre_plane = ogre.Plane()
+		self._ogre_plane = OGRE.Plane()
+		self._ogre_scene_manager = ogre_scene_manager
 		
 	def create_camera_to_viewport_ray(self, screen_x_pixels, screen_y_pixels):
 		"""
@@ -29,12 +30,26 @@ class MouseWorldTransforms:
 		y_perc = screen_y_pixels / float(height)
 		return self._ogre_camera.getCameraToViewportRay(x_perc, y_perc)
 		
+	def query_mouse_terrain_position(self, screen_x_pixels, screen_y_pixels):
+		"""
+		http://www.comp.hkbu.edu.hk/~comp3080/2011/?page_id=296
+		"""
+		ray = self.create_camera_to_viewport_ray(screen_x_pixels, screen_y_pixels)
+		ray_query = self._ogre_scene_manager.createRayQuery(OGRE.Ray()); # TODO: can't I pass the ray directly?
+		ray_query.setRay(ray)
+		result = ray_query.execute()
+		final = None
+		if len(result) > 0 and not result[0] is None and not result[0].worldFragment is None:
+			final = result[0].worldFragment.singleIntersection
+		self._ogre_scene_manager.destroyQuery(ray_query)
+		return final
+
 	def mouse_translate_along_axis(self, pivot_point, axis_ogre, mouse_x1, mouse_y1, mouse_x2, mouse_y2):
 		"""
 		:param ogre.Vector3   pivot_point :
 		:param string{X/Y/Z}  axis_ogre   : OGRE world space (Y = up)
 		:returns: Tuple(Success?:bool, ogre.Vector3|None)
-		"""			
+		"""
 		
 		# Prepare plane
 		cam2pivot_vec = self._ogre_camera.getPosition() - pivot_point
@@ -45,24 +60,24 @@ class MouseWorldTransforms:
 		
 		if axis_ogre == "X":
 			if camcos_y > camcos_z:
-				self._ogre_plane.redefine(ogre.Vector3().UNIT_Y, pivot_point)
+				self._ogre_plane.redefine(OGRE.Vector3().UNIT_Y, pivot_point)
 				normal_str = "Y"
 			else:
-				self._ogre_plane.redefine(ogre.Vector3().UNIT_Z, pivot_point)
+				self._ogre_plane.redefine(OGRE.Vector3().UNIT_Z, pivot_point)
 				normal_str = "Z"
 		elif axis_ogre == "Y":
 			if camcos_x > camcos_z:
-				self._ogre_plane.redefine(ogre.Vector3().UNIT_X, pivot_point)
+				self._ogre_plane.redefine(OGRE.Vector3().UNIT_X, pivot_point)
 				normal_str = "X"
 			else:
-				self._ogre_plane.redefine(ogre.Vector3().UNIT_Z, pivot_point)
+				self._ogre_plane.redefine(OGRE.Vector3().UNIT_Z, pivot_point)
 				normal_str = "Z"
 		elif axis_ogre == "Z":
 			if camcos_x > camcos_y:
-				self._ogre_plane.redefine(ogre.Vector3().UNIT_X, pivot_point)
+				self._ogre_plane.redefine(OGRE.Vector3().UNIT_X, pivot_point)
 				normal_str = "X"
 			else:
-				self._ogre_plane.redefine(ogre.Vector3().UNIT_Y, pivot_point)
+				self._ogre_plane.redefine(OGRE.Vector3().UNIT_Y, pivot_point)
 				normal_str = "Y"
 			
 		# Intersect planes
@@ -83,11 +98,11 @@ class MouseWorldTransforms:
 		# Clamp translation to axis
 		plane_vec_raw = point2 - point1
 		if axis_ogre == "X":
-			world_vec = plane_vec_raw * ogre.Vector3().UNIT_X
+			world_vec = plane_vec_raw * OGRE.Vector3().UNIT_X
 		elif axis_ogre == "Y":
-			world_vec = plane_vec_raw * ogre.Vector3().UNIT_Y
+			world_vec = plane_vec_raw * OGRE.Vector3().UNIT_Y
 		elif axis_ogre == "Z":
-			world_vec = plane_vec_raw * ogre.Vector3().UNIT_Z
+			world_vec = plane_vec_raw * OGRE.Vector3().UNIT_Z
 		
 		#print("    DBG mouse3d >> OK | plane_vec_raw: " + str(plane_vec_raw) + " | world_vec: " + str(world_vec) + " | axis: " + axis_ogre + " | plane_norm: " + normal_str)
 		return (True, world_vec)

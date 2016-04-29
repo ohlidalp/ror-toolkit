@@ -151,6 +151,7 @@
     <Compile Include="source\rortoolkit\gui\TerrainProjectManagerPanel.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="source\rortoolkit\gui\TerrainTrackToolPanel.py" />
     <Compile Include="source\rortoolkit\gui\__init__.py">
       <SubType>Code</SubType>
     </Compile>
@@ -162,6 +163,7 @@
     <Compile Include="source\rortoolkit\terrain\project.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="source\rortoolkit\terrain\tracktool.py" />
     <Compile Include="source\rortoolkit\terrain\__init__.py">
       <SubType>Code</SubType>
     </Compile>

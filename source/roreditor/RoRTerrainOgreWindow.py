@@ -42,6 +42,9 @@ MAX_SMOOTH_ANGLE = 9
 #===============================================================================
 PAUSE_PER_SECOND = 0
 
+# Constants
+ACTIVE_TERRAIN_TOOL_NONE  = 0
+ACTIVE_TERRAIN_TOOL_TRACK = 1
 
 class HistoryEntryClass(object):
 	uuid = None
@@ -87,6 +90,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 
 		self._mouse_drag_start_screen_x = int(0)
 		self._mouse_drag_start_screen_y = int(0)
+		self._active_tool = ACTIVE_TERRAIN_TOOL_NONE
 		self.knownObjects = {}
 		""" dictionary that holds detailed info about
 			all objects that we have on Terrain.
@@ -268,12 +272,34 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		Init; must be called before object is used 
 		but after toolkit media were loaded
 		"""
-		import rortoolkit.mouse_3d 
-		self._mouse_world_transforms = rortoolkit.mouse_3d.MouseWorldTransforms(self.camera, self.renderWindow)
+		import rortoolkit.mouse_3d
+		import rortoolkit.terrain.tracktool
+		import rortoolkit.gui
+
+		self._mouse3d = rortoolkit.mouse_3d.Mouse3D(
+			self.camera, self.renderWindow, self.sceneManager)
+
+		self._track_system = rortoolkit.terrain.tracktool.TrackSystem(self.sceneManager)
+		self._track_tool_window = rortoolkit.gui.TerrainTrackToolPanel(self)
 
 		self._reset_variables()
 		if self.cameraBookmark:
 			self.cameraBookmark.updateVelocity(self.cameraVel, self.cameraShiftVel)
+
+	def setup_toolbar_buttons(self, window, terrain_toolbar):
+		# Toolbar << Track system
+		tracksys_bitmap = getBitmap("Road");
+		menu_tracksys_id = wx.NewId()
+		terrain_toolbar.AddTool(menu_tracksys_id, "Track", 
+			bitmap1=tracksys_bitmap, bitmap2=tracksys_bitmap, kind=wx.ITEM_CHECK) # returns None
+		window.Bind(wx.EVT_MENU, self._on_toolbar_tracktool_button_click, id = menu_tracksys_id)
+
+		# Retrieve toolbar button instances
+		# If you find nicer way to do it, let me know ~ only_a_ptr, 04/2016
+		for tb_button in terrain_toolbar._tbButtons:
+			item_id = tb_button._tbItem._id
+			if item_id == menu_tracksys_id:
+				self._tracksys_menu_item = tb_button._tbItem # wx.lib.agw.flatmenu.FlatToolbarItem
 
 	def export_ogre17_terrain_config(self):
 		"""
@@ -550,7 +576,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		# bind mouse and keyboard
 		self.Bind(wx.EVT_KEY_DOWN, self.onKeyDown) 
 		self.Bind(wx.EVT_KEY_UP, self.onKeyUp) 
-		self.Bind(wx.EVT_MOUSE_EVENTS, self.onMouseEvent)
+		self.Bind(wx.EVT_MOUSE_EVENTS, self._on_mouse_event)
 
 		self._prepare_scene()
 		
@@ -1419,7 +1445,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			return
 		
 		pivot = self.selected.entry.node._getDerivedPosition()
-		was_success, offset = self._mouse_world_transforms.mouse_translate_along_axis(
+		was_success, offset = self._mouse3d.mouse_translate_along_axis(
 			pivot, axis_ogre, mouse_x1, mouse_y1, mouse_x2, mouse_y2)
 		if not was_success:
 			return
@@ -1631,7 +1657,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 
 		return None
 
-	def onMouseEvent(self, event):
+	def _on_mouse_event(self, event):
 		if self.terrain is None:
 			return
 		if event.ButtonDown(wx.MOUSE_BTN_RIGHT):
@@ -1771,6 +1797,16 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 				log().error(str(err))
 				raise
 
+		# Track tool
+		if self._active_tool == ACTIVE_TERRAIN_TOOL_TRACK:
+			mouse_x, mouse_y = event.GetPosition()
+			mouse_world = self._mouse3d.query_mouse_terrain_position(mouse_x, mouse_y)
+			if mouse_world is None:
+				self._track_system.set_cursor_visible(False)
+			else:
+				self._track_system.set_cursor_visible(True)
+				self._track_system.set_cursor_world_pos(mouse_world.x, mouse_world.y, mouse_world.z)
+
 	def moveSelection(self, entry):
 		"selectionBox had been moved with freedom movement"
 		pass
@@ -1778,6 +1814,18 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 	def hideBoundingBox(self):
 			for e in self.entries:
 				self.entries[e].node.showBoundingBox(False)
+
+	def _on_toolbar_tracktool_button_click(self, evt):
+		if self.terrain is None:
+			self._tracksys_menu_item.Select(False)
+			return
+		
+		if self._tracksys_menu_item.IsChecked():
+			self._active_tool = ACTIVE_TERRAIN_TOOL_TRACK
+			self._track_tool_window.Show()
+		else:
+			self._active_tool = ACTIVE_TERRAIN_TOOL_NONE
+			self._track_tool_window.Hide()
 
 	def onKeyDown(self, event):
 		if self.terrain is None:

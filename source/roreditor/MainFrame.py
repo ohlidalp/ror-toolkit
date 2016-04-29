@@ -257,7 +257,7 @@ class MainFrame(wx.Frame):
 
 
 				self.MapOptions = MapOptionWindow(self, title="Map Options")
-				self.MapOptions.perspective = 1						  
+				self.MapOptions.perspective = 1
 
 				self.cameraBookmark = CameraWindow(self, title="Camera Bookmark")
 
@@ -269,7 +269,7 @@ class MainFrame(wx.Frame):
 					window_id = wx.NewId()
 					bitmap = getBitmap(label)
 					buttonidx = self.terraintoolbar.AddTool(window_id, label, bitmap1=bitmap, bitmap2=bitmap, kind=wx.ITEM_CHECK)
-					self.Bind(wx.EVT_MENU, self.on_toolbar_button_click, id=window_id)
+					self.Bind(wx.EVT_MENU, self._on_toolbar_button_click, id=window_id)
 					self.tbbuttons.append({'id' : window_id, 'label': label, 'window': window, 'perspective' : w.perspective, 'buttonidx': buttonidx})
 					
 				#create toolbarButtons for shaped windows
@@ -323,6 +323,9 @@ class MainFrame(wx.Frame):
 				self.ObjectTree = RoRObjectTreeCtrl(self, title="Tree")
 				self.ObjectTree.perspective = 1
 				add_toolbar_button(self, self.ObjectTree)
+
+				
+				self.terrainOgreWin.setup_toolbar_buttons(self, self.terraintoolbar)
 
 				# Read mouse object placement mode from ObjectTree window
 				# The reference is passed thru main window
@@ -465,7 +468,7 @@ class MainFrame(wx.Frame):
 			self.terrainOgreWin.selected.paste()
 			evt.Skip()
 			
-		def on_toolbar_button_click(self, evt):
+		def _on_toolbar_button_click(self, evt):
 			window_id = evt.GetId()
 			idx = list_has_value(self.tbbuttons, 'id', window_id)
 			if idx > -1:
