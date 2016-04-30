@@ -174,12 +174,13 @@ class MainFrame(wx.Frame):
 				self.terraintoolbar.Append(self._perspectives_menu, "Perspectives")
 				self.terraintoolbar.Append(help_menu, "Help")
 				
-#				self.hor_sizer.Add(self.terraintoolbar)
 				self.Bind(wx.EVT_RIGHT_DOWN, self.Onterraintoolbar, self.terraintoolbar)
 
-				self.statusbar = self.CreateStatusBar(4, 0, wx.ID_ANY, "mainstatusbar")
-				self.statusbar.SetStatusWidths([300, 300, 300, 350])
-
+				self.statusbar = self.CreateStatusBar(4, 0, wx.ID_ANY, "mainstatusbar") # wx.StatusBar
+				self.statusbar.SetFieldsCount(3)
+				self.statusbar.SetStatusText("~ current object ~", 0)
+				self.statusbar.SetStatusText("~ editor mode ~", 1)
+				self.statusbar.SetStatusText("~ hints ~", 2)
 				
 #				self.terraintoolbar.SetToolBitmapSize(wx.Size(16,16))
 #				self.terraintoolbar.AddLabelTool(ID_OpenTerrain, "Open Terrain", wx.ArtProvider_GetBitmap(wx.ART_FILE_OPEN))
@@ -636,11 +637,13 @@ class MainFrame(wx.Frame):
 				self.changeEditorMode(3)
 				self.truckEditorUVOgreWin.setTree(tree)
 
-		def updateStatusBar(self, msg=[]):
-				""" msg is four strings
+		def update_status_bar_fields(self, msg=[]):
+				""" msg is 3 strings
 				"""
-				for i in range(0, len(msg)):
-					
+				last = len(msg)
+				if last > 3:
+					last = 3
+				for i in range(0, last):
 					self.statusbar.SetStatusText(msg[i], i)
 
 		def onUpdateRender(self, event=None): 

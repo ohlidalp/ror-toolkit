@@ -188,7 +188,8 @@ class RoRTruckOgreWindow(wxOgre3D):
 			msg[1] = "pos: %.3f, %.3f, %.3f" % (p.x, p.y, p.z) 
 			reldist = p - self.p3d.ogrePosition
 			msg[2] = "dist: %.3f, %.3f, %.3f Len: %.3f" % (reldist.x, reldist.y, reldist.z, reldist.length())
-		self.parent.updateStatusBar(msg)		
+		self.parent.update_status_bar_fields(msg)
+
 	def updateLinks(self, entry):
 		""" entry has lineTruck and it is a node
 		"""

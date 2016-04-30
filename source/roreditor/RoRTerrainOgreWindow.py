@@ -166,7 +166,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 			rotx, roty, rotz = self.selected.entry.rotation
 			msg[2] = ("%d, %0.2f, %0.2f, %0.2f / %0.2f, %0.2f, %0.2f" % (self.selected.entry.data.line, posx, posy, posz, rotx, roty, rotz))
 			
-			self.parent.updateStatusBar(msg)
+			self.parent.update_status_bar_fields(msg)
 	
 	def _getroad(self):
 		return self.parent.RoadSystem
@@ -652,7 +652,7 @@ class RoRTerrainOgreWindow(wxOgreWindow):
 		self.camera.setAutoTracking(False)
 		if entry:
 			self.ObjectInspector.updateData(entry)
-			self.parent.updateStatusBar([entry.data.name, str(entry.position), str(entry.rotation), ""])
+			self.parent.update_status_bar_fields([entry.data.name, str(entry.position), str(entry.rotation)])
 #			self.axis.attachTo(entry.node)
 			if self.autoTracking:
 				self.camera.setAutoTracking(True, entry.node)
